@@ -44,18 +44,34 @@ module.exports = app;
 //start server app 
 var WebSocketServer = require('ws').Server
 var activeApplicationClient = []
+var times = [];
+counter = 0
 
 console.log("server started")
 wss = new WebSocketServer({ port: 8181 });
 wss.on('connection', function (ws) {
     console.log('client connected');
     ws.on('message', function (message) {
-        messageContent = message.toString('ascii') 
-        console.log("message:" + messageContent);
+        //do fps calculator 
+        const now = performance.now();
+        while (times.length > 0 && times[0] <= now - 1000) {
+            times.shift();
+        }
+        times.push(now);
+        fps = times.length;
+
+        if(counter > 100) {
+            counter = 0
+            console.log('fps from sensor: ' + fps)
+        }
+        counter = counter + 1;
+
+        messageContent = message.toString('ascii');
         message = JSON.parse(messageContent);
         type = message.type
         if(type === 'pose_landmark') {
             //depth correction
+            
             //TODO action midware here
             message.action = ["",""]
             
@@ -65,7 +81,7 @@ wss.on('connection', function (ws) {
                 }
             });
         }
-        if(type === 'pose_landmark') {
+        if(type === 'application_client') {
             activeApplicationClient.push(ws)
             ws.notActived = false
         }
