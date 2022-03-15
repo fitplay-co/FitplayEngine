@@ -6,6 +6,7 @@ var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var midware = require('./src/midware');
 
 var app = express();
 
@@ -51,14 +52,20 @@ wss.on('connection', function (ws) {
     ws.on('message', function (message) {
         messageContent = message.toString('ascii') 
         console.log("message:" + messageContent);
-        if(messageContent.startsWith('update-camera:') || messageContent.startsWith('action:') || messageContent.startsWith('update:')) {
+        message = JSON.parse(messageContent);
+        type = message.type
+        if(type === 'pose_landmark') {
+            //depth correction
+            //TODO action midware here
+            message.action = ["",""]
+            
             activeApplicationClient.forEach(function(ws){
                 if(ws.notActived === false) {
                     ws.send( messageContent)
                 }
             });
         }
-        if(messageContent.startsWith('applicationClient:')) {
+        if(type === 'pose_landmark') {
             activeApplicationClient.push(ws)
             ws.notActived = false
         }
