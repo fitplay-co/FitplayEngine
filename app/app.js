@@ -84,6 +84,7 @@ wss.on('connection', function (ws) {
         if(type === 'application_client') {
             activeApplicationClient.push(ws)
             ws.notActived = false
+            console.log("application client attached")
         }
     });
     ws.on('close', function (event) {

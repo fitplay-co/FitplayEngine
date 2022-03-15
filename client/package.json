@@ -1,0 +1,13 @@
+{
+  "name": "app",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./printAppClient.js"
+  },
+  "dependencies": {
+    "websocket": "^1.0.34",
+    "websockets": "^0.2.0",
+    "ws": "^8.5.0"
+  }
+}
