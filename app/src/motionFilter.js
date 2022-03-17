@@ -33,8 +33,8 @@ class motionFilter{
     newImpulse(nextRead, threshold){
         this.vulve = threshold;
         if(this.motionFormer == 0) this.motionFormer = nextRead;
+        this.filteredData = this.filter(nextRead, this.motionFormer, 0.8);
         this.motionFormer = nextRead;
-        this.filteredData = this.filter(this.filteredData);
         //self.filtered_data, self.z = signal.lfilter(self.b, 1, [next_read], zi=self.z)
         p = this.filteredData;
         d = this.filteredData - this.motionFormer;
@@ -88,8 +88,8 @@ class motionFilter{
         return this.direction, this.pidData;
 
     }
-    filter(read){
-        console.log("filtering");
-        return read;
+    filter(read, pre, damping){
+        var res = pre * damping + read * (1 - damping);
+        return res;
     }
 }
