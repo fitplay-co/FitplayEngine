@@ -7,6 +7,8 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var midware = require('./src/midware');
+const depthEstimator = require('./src/depth_estimator');
+const { runInContext } = require('vm');
 
 var app = express();
 
@@ -45,7 +47,8 @@ module.exports = app;
 var WebSocketServer = require('ws').Server
 var activeApplicationClient = []
 var times = [];
-counter = 0
+var counter = 0
+var processingJob = 0
 
 console.log("server started")
 wss = new WebSocketServer({ port: 8181 });
@@ -67,26 +70,35 @@ wss.on('connection', function (ws) {
         counter = counter + 1;
 
         messageContent = message.toString('ascii');
-        message = JSON.parse(messageContent);
-        type = message.type
-        if(type === 'pose_landmark') {
-            //depth correction
-            message.estimateDepth = ""
-
-            //TODO action midware here
-            message.action = ["",""]
-            
-            activeApplicationClient.forEach(function(ws){
-                if(ws.notActived === false) {
-                    ws.send( messageContent)
+        processingJob = processingJob +1 
+        setImmediate (function(){
+            message = JSON.parse(messageContent);
+            type = message.type
+            if(type === 'pose_landmark') {
+                //jump if process jobs too much 
+                if(processingJob < 4) {
+                    //depth correction
+                    message.estimateDepth = depthEstimator.estimateDepthUpdate(message)
+                    //TODO action midware here
+                    message.action = ["",""]
+                    
+                    messageContent = JSON.stringify(message)
+                    activeApplicationClient.forEach(function(ws){
+                        if(ws.notActived === false) {
+                            ws.send( messageContent)
+                        }
+                    });
+                } else {
+                    console.log("warning: frame jump high loading")
                 }
-            });
-        }
-        if(type === 'application_client') {
-            activeApplicationClient.push(ws)
-            ws.notActived = false
-            console.log("application client attached")
-        }
+            }   
+            if(type === 'application_client') {
+                activeApplicationClient.push(ws)
+                ws.notActived = false
+                console.log("application client attached")
+            }
+            processingJob = processingJob - 1 
+        })
     });
     ws.on('close', function (event) {
         ws.notActived = true

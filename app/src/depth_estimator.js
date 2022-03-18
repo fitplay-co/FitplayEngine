@@ -5,7 +5,7 @@ var depthEstimator = {
     rig_list : [],
     tracing : false,
     current_distance : 0,
-    withScale : 480,
+    widthScale : 480,
     heightScale : 640,
 
     appendRig : function(startPoint, endPoint) {
@@ -22,7 +22,17 @@ var depthEstimator = {
         this.calculateCurrentMagnitudeData(pose)
         this.current_distance = this.determineCurrentDistance()
         this.feedbackReferenceDistance(this.current_distance)
-        return 1.0 / this.current_distance
+        var resultDistance = 0
+        if(this.current_distance == 0 ) {
+            resultDistance = 0
+        } else {
+            resultDistance =  1.0 / this.current_distance
+        }
+        pose.monitor = {
+            "rawData": resultDistance,
+            "watchData" :resultDistance
+        }
+        return resultDistance
     },
 
     /* 1. update data and calculate sparse current magnitude, will be zero if currently this joint
@@ -33,9 +43,9 @@ var depthEstimator = {
         this.rig_list.forEach(item => {
             item[2] = this.distance_finder_y_filtered(pose, item[0], item[1])
             index = index + 1
-            if(item[2] > 0 ) {
-                print("filter" + str(index)) 
-            }
+            //if(item[2] > 0 ) {
+                //console.log("filter" + index)
+            //}
         });
     }, 
 
@@ -47,9 +57,9 @@ var depthEstimator = {
                 if (item[2] != 0) {
                     this.tracing = true
                     this.current_distance = 1
-                    return this.current_distance
                 }
             })
+            return this.current_distance
         } else {
             var distanceItemCount = 0 
             var distanceSum = 0
@@ -91,10 +101,11 @@ var depthEstimator = {
         z2 = vec2[2]
         widthScale = this.widthScale
         heightScale = this.heightScale
-        if (Math.abs(z1 - z2) > 0.05) {
+        if (Math.abs(z1 - z2) > 0.03) {
             return 0
         } else {
-            return Math.pow((x1-x2) * (x1-x2) * widthScale * widthScale + (y1-y2) * (y1-y2) * heightScale * heightScale, 0.5) 
+            dist =  Math.pow((x1-x2) * (x1-x2) * widthScale * widthScale + (y1-y2) * (y1-y2) * heightScale * heightScale, 0.5) 
+            return dist
         }
     }, 
 

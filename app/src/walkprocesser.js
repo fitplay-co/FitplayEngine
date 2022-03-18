@@ -10,8 +10,6 @@ var cache_len = 100;
 var lastKneeActionMili = 0;
 //const map = fre_cache.reduce((m, x) => m.set(x, (m.get(x) || 0) + 1), new Map())
 
-
-
 module.exports.processKnee = (data,json,plot=0)=>{
     if(!cof_check(data,27)||!cof_check(data,28)){
         return;
