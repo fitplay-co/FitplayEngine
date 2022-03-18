@@ -71,7 +71,8 @@ wss.on('connection', function (ws) {
         type = message.type
         if(type === 'pose_landmark') {
             //depth correction
-            
+            message.estimateDepth = ""
+
             //TODO action midware here
             message.action = ["",""]
             
