@@ -1,3 +1,3 @@
-var depthEstimator = require('../src/depth_estimator')
+var depthEstimator = require('../src/midware_ground_location')
 var mockData = require('../test/mock_pose_data')
-depthEstimator.estimateDepth(mockData[0])
+depthEstimator.process(mockData[0])

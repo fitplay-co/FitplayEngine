@@ -6,9 +6,8 @@ var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-var midware = require('./src/midware');
-const depthEstimator = require('./src/depth_estimator');
-const { runInContext } = require('vm');
+const groundLocation = require('./src/midware_ground_location');
+const actionDetection = require('./src/midware_action_detection');
 
 var app = express();
 
@@ -75,10 +74,15 @@ wss.on('connection', function (ws) {
             message = JSON.parse(messageContent);
             type = message.type
             if(type === 'pose_landmark') {
+                //TODO for now only pose provided in message as pose landmark
+                pose = message
                 //jump if process jobs too much 
                 if(processingJob < 4) {
+                    //TODO process Input here for input 
+                    //此处开始写局部坐标的初始化（地面坐标系）
                     //depth correction
-                    message.estimateDepth = depthEstimator.estimateDepthUpdate(message)
+                    groundLocation.process(pose)
+                    actionDetection.process(pose)
                     //TODO action midware here
                     message.action = ["",""]
                     
@@ -88,8 +92,9 @@ wss.on('connection', function (ws) {
                             ws.send( messageContent)
                         }
                     });
+                    console.log("depth: " + message.estimateDepth)
                 } else {
-                    console.log("warning: frame jump high loading")
+                    console.log("warning: frame jump ")
                 }
             }   
             if(type === 'application_client') {

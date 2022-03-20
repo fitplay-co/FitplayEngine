@@ -14,11 +14,7 @@ var depthEstimator = {
         this.rig_list.push([startPoint, endPoint, 0, 0, 0])
     },
 
-    estimateDepth : function(pose){
-        return this.estimateDepthUpdate(pose)
-    },
-
-    estimateDepthUpdate : function(pose){
+    process : function(pose){
         this.calculateCurrentMagnitudeData(pose)
         this.current_distance = this.determineCurrentDistance()
         this.feedbackReferenceDistance(this.current_distance)
@@ -31,6 +27,10 @@ var depthEstimator = {
         pose.monitor = {
             "rawData": resultDistance,
             "watchData" :resultDistance
+        }
+        pose.ground_location = {
+            x: 0,
+            z: resultDistance
         }
         return resultDistance
     },
