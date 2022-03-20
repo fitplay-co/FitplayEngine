@@ -92,7 +92,6 @@ wss.on('connection', function (ws) {
                             ws.send( messageContent)
                         }
                     });
-                    console.log("depth: " + message.estimateDepth)
                 } else {
                     console.log("warning: frame jump ")
                 }

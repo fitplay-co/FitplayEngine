@@ -5,8 +5,8 @@ var depthEstimator = {
     rig_list : [],
     tracing : false,
     current_distance : 0,
-    widthScale : 480,
-    heightScale : 640,
+    widthScale : 640,
+    heightScale : 480,
 
     appendRig : function(startPoint, endPoint) {
         /*storage in rig_list as 
@@ -14,7 +14,7 @@ var depthEstimator = {
         this.rig_list.push([startPoint, endPoint, 0, 0, 0])
     },
 
-    process : function(pose){
+    process : function(pose, monitor = false) {
         this.calculateCurrentMagnitudeData(pose)
         this.current_distance = this.determineCurrentDistance()
         this.feedbackReferenceDistance(this.current_distance)
@@ -24,12 +24,15 @@ var depthEstimator = {
         } else {
             resultDistance =  1.0 / this.current_distance
         }
-        pose.monitor = {
-            "rawData": resultDistance,
-            "watchData" :resultDistance
+        if(monitor) {
+            pose.monitor = {
+                "rawData": resultDistance,
+                "watchData" :resultDistance
+            }
         }
         pose.ground_location = {
-            x: 0,
+            //return x with ground location x axis
+            x: pose.keypoints[0].x,
             z: resultDistance
         }
         return resultDistance
@@ -116,8 +119,10 @@ var depthEstimator = {
 
 depthEstimator.appendRig(11, 12)
 depthEstimator.appendRig(23, 24)
-depthEstimator.appendRig(12, 24)
-depthEstimator.appendRig(11, 23)
+//depthEstimator.appendRig(12, 24)
+//depthEstimator.appendRig(11, 23)
 depthEstimator.appendRig(8, 7)
+depthEstimator.appendRig(2, 5)
+//depthEstimator.appendRig(9, 10)
 
 module.exports = depthEstimator;
