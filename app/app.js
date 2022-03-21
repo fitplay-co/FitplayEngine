@@ -6,7 +6,8 @@ var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-var midware = require('./src/midware');
+const groundLocation = require('./src/midware_ground_location');
+const actionDetection = require('./src/midware_action_detection');
 
 var app = express();
 
@@ -45,7 +46,8 @@ module.exports = app;
 var WebSocketServer = require('ws').Server
 var activeApplicationClient = []
 var times = [];
-counter = 0
+var counter = 0
+var processingJob = 0
 
 console.log("server started")
 wss = new WebSocketServer({ port: 8181 });
@@ -67,25 +69,37 @@ wss.on('connection', function (ws) {
         counter = counter + 1;
 
         messageContent = message.toString('ascii');
-        message = JSON.parse(messageContent);
-        type = message.type
-        if(type === 'pose_landmark') {
-            //depth correction
-            
-            //TODO action midware here
-            message.action = ["",""]
-            
-            activeApplicationClient.forEach(function(ws){
-                if(ws.notActived === false) {
-                    ws.send( messageContent)
+        processingJob = processingJob +1 
+        setImmediate (function(){
+            message = JSON.parse(messageContent);
+            type = message.type
+            if(type === 'pose_landmark') {
+                //TODO for now only pose provided in message as pose landmark
+                pose = message
+                //jump if process jobs too much 
+                if(processingJob < 4) {
+                    //TODO process Input here for input 
+                    //此处开始写局部坐标的初始化（地面坐标系）
+                    //depth correction
+                    groundLocation.process(pose)
+                    actionDetection.process(pose)
+                    messageContent = JSON.stringify(pose)
+                    activeApplicationClient.forEach(function(ws){
+                        if(ws.notActived === false) {
+                            ws.send( messageContent)
+                        }
+                    });
+                } else {
+                    console.log("warning: frame jump ")
                 }
-            });
-        }
-        if(type === 'application_client') {
-            activeApplicationClient.push(ws)
-            ws.notActived = false
-            console.log("application client attached")
-        }
+            }   
+            if(type === 'application_client') {
+                activeApplicationClient.push(ws)
+                ws.notActived = false
+                console.log("application client attached")
+            }
+            processingJob = processingJob - 1 
+        })
     });
     ws.on('close', function (event) {
         ws.notActived = true
