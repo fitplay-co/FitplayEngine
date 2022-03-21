@@ -33,7 +33,8 @@ var depthEstimator = {
         pose.ground_location = {
             //return x with ground location x axis
             x: pose.keypoints[0].x,
-            z: resultDistance
+            z: resultDistance,
+            tracing : this.tracing
         }
         return resultDistance
     },

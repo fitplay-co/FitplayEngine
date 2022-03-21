@@ -83,10 +83,7 @@ wss.on('connection', function (ws) {
                     //depth correction
                     groundLocation.process(pose)
                     actionDetection.process(pose)
-                    //TODO action midware here
-                    message.action = ["",""]
-                    
-                    messageContent = JSON.stringify(message)
+                    messageContent = JSON.stringify(pose)
                     activeApplicationClient.forEach(function(ws){
                         if(ws.notActived === false) {
                             ws.send( messageContent)
