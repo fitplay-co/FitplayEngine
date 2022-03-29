@@ -8,6 +8,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const groundLocation = require('./src/midware_ground_location');
 const actionDetection = require('./src/midware_action_detection');
+const readPose = require('./test/read_pose_data')
 
 var app = express();
 
@@ -81,6 +82,7 @@ wss.on('connection', function (ws) {
                     //TODO process Input here for input 
                     //此处开始写局部坐标的初始化（地面坐标系）
                     //depth correction
+                    //readPose.process(pose)
                     groundLocation.process(pose)
                     actionDetection.process(pose)
                     messageContent = JSON.stringify(pose)
