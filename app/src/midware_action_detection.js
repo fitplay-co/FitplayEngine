@@ -1,3 +1,4 @@
+jump_processor = require('./action_detection/jump_detection')
 walk_processor = require('./action_detection/walk_detection')
 
 var actionEstimator = {
@@ -9,6 +10,7 @@ var actionEstimator = {
             "version" : "0.1.0"
         }
         walk_processor.process(pose, monitor)
+        jump_processor.process(pose, monitor)
     }
 }
 
