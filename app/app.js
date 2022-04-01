@@ -9,6 +9,7 @@ var usersRouter = require('./routes/users');
 const groundLocation = require('./src/midware_ground_location');
 const actionDetection = require('./src/midware_action_detection');
 const readPose = require('./test/read_pose_data')
+const gazeTracking = require('./src/midware_gaze_tracking')
 
 var app = express();
 
@@ -85,6 +86,7 @@ wss.on('connection', function (ws) {
                     //readPose.process(pose)
                     groundLocation.process(pose)
                     actionDetection.process(pose)
+                    gazeTracking.process(pose)
                     messageContent = JSON.stringify(pose)
                     activeApplicationClient.forEach(function(ws){
                         if(ws.notActived === false) {
