@@ -3,6 +3,9 @@ var gaze_tracking = {
     z : 0,
     widthScale : 640,
     heightScale : 480,
+    pre_x :0,
+    pre_y:0,
+    pre_z:0,
     
     appendRig : function(startPoint, endPoint) {
         /*storage in rig_list as 
@@ -29,6 +32,9 @@ var gaze_tracking = {
         var res = this.matrixMultiplication(arr_2,arr_1)
         //console.log(res)
         res = this.matrixMultiplication(res,arr_3);
+        res[0][0] = res[0][0]*0.1+this.pre_x*0.9
+        res[1][0] = res[1][0]*0.1+this.pre_y*0.9
+        z = z*0.1+this.pre_z*0.9
         //console.log(res)
         if(monitor) {
             pose.monitor = {
@@ -45,6 +51,10 @@ var gaze_tracking = {
             y: res[1][0],
             z: z
         }
+        this.pre_x = res[0][0]
+        //console.log(this.pre_x)
+        this.pre_y = res[1][0]
+        this.pre_z = z
         return z
     },
     distance_finder_z_filtered: function(pose, num1 , num2) {
