@@ -1,73 +1,74 @@
-var gaze_tracking = {
+//depth estimator 
+//1. calculate depth estimation by compare world and camera 
+//2. estimate rough ly body center z toward camera
+
+var depthEstimator = {
     rig_list : [],
-    z : 0,
+    tracing : false,
+    current_distance : 0,
     widthScale : 640,
     heightScale : 480,
+    startX : 0,
+    startZ :0,
     pre_x :0,
-    pre_y:0,
     pre_z:0,
-    centerPointX : 320,
-    centerPointY : 240,
-    f_dx : 500, //  f/dx
-    f_dy : 900,
-    
     appendRig : function(startPoint, endPoint) {
         /*storage in rig_list as 
         [0]start_rig [1]end_rig, [2]current_magnitude, [3]reference_magnitude, [4]reference_distance*/
         this.rig_list.push([startPoint, endPoint, 0, 0, 0])
     },
-    process : function(pose,monitor = true){
-        //console.log(pose.keypoints[0].y)
-        //console.log(pose.keypoints[0].y)
-        // var arr_1 = [[this.pixelNumForX,0,this.centerPointX],
-        //      [0,this.pixelNumForY,this.centerPointY],
-        //      [0,0,1]]
-        // var arr_2 = [[this.focal_dis,0,0],
-        //     [0,this.focal_dis,0],
-        //     [0,0,1]]
-        var cameraParam = [[this.f_dx,0,this.centerPointX],
-                    [0,this.f_dy,this.centerPointY],
-                    [0,0,1]]
-        z = this.distance_finder_z_filtered(pose,2,5)
-        var arr_3 = new Array()
-        var data = [pose.keypoints[0].x*this.widthScale*z,(1-pose.keypoints[0].y)*this.heightScale*z,z]
-        arr_3 = this.invert(data,arr_3);
 
-        //arr_1 = this.inv(arr_1);
+    process : function(pose, monitor = false) {
+        var arr_1 = [[10000,0,320],
+                [0,10000,240],
+                [0,0,1]]
+        var arr_2 = [[0.05,0,0],
+            [0,0.05,0],
+            [0,0,1]]
+        
+        z_down = this.distance_finder_z_filtered(pose,23,24)*2
+        var arr_3down = new Array()
+        var arr33 = new Array()
+        var data_down = [pose.keypoints[23].x*this.widthScale*z_down,pose.keypoints[23].y*this.heightScale*z_down,z_down]
+        var data = [pose.keypoints[24].x*this.widthScale*z_down,pose.keypoints[24].y*this.heightScale*z_down,z_down]
+        arr_3down = this.invert(data_down,arr_3down)
+        arr33 = this.invert(data,arr33)
+        arr_1 = this.inv(arr_1);
         //console.log(arr_1)
-        cameraParam = this.inv(cameraParam)
-        //arr_2 = this.inv(arr_2);
+        
+        arr_2 = this.inv(arr_2);
         //console.log(arr_2)
         //console.log(arr_3)
-        //var res = this.matrixMultiplication(arr_2,arr_1)
-        var res = this.matrixMultiplication(cameraParam,arr_3)
+        var res = this.matrixMultiplication(arr_1,arr33)
+        var res1 = this.matrixMultiplication(arr_1,arr_3down)
         //console.log(res)
-        //res = this.matrixMultiplication(arr_2,res);
+        var res_down = this.matrixMultiplication(arr_2,res)
+        var resDown = this.matrixMultiplication(arr_2,res1)
+        res_down[0][0] = (res_down[0][0] + resDown[0][0])/2
+        res_down[0][0] = res[0][0]*0.1+this.pre_x*0.9
+        z_down = z_down*0.1+this.pre_z*0.9
+        if(pose.action ==='reset'||this.tracing == false){
+            startX = res_down[0][0]
+            startZ = z_down
+            this.tracing = true
+        }
+        // if(monitor) {
+        //     pose.monitor = {
+        //         "rawData": resultDistance,
+        //         "watchData" :resultDistance
+        //     }
+        // }
 
-        res[0][0] = res[0][0]*0.1+this.pre_x*0.9
-        res[1][0] = res[1][0]*0.1+this.pre_y*0.9
-        z = z*0.1+this.pre_z*0.9
-        //console.log(res)
-        if(monitor) {
-            pose.monitor = {
-                "rawData_z": pose.keypoints[0].z,
-                "watchData_z" :z,
-                "rawData_x":pose.keypoints[0].x,
-                "watchData_x":res[0][0],
-                "rawData_y":1-pose.keypoints[0].y,
-                "watchData_y":res[1][0]
-            }
+        pose.ground_location = {
+            //return x with ground location x axis
+            x: res_down[0][0]-startX,
+            z: z_down-startZ,
+            tracing : this.tracing
         }
-        pose.gaze_tracking = {
-            x: res[0][0],
-            y: res[1][0],
-            z: z,
-        }
-        this.pre_x = res[0][0]
-        //console.log(this.pre_x)
-        this.pre_y = res[1][0]
-        this.pre_z = z
-        return z
+        console.log(pose.ground_location)
+        this.pre_x = res_down[0][0]
+        this.pre_z = z_down
+        return 
     },
     distance_finder_z_filtered: function(pose, num1 , num2) {
         vec1 = this.point2vec(pose, num1)
@@ -77,8 +78,9 @@ var gaze_tracking = {
         widthScale = this.widthScale
         u1 = this.widthScale * x1
         u2 = this.widthScale * x2
-        return 35/Math.abs(0.8*(u2-u1))
+        return 35/Math.abs(u2-u1)
     }, 
+    
     det : function(square) {
         if(square.length !== square[0].length) {
             throw new Error();
@@ -140,7 +142,6 @@ var gaze_tracking = {
     
         return result;
         },
-    
     adjoint : function(square1) {
         // 方阵约束
         if(square1[0].length !== square1.length) {
@@ -208,21 +209,25 @@ var gaze_tracking = {
         var len_j = b[0].length;
         let arr=[];
         for(let i=0;i<len;i++){
-             arr[i]=[];
-             for(var j=0;j<len_j;j++){
-                 arr[i][j]=0;//每次都重新置为0
-                 for(var k=0;k<len;k++)
-                 {
-                     arr[i][j]+=a[i][k]*b[k][j];//
-                 }
-             }
+                arr[i]=[];
+                for(var j=0;j<len_j;j++){
+                    arr[i][j]=0;//每次都重新置为0
+                    for(var k=0;k<len;k++)
+                    {
+                        arr[i][j]+=a[i][k]*b[k][j];//
+                    }
+                }
         }
         return arr;
-     },
-     point2vec: function(pose, num) {
+        },
+
+    
+
+    point2vec: function(pose, num) {
         return [pose.keypoints[num].x, pose.keypoints[num].y, pose.keypoints[num].z]
     }
 }
 
-gaze_tracking.appendRig(2,5)
-module.exports = gaze_tracking;
+
+
+module.exports = depthEstimator;
