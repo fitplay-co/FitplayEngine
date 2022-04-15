@@ -2,7 +2,7 @@
 var WebSocketClient = require('websocket').client;
 
 var client = new WebSocketClient();
-
+var count = 0
 client.on('connectFailed', function(error) {
     console.log('Connect Error: ' + error.toString());
 });
@@ -17,11 +17,24 @@ client.on('connect', function(connection) {
     });
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
-            console.log(message);
+            //console.log(message);
+            count = count + 1
+            //console.log(count)
+            if (count > 300){
+                connection.send(JSON.stringify(groundLocationReset))
+                count = 0
+            }
+
         }
+
     });
     var appClientMessage =  {
         "type" : "application_client"
+    }
+    var groundLocationReset = {
+        "type" : "application_control",
+        "feature_id" : "ground_location",
+        "action" : "reset" 
     }
     connection.send(JSON.stringify(appClientMessage));
 });

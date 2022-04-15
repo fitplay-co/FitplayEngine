@@ -16,7 +16,7 @@ var gaze_tracking = {
         [0]start_rig [1]end_rig, [2]current_magnitude, [3]reference_magnitude, [4]reference_distance*/
         this.rig_list.push([startPoint, endPoint, 0, 0, 0])
     },
-    process : function(pose,monitor = true){
+    process : function(pose,monitor = false){
         //console.log(pose.keypoints[0].y)
         //console.log(pose.keypoints[0].y)
         // var arr_1 = [[this.pixelNumForX,0,this.centerPointX],
