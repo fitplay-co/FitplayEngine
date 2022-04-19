@@ -87,6 +87,16 @@ wss.on('connection', function (ws) {
                     groundLocation.process(pose)
                     actionDetection.process(pose)
                     gazeTracking.process(pose)
+                    //调整pose结构适配api格式
+                    pose.type = "application_frame"
+                    pose.pose_landmark = {
+                        keypoints: pose.keypoints,
+                        keypoints3D: pose.keypoints3D,
+                        timestamp: Date.now(),
+                        version:"0.1.0"
+                    }
+                    delete pose.keypoints
+                    delete pose.keypoints3D
                     messageContent = JSON.stringify(pose)
                     activeApplicationClient.forEach(function(ws){
                         if(ws.notActived === false) {
