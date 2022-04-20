@@ -17,7 +17,9 @@ client.on('connect', function(connection) {
     });
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
-            console.log(message);
+            var profilingTime = JSON.parse(message.utf8Data).timeProfiling 
+            profilingTime.clientReceiveTime = Date.now()
+            console.log(profilingTime);
         }
     });
     var appClientMessage =  {
