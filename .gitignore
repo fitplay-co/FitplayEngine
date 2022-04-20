@@ -117,3 +117,8 @@ dist
 */*.DS_Store
 *.DS_Store
 
+# wasm
+modules/demo/build
+modules/demo/vendor/emscripten
+modules/demo/dist
+
