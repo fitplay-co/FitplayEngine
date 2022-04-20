@@ -102,8 +102,8 @@ wss.on('connection', function (ws) {
                     }
                     delete pose.keypoints
                     delete pose.keypoints3D
-                    messageContent = JSON.stringify(pose)
                     pose.timeProfiling.beforeSendTime = Date.now()
+                    messageContent = JSON.stringify(pose)
                     // console.log(pose.timeProfiling)
                     activeApplicationClient.forEach(function(ws){
                         if(ws.notActived === false) {
