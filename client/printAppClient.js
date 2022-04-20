@@ -17,14 +17,9 @@ client.on('connect', function(connection) {
     });
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
-            //console.log(message);
-            count = count + 1
-            //console.log(count)
-            if (count > 300){
-                connection.send(JSON.stringify(groundLocationReset))
-                count = 0
-            }
-
+            var profilingTime = JSON.parse(message.utf8Data).timeProfiling 
+            profilingTime.clientReceiveTime = Date.now()
+            console.log(profilingTime);
         }
 
     });
