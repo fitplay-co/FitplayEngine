@@ -18,8 +18,10 @@ shared_resource_lock = threading.Lock()
 async def refreshBytes():
     while True:
         await asyncio.sleep(0.3)
+        
         pl.clf()
-        shared_resource_lock.acquire()        
+        shared_resource_lock.acquire()    
+        pl.xlim(0,500)
         pl.subplot(231)
         pl.plot(t, rawData_z)
         pl.title("pixel_z")

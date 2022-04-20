@@ -9,7 +9,8 @@ var usersRouter = require('./routes/users');
 const groundLocation = require('./src/midware_ground_location');
 const actionDetection = require('./src/midware_action_detection');
 const readPose = require('./test/read_pose_data')
-const gazeTracking = require('./src/midware_gaze_tracking')
+const gazeTracking = require('./src/midware_gaze_tracking');
+//const { type } = require('os');
 
 var app = express();
 
@@ -75,6 +76,7 @@ wss.on('connection', function (ws) {
         messageTime = Date.now()
         setImmediate (function(){
             message = JSON.parse(messageContent);
+            //console.log(message)
             type = message.type
             if(type === 'pose_landmark') {
                 //TODO for now only pose provided in message as pose landmark
@@ -111,6 +113,16 @@ wss.on('connection', function (ws) {
                 } else {
                     console.log("warning: frame jump ")
                 }
+            }
+            if(type ==='application_control'){
+                pose = message
+                //console.log(pose)
+                if(processingJob < 4){
+                    if(pose.feature_id === 'ground_location'){
+                        groundLocation.process(pose)
+                    }
+                }
+                
             }   
             if(type === 'application_client') {
                 activeApplicationClient.push(ws)
