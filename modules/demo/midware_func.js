@@ -6,8 +6,8 @@ Module.onRuntimeInitialized = function() {
     var obj = {"happy": true, "pi": 3.141};
     var jsonstr = JSON.stringify(obj);
     console.log(jsonstr);
-    console.log(Module.json_func(jsonstr));
+    console.log(Module.jsonFunc(jsonstr));
     console.log(Module.lerp(1, 2, 0.5));
-    console.log(Module.test_func("test"));
+    console.log(Module.testFunc("test"));
     console.log(vectorSize);
 }

@@ -14,7 +14,7 @@ float lerp(float a, float b, float t) {
     return (1 - t) * a + t * b;
 }
 
-float json_func(const std::string &str)
+float jsonFunc(const std::string &str)
 {
     // auto j = json::parse(R"({"happy": true, "pi": 3.141})");
     auto j = json::parse(str);
@@ -22,14 +22,8 @@ float json_func(const std::string &str)
 	return num;
 }
 
-std::string test_func(const std::string &str)
-{
-	val res = val::undefined();
-	
-	if (str.compare("int") == 0) res = val(123);
-	else if (str.compare("string") == 0) res = val("abc");
-	else if (str.compare("bool") == 0) res = val(true);
-	
+std::string testFunc(const std::string &str)
+{	
 	return "tested";
 }
 
@@ -47,9 +41,9 @@ std::map<int, std::string> returnMapData () {
 EMSCRIPTEN_BINDINGS(module) {
   function("returnVectorData", &returnVectorData);
   function("returnMapData", &returnMapData);
-  function("json_func", &json_func);
+  function("jsonFunc", &jsonFunc);
   function("lerp", &lerp);
-  function("test_func", &test_func);
+  function("testFunc", &testFunc);
 
   // register bindings for std::vector<int> and std::map<int, std::string>.
   register_vector<int>("vector<int>");

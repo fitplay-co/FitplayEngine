@@ -21,6 +21,14 @@ public:
     ++x;
   }
 
+  float jsonFunc(const std::string &str)
+{
+    // auto j = json::parse(R"({"happy": true, "pi": 3.141})");
+    auto j = json::parse(str);
+    float num = j["pose_landmark"]["keypoints"][1]["y"];
+	return num;
+}
+
   int getX() const { return x; }
   void setX(int x_) { x = x_; }
 
@@ -38,6 +46,7 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
   class_<MyClass>("MyClass")
     .constructor<int, std::string>()
     .function("incrementX", &MyClass::incrementX)
+    .function("jsonFunc", &MyClass::jsonFunc)
     .property("x", &MyClass::getX, &MyClass::setX)
     .class_function("getStringFromInstance", &MyClass::getStringFromInstance)
     ;
