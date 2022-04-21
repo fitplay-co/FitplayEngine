@@ -8,7 +8,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const groundLocation = require('./src/midware_ground_location');
 const actionDetection = require('./src/midware_action_detection');
-const readPose = require('./test/read_pose_data')
+const wasm = require('./src/midware_wasm');
 const gazeTracking = require('./src/midware_gaze_tracking');
 //const { type } = require('os');
 
@@ -89,6 +89,7 @@ wss.on('connection', function (ws) {
                     //此处开始写局部坐标的初始化（地面坐标系）
                     //depth correction
                     //readPose.process(pose)
+                    wasm.
                     groundLocation.process(pose)
                     actionDetection.process(pose)
                     gazeTracking.process(pose)
