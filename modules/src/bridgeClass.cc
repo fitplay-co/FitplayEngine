@@ -2,7 +2,10 @@
 #include <emscripten/bind.h>
 #include <string>
 #include <vector>
+#include "json.hpp"
 
+// for convenience
+using json = nlohmann::json;
 using namespace emscripten;
 
 class MyClass {
@@ -19,6 +22,11 @@ public:
   int getX() const { return x; }
   void setX(int x_) { x = x_; }
 
+  std::string jsonFunc(const std::string &str) {
+    //TODO: process input data
+	  return str;
+  }
+
   static std::string getStringFromInstance(const MyClass& instance) {
     return instance.y;
   }
@@ -32,7 +40,7 @@ private:
 EMSCRIPTEN_BINDINGS(my_class_example) {
   class_<MyClass>("MyClass")
     .constructor<int, std::string>()
-    .function("incrementX", &MyClass::incrementX)
+    .function("jsonFunc", &MyClass::jsonFunc)
     .property("x", &MyClass::getX, &MyClass::setX)
     .class_function("getStringFromInstance", &MyClass::getStringFromInstance)
     ;
