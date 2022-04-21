@@ -8,10 +8,6 @@
 using json = nlohmann::json;
 using namespace emscripten;
 
-float lerp(float a, float b, float t) {
-    return (1 - t) * a + t * b;
-}
-
 std::string jsonFunc(const std::string &str)
 {
     // auto j = json::parse(R"({"happy": true, "pi": 3.141})");

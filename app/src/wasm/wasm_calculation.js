@@ -4,7 +4,8 @@ var wasm_processor = {
     process : function(pose, monitor = false){
         Module.onRuntimeInitialized = function() {
             var jsonstr = JSON.stringify(pose);
-            pose = Module.jsonFunc(jsonstr);
+            str = Module.jsonFunc(jsonstr);
+            pose = JSON.parse(str);
         }
     }, 
 }
