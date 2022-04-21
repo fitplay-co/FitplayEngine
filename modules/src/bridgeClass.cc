@@ -8,9 +8,9 @@
 using json = nlohmann::json;
 using namespace emscripten;
 
-class MyClass {
+class BridgeClass {
 public:
-  MyClass(int x, std::string y)
+  BridgeClass(int x, std::string y)
     : x(x)
     , y(y)
   {}
@@ -27,7 +27,7 @@ public:
 	  return str;
   }
 
-  static std::string getStringFromInstance(const MyClass& instance) {
+  static std::string getStringFromInstance(const BridgeClass& instance) {
     return instance.y;
   }
 
@@ -38,10 +38,10 @@ private:
 
 // Binding code
 EMSCRIPTEN_BINDINGS(my_class_example) {
-  class_<MyClass>("MyClass")
+  class_<BridgeClass>("BridgeClass")
     .constructor<int, std::string>()
-    .function("jsonFunc", &MyClass::jsonFunc)
-    .property("x", &MyClass::getX, &MyClass::setX)
-    .class_function("getStringFromInstance", &MyClass::getStringFromInstance)
+    .function("jsonFunc", &BridgeClass::jsonFunc)
+    .property("x", &BridgeClass::getX, &BridgeClass::setX)
+    .class_function("getStringFromInstance", &BridgeClass::getStringFromInstance)
     ;
 }
