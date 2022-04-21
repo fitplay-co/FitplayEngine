@@ -1,4 +1,4 @@
-var Module = require('./dist/sample.js');
+var Module = require('../../../modules/dist/sample.js');
 
 Module.onRuntimeInitialized = function() {
     var vec = Module.returnVectorData();

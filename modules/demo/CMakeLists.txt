@@ -1,6 +1,0 @@
-cmake_minimum_required(VERSION 3.15)
-project(sample)
-include_directories(vendor)
-set(EXECUTABLE_OUTPUT_PATH ../dist)
-add_executable(sample src/develop_class.cc)
-set_target_properties(sample PROPERTIES LINK_FLAGS "--bind -s \"EXTRA_EXPORTED_RUNTIME_METHODS=['addOnPostRun']\"")

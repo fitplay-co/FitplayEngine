@@ -1,5 +1,5 @@
-var Module = require('./dist/sample.js');
-var mockData = require('./test/mock_pose_data');
+var Module = require('../../../modules/dist/sample.js');
+var mockData = require('../test/mock_pose_data');
 
 var obj = mockData[0];
 var jsonstr = JSON.stringify(obj);

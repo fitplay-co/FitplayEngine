@@ -88,8 +88,7 @@ wss.on('connection', function (ws) {
                     //TODO process Input here for input 
                     //此处开始写局部坐标的初始化（地面坐标系）
                     //depth correction
-                    //readPose.process(pose)
-                    wasm.
+                    wasm.process(pose)
                     groundLocation.process(pose)
                     actionDetection.process(pose)
                     gazeTracking.process(pose)

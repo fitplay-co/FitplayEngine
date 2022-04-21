@@ -118,7 +118,7 @@ dist
 *.DS_Store
 
 # wasm
-modules/demo/build
-modules/demo/vendor/emscripten
-modules/demo/dist
+modules/build
+modules/vendor/emscripten
+modules/dist
 
