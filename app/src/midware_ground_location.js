@@ -2,6 +2,8 @@
 //1. calculate depth estimation by compare world and camera 
 //2. estimate rough ly body center z toward camera
 
+const { z } = require("./midware_gaze_tracking")
+
 var depthEstimator = {
     rig_list : [],
     tracing : false,
@@ -18,7 +20,7 @@ var depthEstimator = {
     centerPointY : 240,
     f : 0.05,
     f_dx : 500, //  f/dx
-    f_dy : 700,
+    f_dy : 900,
     legLength : 0,
     whichLeg : 0, //用来识别以左右哪只脚的y为准，0代表左脚，1代表右脚
     appendRig : function(startPoint, endPoint) {
@@ -44,52 +46,60 @@ var depthEstimator = {
         var arr33 = new Array()
         var foot = new Array()
         //左右臀部keypoints坐标
-        var data_down = [pose.keypoints[23].x*this.widthScale*z_down,(1-pose.keypoints[23].y)*this.heightScale*z_down,z_down]
+        var data_down = [(pose.keypoints[23].x+pose.keypoints[24].x)*this.widthScale*z_down*0.5,(1-pose.keypoints[23].y)*this.heightScale*z_down,z_down]
         var data = [pose.keypoints[24].x*this.widthScale*z_down,(1-pose.keypoints[24].y)*this.heightScale*z_down,z_down]
         //脚部坐标
-        var footLoction = [pose.keypoints3D[31+this.whichLeg].x*this.widthScale*z_down,(1-pose.keypoints[31+this.whichLeg].y)*this.heightScale*z_down,z_down]
+        //var footLoction = [pose.keypoints3D[31+this.whichLeg].x*this.widthScale*z_down,(1-pose.keypoints[31+this.whichLeg].y)*this.heightScale*z_down,z_down]
         arr_3down = this.invert(data_down,arr_3down)
         arr33 = this.invert(data,arr33)
-        foot = this.invert(footLoction,foot)
+        //foot = this.invert(footLoction,foot)
         //console.log(arr_2)
         //console.log(arr_3)
         //console.log(res)
         var res_down = this.matrixMultiplication(cameraParam,arr_3down)
         var resDown = this.matrixMultiplication(cameraParam,arr33)
-        var footRes = this.matrixMultiplication(cameraParam,foot)
-        this.legLength = this.distance_finder_leg(this.legLength,pose,z_down)
-        res_down[0][0] = (res_down[0][0] + resDown[0][0])/2
-        res_down[0][0] = res_down[0][0]*0.1+this.pre_x*0.9
+        //var footRes = this.matrixMultiplication(cameraParam,foot)
+        this.legLength = this.distance_finder_leg(this.legLength,pose)
+        //res_down[0][0] = res_down[0][0] 
+        
         res_down[1][0] = (res_down[1][0] + resDown[1][0])/2
         //console.log(this.legLength)
-        console.log(footRes[1][0])
-        console.log(this.legLength)
-        res_down[1][0] = this.legLength - Math.abs(footRes[1][0]) 
-        res_down[1][0] = res_down[1][0]*0.1+this.pre_y*0.9
-        z_down = z_down*0.1+this.pre_z*0.9
-        //console.log(pose.action)
+        //console.log(footRes[1][0])
+        //console.log(this.legLength)
+        //res_down[1][0] = footRes[1][0]
         if(this.tracing == false){
             //console.log(pose.action)
             this.startX = res_down[0][0]
             this.startY = res_down[1][0]
+            console.log(this.startY)
             this.startZ = z_down
             this.tracing = true
+            this.pre_x = res_down[0][0]
+            this.pre_y = res_down[1][0]
+            this.pre_z = z_down
         }
+        //console.log(footRes[1][0])
+        res_down[0][0] = res_down[0][0]*0.1+this.pre_x*0.9
+        res_down[1][0] = res_down[1][0]*0.1+this.pre_y*0.9
+        z_down = z_down*0.1+this.pre_z*0.9
+        //console.log(z_down)
+        //console.log(pose.action)
+        
         if(monitor) {
              pose.monitor = {
                  "rawData_z": (pose.keypoints[23].z+pose.keypoints[24].z)*0.5,
-                 "watchData_z" :z_down - this.startZ,
+                 "watchData_z" :z_down ,
                  "rawData_x":(pose.keypoints[23].x+pose.keypoints[24].x)*0.5,
-                 "watchData_x":res_down[0][0] - this.startX,
+                 "watchData_x":res_down[0][0] ,
                  "rawData_y":1-(pose.keypoints[23].y+pose.keypoints[24].y)*0.5,
-                 "watchData_y":res_down[1][0] 
+                 "watchData_y":res_down[1][0] -this.startY + this.legLength
              }
          }
 
         pose.ground_location = {
             //return x with ground location x axis
             x : res_down[0][0]-this.startX,
-            y : res_down[1][0]-this.startY,
+            y : res_down[1][0]-this.startY + this.legLength,
             z : z_down-this.startZ,
             tracing : this.tracing
         }
@@ -109,10 +119,10 @@ var depthEstimator = {
         u2 = this.widthScale * x2
         return 35/Math.abs(u2-u1)
     }, 
-    distance_finder_leg : function(legLength,pose,z){
-        y_1 = Math.abs(pose.keypoints3D[31].y-pose.keypoints3D[23].y)*this.heightScale*z/(2*18000*this.f)
+    distance_finder_leg : function(legLength,pose){
+        y_1 = Math.abs(pose.keypoints3D[31].y-pose.keypoints3D[23].y)
         //console.log(y_1)
-        y_2 = Math.abs(pose.keypoints3D[32].y-pose.keypoints3D[24].y)*this.heightScale*z/(2*18000*this.f)
+        y_2 = Math.abs(pose.keypoints3D[32].y-pose.keypoints3D[24].y)
         //console.log(y_2)
         if (y_1 > legLength){
             legLength = y_1
