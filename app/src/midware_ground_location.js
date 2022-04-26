@@ -82,8 +82,7 @@ var depthEstimator = {
         res_down[0][0] = res_down[0][0]*0.1+this.pre_x*0.9
         res_down[1][0] = res_down[1][0]*0.1+this.pre_y*0.9
         z_down = z_down*0.1+this.pre_z*0.9
-        //console.log(z_down)
-        //console.log(pose.action)
+
         
         if(monitor) {
              pose.monitor = {
