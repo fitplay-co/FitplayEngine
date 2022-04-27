@@ -29,8 +29,21 @@ client.on('connect', function(connection) {
         "feature_id" : "pose_landmark",
         "action" : "subsribe" 
     }
+    var poseLandmarkRelease = {
+        "type" : "application_control",
+        "feature_id" : "pose_landmark",
+        "action" : "release" 
+    }
+    var groundLocationReset = {
+        "type" : "application_control",
+        "feature_id" : "ground_location",
+        "action" : "reset" 
+    }
     connection.send(JSON.stringify(appClientMessage));
     connection.send(JSON.stringify(poseLandmarkSubscribe))
+    // setTimeout(() => {
+    //     connection.send(JSON.stringify(poseLandmarkRelease))
+    // }, 5000);
 });
 
 client.connect('ws://localhost:8181/');

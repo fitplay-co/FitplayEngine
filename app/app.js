@@ -109,11 +109,11 @@ wss.on('connection', function (ws) {
                     delete pose.keypoints3D
                     messageContent = JSON.stringify(pose)
                     // console.log(pose.timeProfiling)
-                    // activeApplicationClient.forEach(function(ws){
-                    //     if(ws.notActived === false) {
-                    //         ws.send( messageContent)
-                    //     }
-                    // });
+                    activeApplicationClient.forEach(function(ws){
+                        if(ws.notActived === false) {
+                            ws.send( messageContent)
+                        }
+                    });
                     clientSubscriptionMap.get('pose_landmark').forEach(ws => {
                         if(!ws.notActived) {
                             ws.send(messageContent)
@@ -126,15 +126,23 @@ wss.on('connection', function (ws) {
                 pose = message
                 //console.log(pose)
                 if(processingJob < 4){
-                    // if(pose.feature_id === 'ground_location'){
-                    //     groundLocation.process(pose)
-                    // }
+                    if(pose.feature_id === 'ground_location'){
+                        groundLocation.process(pose)
+                    }
                     if (message.action === 'subsribe') {
                         if (!clientSubscriptionMap.has(message.feature_id)) {
                             clientSubscriptionMap.set(message.feature_id, [])
                         }
                         clientSubscriptionMap.get(message.feature_id).push(ws)
                         console.log(`client with id "${clientIdMap.get(ws)}" subscribe ${message.feature_id}`)
+                    } else if (message.action === 'release') {
+                        if (clientSubscriptionMap.has(message.feature_id)) {
+                            const clients = clientSubscriptionMap.get(message.feature_id)
+                            if (clients.indexOf(ws) >= 0) {
+                                clients.splice(clients.indexOf(ws), 1)
+                                console.log(`client with id "${clientIdMap.get(ws)}" release ${message.feature_id}`)
+                            }
+                        }
                     }
                 }
                 
