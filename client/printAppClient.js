@@ -21,9 +21,16 @@ client.on('connect', function(connection) {
         }
     });
     var appClientMessage =  {
-        "type" : "application_client"
+        "type" : "application_client",
+        "id": "test_client"
+    }
+    var poseLandmarkSubscribe = {
+        "type" : "application_control",
+        "feature_id" : "pose_landmark",
+        "action" : "subsribe" 
     }
     connection.send(JSON.stringify(appClientMessage));
+    connection.send(JSON.stringify(poseLandmarkSubscribe))
 });
 
 client.connect('ws://localhost:8181/');

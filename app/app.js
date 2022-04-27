@@ -8,8 +8,15 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const groundLocation = require('./src/midware_ground_location');
 const actionDetection = require('./src/midware_action_detection');
+<<<<<<< HEAD
 const readPose = require('./test/read_pose_data')
 const gazeTracking = require('./src/midware_gaze_tracking')
+=======
+const wasm = require('./src/midware_wasm');
+const gazeTracking = require('./src/midware_gaze_tracking');
+//const { type } = require('os');
+const {performance} = require('perf_hooks')
+>>>>>>> b245ff6... 实现简易的订阅功能
 
 var app = express();
 
@@ -47,6 +54,9 @@ module.exports = app;
 //start server app 
 var WebSocketServer = require('ws').Server
 var activeApplicationClient = []
+var clientMap = new Map() // id -> client映射
+var clientIdMap = new Map() // client -> id映射
+var clientSubscriptionMap = new Map()
 var times = [];
 var counter = 0
 var processingJob = 0
@@ -98,19 +108,44 @@ wss.on('connection', function (ws) {
                     delete pose.keypoints
                     delete pose.keypoints3D
                     messageContent = JSON.stringify(pose)
-                    activeApplicationClient.forEach(function(ws){
-                        if(ws.notActived === false) {
-                            ws.send( messageContent)
+                    // console.log(pose.timeProfiling)
+                    // activeApplicationClient.forEach(function(ws){
+                    //     if(ws.notActived === false) {
+                    //         ws.send( messageContent)
+                    //     }
+                    // });
+                    clientSubscriptionMap.get('pose_landmark').forEach(ws => {
+                        if(!ws.notActived) {
+                            ws.send(messageContent)
                         }
-                    });
+                    })
                 } else {
                     console.log("warning: frame jump ")
                 }
-            }   
-            if(type === 'application_client') {
+            } else if(type ==='application_control'){
+                pose = message
+                //console.log(pose)
+                if(processingJob < 4){
+                    // if(pose.feature_id === 'ground_location'){
+                    //     groundLocation.process(pose)
+                    // }
+                    if (message.action === 'subsribe') {
+                        if (!clientSubscriptionMap.has(message.feature_id)) {
+                            clientSubscriptionMap.set(message.feature_id, [])
+                        }
+                        clientSubscriptionMap.get(message.feature_id).push(ws)
+                        console.log(`client with id "${clientIdMap.get(ws)}" subscribe ${message.feature_id}`)
+                    }
+                }
+                
+            } else if(type === 'application_client') {
                 activeApplicationClient.push(ws)
                 ws.notActived = false
-                console.log("application client attached")
+                if (message.id) {
+                    clientMap.set(message.id, ws)
+                    clientIdMap.set(ws, message.id)
+                }
+                console.log(`application client with id "${message.id}" attached`)
             }
             processingJob = processingJob - 1 
         })
