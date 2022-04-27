@@ -100,6 +100,7 @@ var depthEstimator = {
             x : res_down[0][0]-this.startX,
             y : res_down[1][0]-this.startY + this.legLength,
             z : z_down-this.startZ,
+            legLength: this.legLength,
             tracing : this.tracing
         }
         //console.log(pose.ground_location)
