@@ -114,11 +114,13 @@ wss.on('connection', function (ws) {
                             ws.send( messageContent)
                         }
                     });
-                    clientSubscriptionMap.get('pose_landmark').forEach(ws => {
-                        if(!ws.notActived) {
-                            ws.send(messageContent)
-                        }
-                    })
+                    if (clientSubscriptionMap.get('pose_landmark')) {
+                        clientSubscriptionMap.get('pose_landmark').forEach(ws => {
+                            if(!ws.notActived) {
+                                ws.send(messageContent)
+                            }
+                        })
+                    }
                 } else {
                     console.log("warning: frame jump ")
                 }
