@@ -8,15 +8,9 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const groundLocation = require('./src/midware_ground_location');
 const actionDetection = require('./src/midware_action_detection');
-<<<<<<< HEAD
-const readPose = require('./test/read_pose_data')
-const gazeTracking = require('./src/midware_gaze_tracking')
-=======
-const wasm = require('./src/midware_wasm');
 const gazeTracking = require('./src/midware_gaze_tracking');
 //const { type } = require('os');
 const {performance} = require('perf_hooks')
->>>>>>> b245ff6... 实现简易的订阅功能
 
 var app = express();
 
