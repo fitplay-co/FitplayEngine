@@ -24,14 +24,24 @@ client.on('connect', function(connection) {
         "type" : "application_client",
         "id": "test_client"
     }
-    var poseLandmarkSubscribe = {
+    var actionDetectionSubscribe = {
         "type" : "application_control",
-        "feature_id" : "pose_landmark",
+        "feature_id" : "action_detection",
         "action" : "subsribe" 
     }
-    var poseLandmarkRelease = {
+    var actionDetectionRelease = {
         "type" : "application_control",
-        "feature_id" : "pose_landmark",
+        "feature_id" : "action_detection",
+        "action" : "release" 
+    }
+    var groundLocationSubscribe = {
+        "type" : "application_control",
+        "feature_id" : "ground_loccation",
+        "action" : "subsribe" 
+    }
+    var groundLocationRelease = {
+        "type" : "application_control",
+        "feature_id" : "ground_loccation",
         "action" : "release" 
     }
     var groundLocationReset = {
@@ -40,10 +50,13 @@ client.on('connect', function(connection) {
         "action" : "reset" 
     }
     connection.send(JSON.stringify(appClientMessage));
-    connection.send(JSON.stringify(poseLandmarkSubscribe))
-    // setTimeout(() => {
-    //     connection.send(JSON.stringify(poseLandmarkRelease))
-    // }, 5000);
+    connection.send(JSON.stringify(actionDetectionSubscribe))
+    setTimeout(() => {
+        connection.send(JSON.stringify(groundLocationSubscribe))
+    }, 100)
+    setTimeout(() => {
+        connection.send(JSON.stringify(actionDetectionRelease))
+    }, 10000);
 });
 
 client.connect('ws://localhost:8181/');

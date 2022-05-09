@@ -50,7 +50,7 @@ var WebSocketServer = require('ws').Server
 var activeApplicationClient = []
 var clientMap = new Map() // id -> client映射
 var clientIdMap = new Map() // client -> id映射
-var clientSubscriptionMap = new Map()
+var clientSubscriptionMap = new Map() // client订阅的高级能力
 var times = [];
 var counter = 0
 var processingJob = 0
@@ -88,9 +88,9 @@ wss.on('connection', function (ws) {
                     //此处开始写局部坐标的初始化（地面坐标系）
                     //depth correction
                     //readPose.process(pose)
-                    groundLocation.process(pose)
-                    actionDetection.process(pose)
-                    gazeTracking.process(pose)
+                    const groundLocationData = groundLocation.process(pose)
+                    const actionDetectionData = actionDetection.process(pose)
+                    const gazeTrackingData = gazeTracking.process(pose)
                     //调整pose结构适配api格式
                     pose.type = "application_frame"
                     pose.pose_landmark = {
@@ -101,20 +101,25 @@ wss.on('connection', function (ws) {
                     }
                     delete pose.keypoints
                     delete pose.keypoints3D
-                    messageContent = JSON.stringify(pose)
                     // console.log(pose.timeProfiling)
                     activeApplicationClient.forEach(function(ws){
-                        if(ws.notActived === false) {
+                        if(!ws.notActived) {
+                            if (clientSubscriptionMap.has(ws)) {
+                                const featureSubscriptions = clientSubscriptionMap.get(ws)
+                                if (featureSubscriptions.indexOf('ground_loccation') >= 0) {
+                                    pose.ground_location = groundLocationData.ground_location
+                                }
+                                if (featureSubscriptions.indexOf('action_detection') >= 0) {
+                                    pose.action_detection = actionDetectionData.action_detection
+                                }
+                                if (featureSubscriptions.indexOf('gaze_tracking') >= 0) {
+                                    pose.gaze_tracking = gazeTrackingData.gaze_tracking
+                                }
+                            }
+                            messageContent = JSON.stringify(pose)
                             ws.send( messageContent)
                         }
                     });
-                    if (clientSubscriptionMap.get('pose_landmark')) {
-                        clientSubscriptionMap.get('pose_landmark').forEach(ws => {
-                            if(!ws.notActived) {
-                                ws.send(messageContent)
-                            }
-                        })
-                    }
                 } else {
                     console.log("warning: frame jump ")
                 }
@@ -122,20 +127,18 @@ wss.on('connection', function (ws) {
                 pose = message
                 //console.log(pose)
                 if(processingJob < 4){
-                    if(pose.feature_id === 'ground_location'){
-                        groundLocation.process(pose)
-                    }
                     if (message.action === 'subsribe') {
-                        if (!clientSubscriptionMap.has(message.feature_id)) {
-                            clientSubscriptionMap.set(message.feature_id, [])
+                        if (!clientSubscriptionMap.has(ws)) {
+                            clientSubscriptionMap.set(ws, [])
                         }
-                        clientSubscriptionMap.get(message.feature_id).push(ws)
+                        clientSubscriptionMap.get(ws).push(message.feature_id)
                         console.log(`client with id "${clientIdMap.get(ws)}" subscribe ${message.feature_id}`)
                     } else if (message.action === 'release') {
-                        if (clientSubscriptionMap.has(message.feature_id)) {
-                            const clients = clientSubscriptionMap.get(message.feature_id)
-                            if (clients.indexOf(ws) >= 0) {
-                                clients.splice(clients.indexOf(ws), 1)
+                        if (clientSubscriptionMap.has(ws)) {
+                            const clientSubscription = clientSubscriptionMap.get(ws)
+                            const subscriptionIndex = clientSubscription.indexOf(message.feature_id)
+                            if (subscriptionIndex >= 0) {
+                                clientSubscription.splice(subscriptionIndex, 1)
                                 console.log(`client with id "${clientIdMap.get(ws)}" release ${message.feature_id}`)
                             }
                         }

@@ -30,8 +30,9 @@ var gaze_tracking = {
         //console.log(res)
         res = this.matrixMultiplication(res,arr_3);
         //console.log(res)
+        const resultData = {}
         if(monitor) {
-            pose.monitor = {
+            resultData.monitor = {
                 "rawData_z": pose.keypoints[0].z,
                 "watchData_z" :z,
                 "rawData_x":pose.keypoints[0].x,
@@ -40,12 +41,12 @@ var gaze_tracking = {
                 "watchData_y":res[1][0]
             }
         }
-        pose.gaze_tracking = {
+        resultData.gaze_tracking = {
             x: res[0][0],
             y: res[1][0],
             z: z
         }
-        return z
+        return resultData
     },
     distance_finder_z_filtered: function(pose, num1 , num2) {
         vec1 = this.point2vec(pose, num1)

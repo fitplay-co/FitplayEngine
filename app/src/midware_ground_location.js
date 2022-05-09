@@ -24,19 +24,20 @@ var depthEstimator = {
         } else {
             resultDistance =  1.0 / this.current_distance
         }
+        const resultData = {}
         if(monitor) {
-            pose.monitor = {
+            resultData.monitor = {
                 "rawData": resultDistance,
                 "watchData" :resultDistance
             }
         }
-        pose.ground_location = {
+        resultData.ground_location = {
             //return x with ground location x axis
             x: pose.keypoints[0].x,
             z: resultDistance,
             tracing : this.tracing
         }
-        return resultDistance
+        return resultData
     },
 
     /* 1. update data and calculate sparse current magnitude, will be zero if currently this joint
