@@ -29,7 +29,7 @@ var depthEstimator = {
         this.rig_list.push([startPoint, endPoint, 0, 0, 0])
     },
 
-    process : function(pose, monitor = true) {
+    process : function(pose, monitor = false) {
         //console.log(pose.keypoints3D)
         if (pose.action ==='reset'){
             this.startX = this.pre_x

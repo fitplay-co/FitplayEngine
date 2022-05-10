@@ -5,15 +5,16 @@ var walk_processor = {
     current_frame_distance : 0,
     current_leg: 0,
     speed_mean: 0,
-    amp_threshold: 0.02,
+    amp_threshold: 0.05,
     monitor_process : false,
     fpm : 0,
     times : [],
     fpmStopCount : 0,
     frameShiftFilterCount : 0 ,
 
-    process : function(pose, monitor = false){
+    process : function(pose, monitor = true){
         this.calculate_current_frame_distance(pose)
+        //console.log(this.current_frame_distance)
         this.calculate_current_distance_mean(pose)
         this.calculate_current_direction(pose, monitor)
         this.monitor_process = monitor
@@ -39,9 +40,9 @@ var walk_processor = {
         this.current_distance_mean = this.current_distance_mean * 0.9 + this.current_frame_distance * 0.1
     },
 
-    calculate_current_direction: function(pose, monitor = false) {
+    calculate_current_direction: function(pose, monitor = true) {
         this.current_speed_mean = this.current_speed_mean * 0.9  + Math.abs(this.current_frame_distance - this.current_distance_mean) * 0.1
-        if(this.current_frame_distance - this.current_distance_mean > this.amp_threshold) {
+        if(this.current_frame_distance  > this.amp_threshold) {
             if(this.current_leg != 1) {
                 if(this.frameShiftFilterCount > 2) {
                     this.shiftDirectionStepPerMinutes()
@@ -54,7 +55,7 @@ var walk_processor = {
                 this.frameShiftFilterCount = 0
             }        
         } 
-        if(this.current_frame_distance - this.current_distance_mean < -this.amp_threshold) {
+        if(this.current_frame_distance  < -this.amp_threshold) {
             if(this.current_leg != -1) {
                 if(this.frameShiftFilterCount > 2) {
                     this.shiftDirectionStepPerMinutes()
@@ -67,9 +68,9 @@ var walk_processor = {
                 this.frameShiftFilterCount = 0
             }
         } 
-        if(Math.abs(this.current_frame_distance - this.current_distance_mean) < this.amp_threshold) {
+        if(Math.abs(this.current_frame_distance ) < this.amp_threshold) {
             this.fpmStopCount = this.fpmStopCount + 1 
-            if(this.fpmStopCount > 30) {
+            if(this.fpmStopCount > 15) {
                 this.current_leg = 0
                 this.fpm = 0
             }
@@ -81,12 +82,17 @@ var walk_processor = {
             "frequency" : this.fpm,
             "strength" : this.current_speed_mean
         }
+        //console.log(pose.action_detection.walk.legUp)
+        //console.log(pose.action_detection.walk.frequency)
         if (monitor) {
-            console.log("freq : " + this.fpm)
-            console.log("strength : " + this.current_speed_mean)
+            //console.log("freq : " + this.fpm)
+            //console.log("strength : " + this.current_speed_mean)
             pose.monitor = {
-                "rawData": this.current_leg,
-                "watchData" :this.current_frame_distance
+                "rawData_x": this.current_leg,
+                "watchData_x" :this.current_frame_distance,
+                "rawData_y" : this.fpm,
+                "watchData_y" : this.fpm
+
             }
         }
     },
@@ -118,6 +124,7 @@ var walk_processor = {
         return [pose.keypoints[num].x, pose.keypoints[num].y, pose.keypoints[num].z]
     }
 }
+
 
 walk_processor.appendRig(26, 25)
 walk_processor.appendRig(28, 27)
