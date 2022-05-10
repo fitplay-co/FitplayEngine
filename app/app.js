@@ -45,12 +45,15 @@ app.use(function(err, req, res, next) {
 
 module.exports = app;
 
+const ADVANCED_FEATURES = ['ground_loccation', 'action_detection', 'gaze_tracking', 'throw_direction']
+
 //start server app 
 var WebSocketServer = require('ws').Server
 var activeApplicationClient = []
 var clientMap = new Map() // id -> client映射
 var clientIdMap = new Map() // client -> id映射
 var clientSubscriptionMap = new Map() // client订阅的高级能力
+var advancedFeaturesSubscriptionsMap = new Map() // 每个高级能力订阅的客户端数
 var times = [];
 var counter = 0
 var processingJob = 0
@@ -88,9 +91,18 @@ wss.on('connection', function (ws) {
                     //此处开始写局部坐标的初始化（地面坐标系）
                     //depth correction
                     //readPose.process(pose)
-                    const groundLocationData = groundLocation.process(pose)
-                    const actionDetectionData = actionDetection.process(pose)
-                    const gazeTrackingData = gazeTracking.process(pose)
+
+                    // 只有当有至少1个客户端订阅了高级能力时再进行相关计算
+                    var groundLocationData, actionDetectionData, gazeTrackingData
+                    if (advancedFeaturesSubscriptionsMap.has('ground_loccation')) {
+                        groundLocationData = groundLocation.process(pose)
+                    }
+                    if (advancedFeaturesSubscriptionsMap.has('action_detection')) {
+                        actionDetectionData = actionDetection.process(pose)
+                    }
+                    if (advancedFeaturesSubscriptionsMap.has('gaze_tracking')) {
+                        gazeTrackingData = gazeTracking.process(pose)
+                    }
                     //调整pose结构适配api格式
                     pose.type = "application_frame"
                     pose.pose_landmark = {
@@ -125,13 +137,18 @@ wss.on('connection', function (ws) {
                 }
             } else if(type ==='application_control'){
                 pose = message
-                //console.log(pose)
+                // console.log('get message:'+messageContent)
                 if(processingJob < 4){
                     if (message.action === 'subsribe') {
                         if (!clientSubscriptionMap.has(ws)) {
                             clientSubscriptionMap.set(ws, [])
                         }
                         clientSubscriptionMap.get(ws).push(message.feature_id)
+                        if (advancedFeaturesSubscriptionsMap.has(message.feature_id)) {
+                            advancedFeaturesSubscriptionsMap.set(message.feature_id, advancedFeaturesSubscriptionsMap.get(message.feature_id) + 1)
+                        } else {
+                            advancedFeaturesSubscriptionsMap.set(message.feature_id, 1)
+                        }
                         console.log(`client with id "${clientIdMap.get(ws)}" subscribe ${message.feature_id}`)
                     } else if (message.action === 'release') {
                         if (clientSubscriptionMap.has(ws)) {
