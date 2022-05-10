@@ -14,7 +14,6 @@ var walk_processor = {
 
     process : function(pose, monitor = true){
         this.calculate_current_frame_distance(pose)
-        //console.log(this.current_frame_distance)
         this.calculate_current_distance_mean(pose)
         this.calculate_current_direction(pose, monitor)
         this.monitor_process = monitor
