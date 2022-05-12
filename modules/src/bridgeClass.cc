@@ -23,8 +23,19 @@ public:
   void setX(int x_) { x = x_; }
 
   std::string jsonFunc(const std::string &str) {
-    //TODO: process input data
-	  return str;
+    // auto j = json::parse(R"({"happy": true, "pi": 3.141})");
+    // convert string to json
+    auto j = json::parse(str);
+    // get data from json
+    // float num = j["pose_landmark"]["keypoints"][1]["y"];
+
+    // TODO: process input data
+
+    // add property to json object
+    j["pi"] = 3.141;
+    // convert json to string
+    std::string s = j.dump();
+	  return s;
   }
 
   static std::string getStringFromInstance(const BridgeClass& instance) {

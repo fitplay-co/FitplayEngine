@@ -120,5 +120,6 @@ dist
 # wasm
 modules/build
 modules/vendor/emscripten
-modules/dist
+modules/legacy
+
 
