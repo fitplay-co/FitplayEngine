@@ -51,9 +51,7 @@ client.on('connect', function(connection) {
     }
     connection.send(JSON.stringify(appClientMessage));
     connection.send(JSON.stringify(actionDetectionSubscribe))
-    setTimeout(() => {
-        connection.send(JSON.stringify(groundLocationSubscribe))
-    }, 100)
+    connection.send(JSON.stringify(groundLocationSubscribe))
     setTimeout(() => {
         connection.send(JSON.stringify(actionDetectionRelease))
     }, 10000);
