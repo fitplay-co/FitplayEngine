@@ -21,9 +21,40 @@ client.on('connect', function(connection) {
         }
     });
     var appClientMessage =  {
-        "type" : "application_client"
+        "type" : "application_client",
+        "id": "test_client"
+    }
+    var actionDetectionSubscribe = {
+        "type" : "application_control",
+        "feature_id" : "action_detection",
+        "action" : "subsribe" 
+    }
+    var actionDetectionRelease = {
+        "type" : "application_control",
+        "feature_id" : "action_detection",
+        "action" : "release" 
+    }
+    var groundLocationSubscribe = {
+        "type" : "application_control",
+        "feature_id" : "ground_loccation",
+        "action" : "subsribe" 
+    }
+    var groundLocationRelease = {
+        "type" : "application_control",
+        "feature_id" : "ground_loccation",
+        "action" : "release" 
+    }
+    var groundLocationReset = {
+        "type" : "application_control",
+        "feature_id" : "ground_location",
+        "action" : "reset" 
     }
     connection.send(JSON.stringify(appClientMessage));
+    connection.send(JSON.stringify(actionDetectionSubscribe))
+    connection.send(JSON.stringify(groundLocationSubscribe))
+    setTimeout(() => {
+        connection.send(JSON.stringify(actionDetectionRelease))
+    }, 10000);
 });
 
 client.connect('ws://localhost:8181/');

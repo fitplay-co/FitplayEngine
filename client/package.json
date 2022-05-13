@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./printAppClient.js"
+    "start": "node ./printAppClient.js",
+    "imu": "node ./mock_imu.js"
   },
   "dependencies": {
     "websocket": "^1.0.34",
