@@ -9,9 +9,9 @@ var wasm_processor = {
             this.initialized = true
             //console.log("initialized")
         }
-        var jsonstr = JSON.stringify(pose)
+        pose = JSON.parse(this.instance.jsonFunc(JSON.stringify(pose)))
         //console.log(this.instance.jsonFunc(jsonstr))
-        //console.log("process")
+        console.log(pose)
     }, 
 }
 
