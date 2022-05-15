@@ -526,6 +526,82 @@ init_gui ()
     gui.add (s_gui_prop, 'draw_pmeter');
 }
 
+function createSensorClient() {
+    //    var client = new WebSocketClient();
+    // var count = 0
+    // client.on('connectFailed', function(error) {
+    //     console.log('Connect Error: ' + error.toString());
+    // });
+
+    // client.on('connect', function(connection) {
+    //     console.log('WebSocket Client Connected');
+    //     connection.on('error', function(error) {
+    //         console.log("Connection Error: " + error.toString());
+    //     });
+    //     connection.on('close', function() {
+    //         console.log('echo-protocol Connection Closed');
+    //     });
+    //     connection.on('message', function(message) {
+    //         if (message.type === 'utf8') {
+    //             var profilingTime = JSON.parse(message.utf8Data).timeProfiling 
+    //             profilingTime.clientReceiveTime = Date.now()
+    //             test_landmark_p = JSON.parse(message.utf8Data)
+    //             console.log(profilingTime);
+    //         }
+
+    //     });
+    //     var appClientMessage =  {
+    //         "type" : "application_client"
+    //     }
+    //     var groundLocationReset = {
+    //         "type" : "application_control",
+    //         "feature_id" : "ground_location",
+    //         "action" : "reset" 
+    //     }
+    //     connection.send(JSON.stringify(appClientMessage));
+    // });
+
+    // client.connect('ws://localhost:8181/');
+
+  var client = new WebSocket('ws://127.0.0.1:8181/');
+
+  // Connection opened
+  client.addEventListener('open', function (event) {
+    console.log("open websocket")
+
+    var appClientMessage = {
+        "type" : "application_client"
+    }
+    client.send(JSON.stringify(appClientMessage))
+  });
+
+  // Connection opened
+  client.addEventListener('error', function (event) {
+    console.log("error websocket")
+    console.log(event)
+  });
+
+  // Connection opened
+  client.addEventListener('close', function (event) {
+    console.log("close websocket")
+    console.log(event)
+    client = new WebSocket('ws://127.0.0.1:8181/');
+  });
+
+  client.addEventListener('message', function(event) {
+    var profilingTime = JSON.parse(event.data).timeProfiling 
+    profilingTime.clientReceiveTime = Date.now()
+    test_landmark_p = JSON.parse(event.data)
+    // console.log(profilingTime);   
+  })
+
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+  return client
+}
+
+
 
 /* ---------------------------------------------------------------- *
  *      M A I N    F U N C T I O N
@@ -649,6 +725,7 @@ async function startWebGL()
         //stats.end();
         requestAnimationFrame (render);
     }
+    createSensorClient()
     render ();
 }
 
