@@ -11,7 +11,7 @@ var wasm_processor = {
         }
         pose = JSON.parse(this.instance.jsonFunc(JSON.stringify(pose)))
         //console.log(this.instance.jsonFunc(jsonstr))
-        console.log(pose)
+        console.log(pose["fitting"])
     }, 
 }
 
