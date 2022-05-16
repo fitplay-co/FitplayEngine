@@ -1,3 +1,5 @@
+const {performance} = require('perf_hooks')
+
 var walk_processor = {
     rig_list : [],
     current_distance_mean : 0,
@@ -11,12 +13,15 @@ var walk_processor = {
     times : [],
     fpmStopCount : 0,
     frameShiftFilterCount : 0 ,
+    resultData: {},
 
-    process : function(pose, monitor = false){
+    process : function(pose, resultData, monitor = false){
+        this.resultData = resultData
         this.calculate_current_frame_distance(pose)
         this.calculate_current_distance_mean(pose)
         this.calculate_current_direction(pose, monitor)
         this.monitor_process = monitor
+        return this.resultData
     }, 
 
     appendRig : function(startPoint, endPoint) {
@@ -76,7 +81,7 @@ var walk_processor = {
         } else {
             this.fpmStopCount = 0
         }
-        pose.action_detection.walk = {
+        this.resultData.action_detection.walk = {
             "legUp" : this.current_leg,
             "frequency" : this.fpm,
             "strength" : this.current_speed_mean
@@ -84,7 +89,7 @@ var walk_processor = {
         if (monitor) {
             console.log("freq : " + this.fpm)
             console.log("strength : " + this.current_speed_mean)
-            pose.monitor = {
+            this.resultData.monitor = {
                 "rawData": this.current_leg,
                 "watchData" :this.current_frame_distance
             }
