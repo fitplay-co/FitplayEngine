@@ -119,7 +119,7 @@ namespace fitplay {
         vec3 rarmFK = fkToNextPoint(rshoulderFK, right, rarmRotation, 1.0f);
         vec3 lwristFK = fkToNextPoint(larmFK, left, lwristRotation, 1.0f);
         vec3 rwristFK = fkToNextPoint(rarmFK, right, rwristRotation, 1.0f);
-        vec3 lhandFK = fkToNextPoint(lwristFK, right, lhandRotation, 1.0f);
+        vec3 lhandFK = fkToNextPoint(lwristFK, left, lhandRotation, 1.0f);
         vec3 rhandFK = fkToNextPoint(rwristFK, right, rhandRotation, 1.0f);
         vec3 lhipFK = fkToNextPoint(hipcenter, left, lhipRotation, 1.0f);
         vec3 rhipFK = fkToNextPoint(hipcenter, right, rhipRotation, 1.0f);
@@ -127,8 +127,8 @@ namespace fitplay {
         vec3 rkneeFK = fkToNextPoint(rhipFK, down, rkneeRotation, 1.0f);
         vec3 lankleFK = fkToNextPoint(lkneeFK, down, lankleRotation, 1.0f);
         vec3 rankleFK = fkToNextPoint(rkneeFK, down, rankleRotation, 1.0f);
-        vec3 lfootFK = fkToNextPoint(lfootFK, down, lfootRotation, 1.0f);
-        vec3 rfootFK = fkToNextPoint(rfootFK, down, rfootRotation, 1.0f);
+        vec3 lfootFK = fkToNextPoint(lankleFK, down, lfootRotation, 1.0f);
+        vec3 rfootFK = fkToNextPoint(rankleFK, down, rfootRotation, 1.0f);
 
         writeFK(neckFK, data, 0 , "neckFK");
         writeFK(headFK, data, 1 , "headFK");
@@ -167,11 +167,11 @@ namespace fitplay {
 
     vec3 fitting::fkToNextPoint(vec3 const & startPoint, vec3 const & boneDirection, quat const & boneRotation, float const & bontLength) {
         auto direction = glm::rotate(boneRotation, boneDirection);
-        return vec3(direction[0] * bontLength, direction[1] * bontLength, direction[2] * bontLength);
+        return vec3(startPoint[0] + direction[0] * bontLength, startPoint[1] + direction[1] * bontLength, startPoint[2] + direction[2] * bontLength);
     }
 
     vec3 fitting::vectorFromToPoint(vec3 const & from, vec3 const & to) {
-        return vec3(to[0] - from[0], to[1] - from[1], to[2] - from[2]);
+        return glm::normalize(vec3(to[0] - from[0], to[1] - from[1], to[2] - from[2]));
     }
 
     vec3 fitting::readLandmarkPointVector(int point,const json& data) {
