@@ -8,6 +8,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const groundLocation = require('./src/midware_ground_location');
 const actionDetection = require('./src/midware_action_detection');
+const wasm = require('./src/midware_wasm');
 const gazeTracking = require('./src/midware_gaze_tracking');
 //const { type } = require('os');
 const {performance} = require('perf_hooks');
@@ -66,9 +67,12 @@ var messageLoop = coroutine(function*() {
         const message = bufferData.message
         const ws = bufferData.webSocket
         type = message.type
+        messageTime = Date.now()
         if(type === 'pose_landmark') {
             //TODO for now only pose provided in message as pose landmark
             pose = message
+            pose.timeProfiling.serverReceive = messageTime
+            pose.timeProfiling.processingTime = Date.now()
             //jump if process jobs too much 
             //TODO process Input here for input 
             //此处开始写局部坐标的初始化（地面坐标系）
@@ -76,6 +80,7 @@ var messageLoop = coroutine(function*() {
             //readPose.process(pose)
 
             // 只有当至少1个客户端订阅了高级能力时再进行相关计算
+            wasm.process(pose)
             var groundLocationData, actionDetectionData, gazeTrackingData
             if (advancedFeaturesSubscriptionsMap.has('ground_loccation')) {
                 groundLocationData = groundLocation.process(pose)
@@ -94,8 +99,10 @@ var messageLoop = coroutine(function*() {
                 timestamp: Date.now(),
                 version:"0.1.0"
             }
+            console.log(pose["fitting"])
             delete pose.keypoints
             delete pose.keypoints3D
+            pose.timeProfiling.beforeSendTime = Date.now()
             // console.log(pose.timeProfiling)
             activeApplicationClient.forEach(function(ws){
                 if(!ws.notActived) {
@@ -197,7 +204,6 @@ wss.on('connection', function (ws) {
         console.log('error occured');
     });
 }); 
-
 function coroutine(f) {
     var o = f(); // instantiate the coroutine
     o.next(); // execute until the first yield

@@ -2,7 +2,7 @@
 var WebSocketClient = require('websocket').client;
 
 var client = new WebSocketClient();
-
+var count = 0
 client.on('connectFailed', function(error) {
     console.log('Connect Error: ' + error.toString());
 });
@@ -17,8 +17,11 @@ client.on('connect', function(connection) {
     });
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
-            console.log(message);
+            var profilingTime = JSON.parse(message.utf8Data).timeProfiling 
+            profilingTime.clientReceiveTime = Date.now()
+            console.log(profilingTime);
         }
+
     });
     var appClientMessage =  {
         "type" : "application_client",
@@ -43,6 +46,11 @@ client.on('connect', function(connection) {
         "type" : "application_control",
         "feature_id" : "ground_loccation",
         "action" : "release" 
+    }
+    var groundLocationReset = {
+        "type" : "application_control",
+        "feature_id" : "ground_location",
+        "action" : "reset" 
     }
     var groundLocationReset = {
         "type" : "application_control",
