@@ -128,7 +128,7 @@ namespace fitplay {
         vec3 lankleFK = fkToNextPoint(lkneeFK, down, lankleRotation, 0.3f);
         vec3 rankleFK = fkToNextPoint(rkneeFK, down, rankleRotation, 0.3f);
         vec3 lfootFK = fkToNextPoint(lankleFK, down, lfootRotation, 0.1f);
-        vec3 rfootFK = fkToNextPoint(rankleFK, down, rfootRotation, 0.2f);
+        vec3 rfootFK = fkToNextPoint(rankleFK, down, rfootRotation, 0.1f);
 
         writeFK(neckFK, data, 0 , "neckFK");
         writeFK(headFK, data, 1 , "headFK");

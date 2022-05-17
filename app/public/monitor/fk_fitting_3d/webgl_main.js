@@ -159,8 +159,8 @@ render_3d_bone (gl, mtxGlobal, pose, idx0, idx1, color, rad, is_shadow)
     const pos1 = [pose.key3d[idx1].x, pose.key3d[idx1].y, pose.key3d[idx1].z];
 
     /* if the confidence score is low, draw more transparently. */
-    const s0 = pose.key3d[idx0].score;
-    const s1 = pose.key3d[idx1].score;
+    const s0 =  0.9;//pose.key3d[idx0].score;
+    const s1 =  0.9;//pose.key3d[idx1].score;
     const a  = color[3];
 
     color[3] = ((s0 > 0.1) && (s1 > 0.1)) ? a : 0.1;
@@ -251,7 +251,7 @@ render_skelton_3d (gl, landmarks)
         }
 
         /* joint point */
-        for (let i = 0; i < kPoseKeyNum - 1; i ++)
+        for (let i = 0; i < kPoseKeyNum; i ++)
         {
             const keyx = pose.key3d[i].x;
             const keyy = pose.key3d[i].y;
@@ -277,38 +277,32 @@ render_skelton_3d (gl, landmarks)
             colj[3] = alp;
         }
 
-        /* right arm */
-        // const rad = s_gui_prop.bone_radius;
-        // render_3d_bone (gl, mtxGlobal, pose,  11,  13, coln, rad, is_shadow);
-        // render_3d_bone (gl, mtxGlobal, pose,  13,  15, coln, rad, is_shadow);
-        // render_3d_bone (gl, mtxGlobal, pose,  15,  19, coln, rad, is_shadow);
+        /* head and shoulder */
+        const rad = s_gui_prop.bone_radius;
+        render_3d_bone (gl, mtxGlobal, pose,  0,  1, coln, rad, is_shadow);
+        render_3d_bone (gl, mtxGlobal, pose,  0,  2, coln, rad, is_shadow);
+        render_3d_bone (gl, mtxGlobal, pose,  0,  3, coln, rad, is_shadow);
 
-        // /* left arm */
-        // render_3d_bone (gl, mtxGlobal, pose,  12,  14, coln, rad, is_shadow);
-        // render_3d_bone (gl, mtxGlobal, pose,  14,  16, coln, rad, is_shadow);
-        // render_3d_bone (gl, mtxGlobal, pose,  16,  20, coln, rad, is_shadow);
+        //arm 
+        render_3d_bone (gl, mtxGlobal, pose,  2,  4, coln, rad, is_shadow);
+        render_3d_bone (gl, mtxGlobal, pose,  3,  5, coln, rad, is_shadow);
+        render_3d_bone (gl, mtxGlobal, pose,  4,  6, coln, rad, is_shadow);
+        render_3d_bone (gl, mtxGlobal, pose,  5,  7, coln, rad, is_shadow);
+        render_3d_bone (gl, mtxGlobal, pose,  6,  8, coln, rad, is_shadow);
+        render_3d_bone (gl, mtxGlobal, pose,  7,  9, coln, rad, is_shadow);
 
-        // /* right leg */
-        // render_3d_bone (gl, mtxGlobal, pose,  23,  25, coln, rad, is_shadow);
-        // render_3d_bone (gl, mtxGlobal, pose,  25,  27, coln, rad, is_shadow);
-        // render_3d_bone (gl, mtxGlobal, pose,  27,  31, coln, rad, is_shadow);
+        //body 
+        render_3d_bone (gl, mtxGlobal, pose,  10,  11, coln, rad, is_shadow);
+        render_3d_bone (gl, mtxGlobal, pose,  0,  10, coln, rad, is_shadow);
+        render_3d_bone (gl, mtxGlobal, pose,  0,  11, coln, rad, is_shadow);
 
-        // /* left leg */
-        // render_3d_bone (gl, mtxGlobal, pose,  24, 26, coln, rad, is_shadow);
-        // render_3d_bone (gl, mtxGlobal, pose,  26, 28, coln, rad, is_shadow);
-        // render_3d_bone (gl, mtxGlobal, pose,  28, 32, coln, rad, is_shadow);
-
-        // /* neck */
-        // render_3d_bone (gl, mtxGlobal, pose,  11,  12, coln, rad, is_shadow);
-        // render_3d_bone (gl, mtxGlobal, pose,  11,  23, coln, rad, is_shadow);
-        // render_3d_bone (gl, mtxGlobal, pose,  12,  24, coln, rad, is_shadow);
-        // render_3d_bone (gl, mtxGlobal, pose,  23,  24, coln, rad, is_shadow);
-
-        /* eye */
-        //render_3d_bone (gl, mtxGlobal, pose,  0, 14, coln, 1.0, is_shadow);
-        //render_3d_bone (gl, mtxGlobal, pose, 14, 16, coln, 1.0, is_shadow);
-        //render_3d_bone (gl, mtxGlobal, pose,  0, 15, coln, 1.0, is_shadow);
-        //render_3d_bone (gl, mtxGlobal, pose, 15, 17, coln, 1.0, is_shadow);
+        //leg
+        render_3d_bone (gl, mtxGlobal, pose,  10,  12, coln, rad, is_shadow);
+        render_3d_bone (gl, mtxGlobal, pose,  11,  13, coln, rad, is_shadow);
+        render_3d_bone (gl, mtxGlobal, pose,  12,  14, coln, rad, is_shadow);
+        render_3d_bone (gl, mtxGlobal, pose,  13,  15, coln, rad, is_shadow);
+        render_3d_bone (gl, mtxGlobal, pose,  14,  16, coln, rad, is_shadow);
+        render_3d_bone (gl, mtxGlobal, pose,  15,  17, coln, rad, is_shadow);
     }
 }
 

@@ -251,7 +251,7 @@ render_skelton_3d (gl, landmarks)
         }
 
         /* joint point */
-        for (let i = 0; i < kPoseKeyNum - 1; i ++)
+        for (let i = 0; i < kPoseKeyNum ; i ++)
         {
             const keyx = pose.key3d[i].x;
             const keyy = pose.key3d[i].y;
