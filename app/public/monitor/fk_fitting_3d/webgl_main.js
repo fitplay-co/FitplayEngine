@@ -302,7 +302,7 @@ render_skelton_3d (gl, landmarks)
         render_3d_bone (gl, mtxGlobal, pose,  12,  14, coln, rad, is_shadow);
         render_3d_bone (gl, mtxGlobal, pose,  13,  15, coln, rad, is_shadow);
         render_3d_bone (gl, mtxGlobal, pose,  14,  16, coln, rad, is_shadow);
-er    }
+    }
 }
 
 
