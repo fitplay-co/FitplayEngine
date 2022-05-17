@@ -1,3 +1,5 @@
+const MAX_BUFFER_SIZE = 3 //缓冲队列容量上限
+
 // 输入数据缓冲，包含传感器输入数据以及客户端发送的消息
 var messageBuffer = {
     messageBufferMap: new Map(),
@@ -20,8 +22,12 @@ var messageBuffer = {
             messageType = message.sensor_type
         }
         if (messageType) {
+            if ((messageType === 'pose_landmark' || messageType === 'sensor_frame') && this.messageBufferMap.get(messageType).length >= MAX_BUFFER_SIZE) {
+                console.log('drop earliest frame!!!')
+                this.messageBufferMap.get(messageType).shift()
+            }
             this.messageBufferMap.get(messageType).push({'message': message, 'webSocket': webSocket})
-            console.log('new message:'+message.type+"|"+this.messageBufferMap.get(messageType).length)
+            console.log('add new message:'+message.type+"|"+this.messageBufferMap.get(messageType).length)
         }
     },
 
