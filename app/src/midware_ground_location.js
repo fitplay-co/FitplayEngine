@@ -29,7 +29,7 @@ var depthEstimator = {
         this.rig_list.push([startPoint, endPoint, 0, 0, 0])
     },
 
-    process : function(pose, monitor = true) {
+    process : function(pose, monitor = false) {
         //console.log(pose.keypoints3D)
         if (pose.action ==='reset'){
             this.startX = this.pre_x
@@ -60,7 +60,7 @@ var depthEstimator = {
         var resDown = this.matrixMultiplication(cameraParam,arr33)
         //var footRes = this.matrixMultiplication(cameraParam,foot)
         this.legLength = this.distance_finder_leg(this.legLength,pose)
-        //res_down[0][0] = res_down[0][0] 
+        res_down[0][0] = (res_down[0][0] +resDown[0][0])/2
         
         res_down[1][0] = (res_down[1][0] + resDown[1][0])/2
         //console.log(this.legLength)
@@ -71,7 +71,6 @@ var depthEstimator = {
             //console.log(pose.action)
             this.startX = res_down[0][0]
             this.startY = res_down[1][0]
-            console.log(this.startY)
             this.startZ = z_down
             this.tracing = true
             this.pre_x = res_down[0][0]
