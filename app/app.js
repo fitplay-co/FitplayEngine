@@ -80,7 +80,7 @@ var messageLoop = coroutine(function*() {
             //readPose.process(pose)
 
             // 只有当至少1个客户端订阅了高级能力时再进行相关计算
-            //wasm.process(pose)
+            wasm.process(pose)
             var groundLocationData, actionDetectionData, gazeTrackingData
             if (advancedFeaturesSubscriptionsMap.has('ground_loccation')) {
                 groundLocationData = groundLocation.process(pose)
