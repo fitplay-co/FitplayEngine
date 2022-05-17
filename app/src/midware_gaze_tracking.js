@@ -69,7 +69,8 @@ var gaze_tracking = {
             z: z,
             d : distance
         }
-        console.log(pose.gaze_tracking)
+        
+        console.log(resultData.gaze_tracking)
         this.pre_x = res[0][0]
         //console.log(this.pre_x)
         this.pre_y = res[1][0]

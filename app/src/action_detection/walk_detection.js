@@ -1,5 +1,3 @@
-const {performance} = require('perf_hooks')
-
 var walk_processor = {
     rig_list : [],
     current_distance_mean : 0,
@@ -13,16 +11,13 @@ var walk_processor = {
     times : [],
     fpmStopCount : 0,
     frameShiftFilterCount : 0 ,
-    resultData: {},
 
-
-    process : function(pose, resultData, monitor = false){
-        this.resultData = resultData
+    process : function(pose, monitor = true){
         this.calculate_current_frame_distance(pose)
         this.calculate_current_distance_mean(pose)
         this.calculate_current_direction(pose, monitor)
+        
         this.monitor_process = monitor
-        return this.resultData
     }, 
 
     appendRig : function(startPoint, endPoint) {
@@ -82,7 +77,7 @@ var walk_processor = {
         } else {
             this.fpmStopCount = 0
         }
-        this.resultData.action_detection.walk = {
+        pose.action_detection.walk = {
             "legUp" : this.current_leg,
             "frequency" : this.fpm,
             "strength" : this.current_speed_mean
@@ -90,12 +85,13 @@ var walk_processor = {
         //console.log(pose.action_detection.walk.legUp)
         //console.log(pose.action_detection.walk.frequency)
         if (monitor) {
-
-            console.log("freq : " + this.fpm)
-            console.log("strength : " + this.current_speed_mean)
-            this.resultData.monitor = {
-                "rawData": this.current_leg,
-                "watchData" :this.current_frame_distance
+            //console.log("freq : " + this.fpm)
+            //console.log("strength : " + this.current_speed_mean)
+            pose.monitor = {
+                "rawData_x": this.current_leg,
+                "watchData_x" :this.current_frame_distance,
+                "rawData_y" : this.fpm,
+                "watchData_y" : this.fpm
 
             }
         }
