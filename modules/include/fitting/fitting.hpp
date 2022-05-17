@@ -43,8 +43,8 @@ namespace fitplay {
         // here spine is ignored for faster fitting
         vec3 up = vec3 (0.0f, 1.0f, 0.0f);
         vec3 down =  vec3 (0.0f, -1.0f, 0.0f);
-        vec3 left =  vec3 (1.0f, 0.0f, 0.0f);
-        vec3 right =  vec3 (-1.0f, 0.0f, 0.0f);
+        vec3 left =  vec3 (-1.0f, 0.0f, 0.0f);
+        vec3 right =  vec3 (1.0f, 0.0f, 0.0f);
 
         // transfer to vec3 for each landmarks
         vec3 head = readLandmarkPointVector(0, data);
@@ -69,26 +69,26 @@ namespace fitplay {
         vec3 neck = vec3((lshoulder[0] + rshoulder[0])/2.0f, (lshoulder[1] + rshoulder[1])/2.0f, (lshoulder[2] + rshoulder[2])/2.0f);
         //calculate rotation in each joints, to generate bones
         //up half human
-        glm::quat neckRotation = glm::rotation(vectorFromToPoint(hipcenter, neck), up);
-        glm::quat headRotation = glm::rotation(vectorFromToPoint(neck, head), up);
-        glm::quat lshoulderRotation = glm::rotation(vectorFromToPoint(neck, lshoulder), left);
-        glm::quat rshoulderRotation = glm::rotation(vectorFromToPoint(neck, rshoulder), right);
-        glm::quat larmRotation = glm::rotation(vectorFromToPoint(lshoulder, larm), left);
-        glm::quat rarmRotation = glm::rotation(vectorFromToPoint(rshoulder, rarm), right);
-        glm::quat lwristRotation = glm::rotation(vectorFromToPoint(larm, lwrist), left);
-        glm::quat rwristRotation = glm::rotation(vectorFromToPoint(rarm, rwrist), right);
-        glm::quat lhandRotation = glm::rotation(vectorFromToPoint(lwrist, lhand), left);
-        glm::quat rhandRotation = glm::rotation(vectorFromToPoint(rwrist, rhand), right);
+        glm::quat neckRotation = glm::rotation(up, vectorFromToPoint(hipcenter, neck));
+        glm::quat headRotation = glm::rotation(up, vectorFromToPoint(neck, head));
+        glm::quat lshoulderRotation = glm::rotation(left, vectorFromToPoint(neck, lshoulder));
+        glm::quat rshoulderRotation = glm::rotation(right, vectorFromToPoint(neck, rshoulder));
+        glm::quat larmRotation = glm::rotation(left, vectorFromToPoint(lshoulder, larm));
+        glm::quat rarmRotation = glm::rotation(right, vectorFromToPoint(rshoulder, rarm));
+        glm::quat lwristRotation = glm::rotation(left, vectorFromToPoint(larm, lwrist));
+        glm::quat rwristRotation = glm::rotation(right, vectorFromToPoint(rarm, rwrist));
+        glm::quat lhandRotation = glm::rotation(left, vectorFromToPoint(lwrist, lhand));
+        glm::quat rhandRotation = glm::rotation(right, vectorFromToPoint(rwrist, rhand));
 
         //down half human
-        glm::quat lhipRotation =  glm::rotation(vectorFromToPoint(hipcenter, lhip), left);
-        glm::quat rhipRotation =  glm::rotation(vectorFromToPoint(hipcenter, rhip), right);
-        glm::quat lkneeRotation =  glm::rotation(vectorFromToPoint(lhip, lknee), down);
-        glm::quat rkneeRotation =  glm::rotation(vectorFromToPoint(rhip, rknee), down);
-        glm::quat lankleRotation = glm::rotation(vectorFromToPoint(lknee, lankle), down);
-        glm::quat rankleRotation = glm::rotation(vectorFromToPoint(rknee, rankle), down);
-        glm::quat lfootRotation = glm::rotation(vectorFromToPoint(lankle, lfoot), down);
-        glm::quat rfootRotation = glm::rotation(vectorFromToPoint(rankle, rfoot), down);
+        glm::quat lhipRotation =  glm::rotation(left, vectorFromToPoint(hipcenter, lhip));
+        glm::quat rhipRotation =  glm::rotation(right, vectorFromToPoint(hipcenter, rhip));
+        glm::quat lkneeRotation =  glm::rotation(down, vectorFromToPoint(lhip, lknee));
+        glm::quat rkneeRotation =  glm::rotation(down, vectorFromToPoint(rhip, rknee));
+        glm::quat lankleRotation = glm::rotation(down, vectorFromToPoint(lknee, lankle));
+        glm::quat rankleRotation = glm::rotation(down, vectorFromToPoint(rknee, rankle));
+        glm::quat lfootRotation = glm::rotation(down, vectorFromToPoint(lankle, lfoot));
+        glm::quat rfootRotation = glm::rotation(down, vectorFromToPoint(rankle, rfoot));
 
         //write rotations 
         writeRotation(neckRotation, data, 0, "neckRotation");
@@ -111,24 +111,24 @@ namespace fitplay {
         writeRotation(rfootRotation, data, 17, "rfootRotation");
 
         //write fks 
-        vec3 neckFK = fkToNextPoint(hipcenter, up, neckRotation, 1.0f);
-        vec3 headFK = fkToNextPoint(neckFK, up, headRotation, 1.0f);
-        vec3 lshoulderFK = fkToNextPoint(neckFK, left, lshoulderRotation, 1.0f);
-        vec3 rshoulderFK = fkToNextPoint(neckFK, right, rshoulderRotation, 1.0f);
-        vec3 larmFK = fkToNextPoint(lshoulderFK, left, larmRotation, 1.0f);
-        vec3 rarmFK = fkToNextPoint(rshoulderFK, right, rarmRotation, 1.0f);
-        vec3 lwristFK = fkToNextPoint(larmFK, left, lwristRotation, 1.0f);
-        vec3 rwristFK = fkToNextPoint(rarmFK, right, rwristRotation, 1.0f);
-        vec3 lhandFK = fkToNextPoint(lwristFK, left, lhandRotation, 1.0f);
-        vec3 rhandFK = fkToNextPoint(rwristFK, right, rhandRotation, 1.0f);
-        vec3 lhipFK = fkToNextPoint(hipcenter, left, lhipRotation, 1.0f);
-        vec3 rhipFK = fkToNextPoint(hipcenter, right, rhipRotation, 1.0f);
-        vec3 lkneeFK = fkToNextPoint(lhipFK, down, lkneeRotation, 1.0f);
-        vec3 rkneeFK = fkToNextPoint(rhipFK, down, rkneeRotation, 1.0f);
-        vec3 lankleFK = fkToNextPoint(lkneeFK, down, lankleRotation, 1.0f);
-        vec3 rankleFK = fkToNextPoint(rkneeFK, down, rankleRotation, 1.0f);
-        vec3 lfootFK = fkToNextPoint(lankleFK, down, lfootRotation, 1.0f);
-        vec3 rfootFK = fkToNextPoint(rankleFK, down, rfootRotation, 1.0f);
+        vec3 neckFK = fkToNextPoint(hipcenter, up, neckRotation, 0.4f);
+        vec3 headFK = fkToNextPoint(neckFK, up, headRotation, 0.1f);
+        vec3 lshoulderFK = fkToNextPoint(neckFK, left, lshoulderRotation, 0.1f);
+        vec3 rshoulderFK = fkToNextPoint(neckFK, right, rshoulderRotation, 0.1f);
+        vec3 larmFK = fkToNextPoint(lshoulderFK, left, larmRotation, 0.2f);
+        vec3 rarmFK = fkToNextPoint(rshoulderFK, right, rarmRotation, 0.2f);
+        vec3 lwristFK = fkToNextPoint(larmFK, left, lwristRotation, 0.2f);
+        vec3 rwristFK = fkToNextPoint(rarmFK, right, rwristRotation, 0.2f);
+        vec3 lhandFK = fkToNextPoint(lwristFK, left, lhandRotation, 0.1f);
+        vec3 rhandFK = fkToNextPoint(rwristFK, right, rhandRotation, 0.1f);
+        vec3 lhipFK = fkToNextPoint(hipcenter, left, lhipRotation, 0.1f);
+        vec3 rhipFK = fkToNextPoint(hipcenter, right, rhipRotation, 0.1f);
+        vec3 lkneeFK = fkToNextPoint(lhipFK, down, lkneeRotation, 0.3f);
+        vec3 rkneeFK = fkToNextPoint(rhipFK, down, rkneeRotation, 0.3f);
+        vec3 lankleFK = fkToNextPoint(lkneeFK, down, lankleRotation, 0.3f);
+        vec3 rankleFK = fkToNextPoint(rkneeFK, down, rankleRotation, 0.3f);
+        vec3 lfootFK = fkToNextPoint(lankleFK, down, lfootRotation, 0.1f);
+        vec3 rfootFK = fkToNextPoint(rankleFK, down, rfootRotation, 0.2f);
 
         writeFK(neckFK, data, 0 , "neckFK");
         writeFK(headFK, data, 1 , "headFK");
