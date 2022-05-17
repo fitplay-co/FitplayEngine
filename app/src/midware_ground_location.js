@@ -83,9 +83,9 @@ var depthEstimator = {
         res_down[1][0] = res_down[1][0]*0.1+this.pre_y*0.9
         z_down = z_down*0.1+this.pre_z*0.9
 
-        
+        const resultData = {}
         if(monitor) {
-             pose.monitor = {
+            resultData.monitor = {
                  "rawData_z": (pose.keypoints[23].z+pose.keypoints[24].z)*0.5,
                  "watchData_z" :z_down ,
                  "rawData_x":(pose.keypoints[23].x+pose.keypoints[24].x)*0.5,
@@ -95,7 +95,7 @@ var depthEstimator = {
              }
          }
 
-        pose.ground_location = {
+        resultData.ground_location = {
             //return x with ground location x axis
             x : res_down[0][0]-this.startX,
             y : res_down[1][0]-this.startY + this.legLength,
@@ -107,7 +107,7 @@ var depthEstimator = {
         this.pre_x = res_down[0][0]
         this.pre_y = res_down[1][0]
         this.pre_z = z_down
-        return 
+        return resultData
     },
     distance_finder_z_filtered: function(pose, num1 , num2) {
         vec1 = this.point2vec(pose, num1)
