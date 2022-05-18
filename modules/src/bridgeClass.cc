@@ -36,6 +36,7 @@ public:
     flatbuffers::FlatBufferBuilder builder(1024);
     auto name = builder.CreateString("test");
     auto testClass = Test::CreateTestC(builder, name);
+    builder.Finish(orc);
   
     // add property to json object
     j["wasm_bridge_version"] = "0.0.1";
