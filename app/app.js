@@ -73,7 +73,7 @@ wss.on('connection', function (ws) {
 
         messageContent = message.toString('ascii');
         processingJob = processingJob +1
-        messageTime = Date.now()
+        messageTime = performance.now()*1000
         setImmediate (function(){
             message = JSON.parse(messageContent);
             //console.log(message)
@@ -82,7 +82,7 @@ wss.on('connection', function (ws) {
                 //TODO for now only pose provided in message as pose landmark
                 pose = message
                 pose.timeProfiling.serverReceive = messageTime
-                pose.timeProfiling.processingTime = Date.now()
+                pose.timeProfiling.processingTime = performance.now()*1000
                 //jump if process jobs too much 
                 if(processingJob < 4) {
                     //TODO process Input here for input 
@@ -102,7 +102,7 @@ wss.on('connection', function (ws) {
                     }
                     delete pose.keypoints
                     delete pose.keypoints3D
-                    pose.timeProfiling.beforeSendTime = Date.now()
+                    pose.timeProfiling.beforeSendTime = performance.now()*1000
                     //console.log(pose)
                     messageContent = JSON.stringify(pose)
                     //console.log(messageContent)
