@@ -1,3 +1,5 @@
+const {performance} = require('perf_hooks')
+
 var jump_processor = {
     current_distance_mean : 0,
     current_speed_mean: 0,
@@ -11,12 +13,15 @@ var jump_processor = {
     times : [],
     fpmStopCount : 0,
     frameShiftFilterCount : 0,
+    resultData: {},
 
-    process : function(pose, monitor = false){
+    process : function(pose, resultData, monitor = false){
+        this.resultData = resultData
         this.calculate_current_frame_distance(pose)
         this.calculate_current_distance_mean(pose)
         this.calculate_current_direction(pose, monitor)
         this.monitor_process = monitor
+        return this.resultData
     }, 
 
     /*1. calculate current frame point weighted summation
@@ -70,14 +75,14 @@ var jump_processor = {
         // console.log(this.current_jump)
         // console.log(this.current_speed_mean)
         this.current_height = this.current_jump == 1? this.current_speed_mean:0
-        pose.action_detection.jump = {
+        this.resultData.action_detection.jump = {
             "up" : this.current_jump,
             "strength" : this.current_height
         }
         if (monitor) {
             console.log("freq : " + this.fpm)
             console.log("strength : " + this.current_speed_mean)
-            pose.monitor = {
+            this.resultData.monitor = {
                 "rawData": this.current_jump,
                 "watchData" :this.current_frame_distance
             }

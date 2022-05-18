@@ -29,7 +29,7 @@ var depthEstimator = {
         this.rig_list.push([startPoint, endPoint, 0, 0, 0])
     },
 
-    process : function(pose, monitor = true) {
+    process : function(pose, monitor = false) {
         //console.log(pose.keypoints3D)
         if (pose.action ==='reset'){
             this.startX = this.pre_x
@@ -60,7 +60,7 @@ var depthEstimator = {
         var resDown = this.matrixMultiplication(cameraParam,arr33)
         //var footRes = this.matrixMultiplication(cameraParam,foot)
         this.legLength = this.distance_finder_leg(this.legLength,pose)
-        //res_down[0][0] = res_down[0][0] 
+        res_down[0][0] = (res_down[0][0] +resDown[0][0])/2
         
         res_down[1][0] = (res_down[1][0] + resDown[1][0])/2
         //console.log(this.legLength)
@@ -71,7 +71,6 @@ var depthEstimator = {
             //console.log(pose.action)
             this.startX = res_down[0][0]
             this.startY = res_down[1][0]
-            console.log(this.startY)
             this.startZ = z_down
             this.tracing = true
             this.pre_x = res_down[0][0]
@@ -83,9 +82,9 @@ var depthEstimator = {
         res_down[1][0] = res_down[1][0]*0.1+this.pre_y*0.9
         z_down = z_down*0.1+this.pre_z*0.9
 
-        
+        const resultData = {}
         if(monitor) {
-             pose.monitor = {
+            resultData.monitor = {
                  "rawData_z": (pose.keypoints[23].z+pose.keypoints[24].z)*0.5,
                  "watchData_z" :z_down ,
                  "rawData_x":(pose.keypoints[23].x+pose.keypoints[24].x)*0.5,
@@ -95,7 +94,7 @@ var depthEstimator = {
              }
          }
 
-        pose.ground_location = {
+        resultData.ground_location = {
             //return x with ground location x axis
             x : res_down[0][0]-this.startX,
             y : res_down[1][0]-this.startY + this.legLength,
@@ -107,7 +106,7 @@ var depthEstimator = {
         this.pre_x = res_down[0][0]
         this.pre_y = res_down[1][0]
         this.pre_z = z_down
-        return 
+        return resultData
     },
     distance_finder_z_filtered: function(pose, num1 , num2) {
         vec1 = this.point2vec(pose, num1)

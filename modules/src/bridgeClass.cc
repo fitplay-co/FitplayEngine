@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "json.hpp"
+#include "fitting/fitting.hpp"
 
 // for convenience
 using json = nlohmann::json;
@@ -25,14 +26,15 @@ public:
   std::string jsonFunc(const std::string &str) {
     // auto j = json::parse(R"({"happy": true, "pi": 3.141})");
     // convert string to json
-    auto j = json::parse(str);
+    json j = json::parse(str);
     // get data from json
     // float num = j["pose_landmark"]["keypoints"][1]["y"];
-
+    
     // TODO: process input data
-
+    fitInstance.process(j);
+  
     // add property to json object
-    j["pi"] = 3.141;
+    j["wasm_bridge_version"] = "0.0.1";
     // convert json to string
     std::string s = j.dump();
 	  return s;
@@ -45,6 +47,7 @@ public:
 private:
   int x;
   std::string y;
+  fitplay::fitting fitInstance;
 };
 
 // Binding code
