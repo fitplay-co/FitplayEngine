@@ -27,7 +27,7 @@ public:
   std::string jsonFunc(const std::string &str) {
     // auto j = json::parse(R"({"happy": true, "pi": 3.141})");
     // convert string to json
-    json j = json::parse(str);
+    // json j = json::parse(str);
     // get data from json
     // float num = j["pose_landmark"]["keypoints"][1]["y"];
     
@@ -36,13 +36,13 @@ public:
     flatbuffers::FlatBufferBuilder builder(1024);
     auto name = builder.CreateString("test");
     auto testClass = Test::CreateTestC(builder, name);
-    builder.Finish(orc);
+    builder.Finish(testClass);
   
     // add property to json object
-    j["wasm_bridge_version"] = "0.0.1";
+    // j["wasm_bridge_version"] = "0.0.1";
     // convert json to string
-    std::string s = j.dump();
-	  return s;
+    // std::string s = j.dump();
+	  return str;
   }
 
   static std::string getStringFromInstance(const BridgeClass& instance) {
