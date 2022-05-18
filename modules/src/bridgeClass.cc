@@ -4,6 +4,7 @@
 #include <vector>
 #include "json.hpp"
 #include "fitting/fitting.hpp"
+#include "flatbuffer/test_generated.h"
 
 // for convenience
 using json = nlohmann::json;
@@ -31,7 +32,10 @@ public:
     // float num = j["pose_landmark"]["keypoints"][1]["y"];
     
     // TODO: process input data
-    fitInstance.process(j);
+    // fitInstance.process(j);
+    flatbuffers::FlatBufferBuilder builder(1024);
+    auto name = builder.CreateString("test");
+    auto testClass = Test::CreateTestC(builder, name);
   
     // add property to json object
     j["wasm_bridge_version"] = "0.0.1";

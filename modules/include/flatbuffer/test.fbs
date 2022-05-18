@@ -1,0 +1,7 @@
+namespace Test;
+
+table TestC {
+    name:string;
+}
+
+root_type TestC;
