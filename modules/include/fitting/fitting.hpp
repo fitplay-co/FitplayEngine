@@ -7,13 +7,33 @@
 using namespace nlohmann;
 using namespace glm;
 
+const int jointPointSize = 18;
+
 namespace fitplay {
+    struct jointPoint {
+        std::string jointName;
+        int parentIndex = 0;
+        float boneLength = 0.0f;
+
+        vec3 fromPoint;
+        vec3 toPoint;
+
+        vec3 posDirection3d = vec3 (0.0f, 1.0f, 0.0f); //by default to up 
+        quat fkRotation;
+        vec3 fromPointFk =  vec3 (0.0f, 0.0f, 0.0f);
+        vec3 toPointFk =  vec3 (0.0f, 0.0f, 0.0f);
+    };
+
     class fitting {
         private:
             /* data */
         public:
+            jointPoint jointPoints[jointPointSize + 1];
             fitting();
             ~ fitting();
+            void addJointPoint(jointPoint& p, std::string name, int parentIndex, float boneLength);
+            //update joint point in each process, to calculate fk landmark and rotation and do fitting
+            void updateJointPoint(jointPoint& p, vec3 startPoint, vec3 endPoint);
             void process(json& data);
             vec3 vectorFromToPoint(vec3 const & from, vec3 const & to);
             vec3 readLandmarkPointVector(int point,const json& data);
@@ -22,8 +42,51 @@ namespace fitplay {
             void writeFK(vec3 const& point, json & data, int index, std::string name);
     };
 
-    fitting::fitting() {}
+    fitting::fitting() {
+        addJointPoint(jointPoints[0], "neck", 18, 0.4f);
+        addJointPoint(jointPoints[1], "head", 0, 0.1f);
+        addJointPoint(jointPoints[2], "lshoulder", 0, 0.1f);
+        addJointPoint(jointPoints[3], "rshoulder", 0, 0.1f);
+        addJointPoint(jointPoints[4], "luparm", 2, 0.2f);
+        addJointPoint(jointPoints[5], "ruparm", 3, 0.2f);
+        addJointPoint(jointPoints[6], "llowarm", 4, 0.2f);
+        addJointPoint(jointPoints[7], "rlowarm", 5, 0.2f);
+        addJointPoint(jointPoints[8], "lhand", 6, 0.1f);
+        addJointPoint(jointPoints[9], "rhand", 7, 0.1f);
+        addJointPoint(jointPoints[10], "lhip", 18, 0.1f);
+        addJointPoint(jointPoints[11], "rhip", 18, 0.1f);
+        addJointPoint(jointPoints[12], "lupleg", 10, 0.3);
+        addJointPoint(jointPoints[13], "rupleg", 11, 0.3f);
+        addJointPoint(jointPoints[14], "llowleg", 12, 0.3f);
+        addJointPoint(jointPoints[15], "rlowleg", 13, 0.3f);
+        addJointPoint(jointPoints[16], "lfoot", 14, 0.1f);
+        addJointPoint(jointPoints[17], "rfoot", 15, 0.1f);
+
+        //last point for root reference from neck, hip points
+        addJointPoint(jointPoints[18], "root", -1, 0.4f);
+    }
+
     fitting::~fitting() {}
+
+    void fitting::addJointPoint(jointPoint& p, std::string name, int parentIndex, float boneLength) {
+        p.jointName = name;
+        p.parentIndex = parentIndex;
+        p.boneLength = boneLength;
+    }
+
+    void fitting::updateJointPoint(jointPoint& p, vec3 startPoint, vec3 endPoint) {
+        //first step update start end points 
+        p.fromPoint = startPoint;
+        p.toPoint = endPoint;
+
+        //calculate pose Direction 3d
+        p.posDirection3d = vectorFromToPoint(startPoint, endPoint);
+        p.fkRotation = glm::rotation(jointPoints[p.parentIndex].posDirection3d, p.posDirection3d);
+
+        //calculate fk
+        p.fromPointFk = jointPoints[p.parentIndex].toPointFk;
+        p.toPointFk = fkToNextPoint(p.fromPointFk, jointPoints[p.parentIndex].posDirection3d, p.fkRotation, p.boneLength);
+    }
 
     void fitting::process(json& data) {
         data["fitting"]["wasm_fitting_version"] = "0.0.1";
@@ -69,85 +132,30 @@ namespace fitplay {
         vec3 neck = vec3((lshoulder[0] + rshoulder[0])/2.0f, (lshoulder[1] + rshoulder[1])/2.0f, (lshoulder[2] + rshoulder[2])/2.0f);
         //calculate rotation in each joints, to generate bones
         //up half human
-        glm::quat neckRotation = glm::rotation(up, vectorFromToPoint(hipcenter, neck));
-        glm::quat headRotation = glm::rotation(up, vectorFromToPoint(neck, head));
-        glm::quat lshoulderRotation = glm::rotation(left, vectorFromToPoint(neck, lshoulder));
-        glm::quat rshoulderRotation = glm::rotation(right, vectorFromToPoint(neck, rshoulder));
-        glm::quat larmRotation = glm::rotation(left, vectorFromToPoint(lshoulder, larm));
-        glm::quat rarmRotation = glm::rotation(right, vectorFromToPoint(rshoulder, rarm));
-        glm::quat lwristRotation = glm::rotation(left, vectorFromToPoint(larm, lwrist));
-        glm::quat rwristRotation = glm::rotation(right, vectorFromToPoint(rarm, rwrist));
-        glm::quat lhandRotation = glm::rotation(left, vectorFromToPoint(lwrist, lhand));
-        glm::quat rhandRotation = glm::rotation(right, vectorFromToPoint(rwrist, rhand));
+        // glm::quat neckRotation = glm::rotation(up, vectorFromToPoint(hipcenter, neck));
+        updateJointPoint(jointPoints[0], hipcenter, neck);
+        updateJointPoint(jointPoints[1], neck, head);
+        updateJointPoint(jointPoints[2], neck, lshoulder);
+        updateJointPoint(jointPoints[3], neck, rshoulder);
+        updateJointPoint(jointPoints[4], lshoulder, larm);
+        updateJointPoint(jointPoints[5], rshoulder, rarm);
+        updateJointPoint(jointPoints[6], larm, lwrist);
+        updateJointPoint(jointPoints[7], rarm, rwrist);
+        updateJointPoint(jointPoints[8], lwrist, lhand);
+        updateJointPoint(jointPoints[9], rwrist, rhand);
+        updateJointPoint(jointPoints[10], hipcenter, lhip);
+        updateJointPoint(jointPoints[11], hipcenter, rhip);
+        updateJointPoint(jointPoints[12], lhip, lknee);
+        updateJointPoint(jointPoints[13], rhip, rknee);
+        updateJointPoint(jointPoints[14], lknee, lankle);
+        updateJointPoint(jointPoints[15], rknee, rankle);
+        updateJointPoint(jointPoints[16], lankle, lfoot);
+        updateJointPoint(jointPoints[17], rankle, rfoot);
 
-        //down half human
-        glm::quat lhipRotation =  glm::rotation(left, vectorFromToPoint(hipcenter, lhip));
-        glm::quat rhipRotation =  glm::rotation(right, vectorFromToPoint(hipcenter, rhip));
-        glm::quat lkneeRotation =  glm::rotation(down, vectorFromToPoint(lhip, lknee));
-        glm::quat rkneeRotation =  glm::rotation(down, vectorFromToPoint(rhip, rknee));
-        glm::quat lankleRotation = glm::rotation(down, vectorFromToPoint(lknee, lankle));
-        glm::quat rankleRotation = glm::rotation(down, vectorFromToPoint(rknee, rankle));
-        glm::quat lfootRotation = glm::rotation(down, vectorFromToPoint(lankle, lfoot));
-        glm::quat rfootRotation = glm::rotation(down, vectorFromToPoint(rankle, rfoot));
-
-        //write rotations 
-        writeRotation(neckRotation, data, 0, "neckRotation");
-        writeRotation(headRotation, data, 1, "headRotation");
-        writeRotation(lshoulderRotation, data, 2, "lshoulderRotation");
-        writeRotation(rshoulderRotation, data, 3, "rshoulderRotation");
-        writeRotation(larmRotation, data, 4, "larmRotation");
-        writeRotation(rarmRotation, data, 5, "rarmRotation");
-        writeRotation(lwristRotation, data, 6, "lwristRotation");
-        writeRotation(rwristRotation, data, 7, "rwristRotation");
-        writeRotation(lhandRotation, data, 8, "lhandRotation");
-        writeRotation(rhandRotation, data, 9, "rhandRotation");
-        writeRotation(lhipRotation, data, 10, "lhipRotation");
-        writeRotation(rhipRotation, data, 11, "rhipRotation");
-        writeRotation(lkneeRotation, data, 12, "lkneeRotation");
-        writeRotation(rkneeRotation, data, 13, "rkneeRotation");
-        writeRotation(lankleRotation, data, 14, "lankleRotation");
-        writeRotation(rankleRotation, data, 15, "rankleRotation");
-        writeRotation(lfootRotation, data, 16, "lfootRotation");
-        writeRotation(rfootRotation, data, 17, "rfootRotation");
-
-        //write fks 
-        vec3 neckFK = fkToNextPoint(hipcenter, up, neckRotation, 0.4f);
-        vec3 headFK = fkToNextPoint(neckFK, up, headRotation, 0.1f);
-        vec3 lshoulderFK = fkToNextPoint(neckFK, left, lshoulderRotation, 0.1f);
-        vec3 rshoulderFK = fkToNextPoint(neckFK, right, rshoulderRotation, 0.1f);
-        vec3 larmFK = fkToNextPoint(lshoulderFK, left, larmRotation, 0.2f);
-        vec3 rarmFK = fkToNextPoint(rshoulderFK, right, rarmRotation, 0.2f);
-        vec3 lwristFK = fkToNextPoint(larmFK, left, lwristRotation, 0.2f);
-        vec3 rwristFK = fkToNextPoint(rarmFK, right, rwristRotation, 0.2f);
-        vec3 lhandFK = fkToNextPoint(lwristFK, left, lhandRotation, 0.1f);
-        vec3 rhandFK = fkToNextPoint(rwristFK, right, rhandRotation, 0.1f);
-        vec3 lhipFK = fkToNextPoint(hipcenter, left, lhipRotation, 0.1f);
-        vec3 rhipFK = fkToNextPoint(hipcenter, right, rhipRotation, 0.1f);
-        vec3 lkneeFK = fkToNextPoint(lhipFK, down, lkneeRotation, 0.3f);
-        vec3 rkneeFK = fkToNextPoint(rhipFK, down, rkneeRotation, 0.3f);
-        vec3 lankleFK = fkToNextPoint(lkneeFK, down, lankleRotation, 0.3f);
-        vec3 rankleFK = fkToNextPoint(rkneeFK, down, rankleRotation, 0.3f);
-        vec3 lfootFK = fkToNextPoint(lankleFK, down, lfootRotation, 0.1f);
-        vec3 rfootFK = fkToNextPoint(rankleFK, down, rfootRotation, 0.1f);
-
-        writeFK(neckFK, data, 0 , "neckFK");
-        writeFK(headFK, data, 1 , "headFK");
-        writeFK(lshoulderFK, data, 2 , "lshoulderFK");
-        writeFK(rshoulderFK, data, 3 , "rshoulderFK");
-        writeFK(larmFK, data, 4 , "larmFK");
-        writeFK(rarmFK, data, 5 , "rarmFK");
-        writeFK(lwristFK, data, 6 , "lwristFK");
-        writeFK(rwristFK, data, 7 , "rwristFK");
-        writeFK(lhandFK, data, 8 , "lhandFK");
-        writeFK(rhandFK, data, 9 , "rhandFK");
-        writeFK(lhipFK, data, 10 , "lhipFK");
-        writeFK(rhipFK, data, 11 , "rhipFK");
-        writeFK(lkneeFK, data, 12 , "lkneeFK");
-        writeFK(rkneeFK, data, 13 , "rkneeFK");
-        writeFK(lankleFK, data, 14 , "lankleFK");
-        writeFK(rankleFK, data, 15 , "rankleFK");
-        writeFK(lfootFK, data, 16 , "lfootFK");
-        writeFK(rfootFK, data, 17 , "rfootFK");
+        for(int i = 0; i < jointPointSize; i ++) {
+            writeRotation(jointPoints[i].fkRotation, data, i, jointPoints[i].jointName);
+            writeFK(jointPoints[i].toPointFk, data, i, jointPoints[i].jointName);
+        }
     }
 
     void fitting::writeFK(vec3 const& point, json & data, int index, std::string name) {
