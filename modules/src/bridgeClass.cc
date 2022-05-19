@@ -24,7 +24,7 @@ public:
   int getX() const { return x; }
   void setX(int x_) { x = x_; }
 
-  std::string jsonFunc(const std::string &str) {
+  std::string jsonFunc(std::string input) {
     // auto j = json::parse(R"({"happy": true, "pi": 3.141})");
     // convert string to json
     // json j = json::parse(str);
@@ -34,15 +34,17 @@ public:
     // TODO: process input data
     // fitInstance.process(j);
     flatbuffers::FlatBufferBuilder builder(1024);
-    auto name = builder.CreateString("test");
-    auto testClass = Test::CreateTestC(builder, name);
-    builder.Finish(testClass);
-  
+    // auto name = builder.CreateString("test");
+    // auto testClass = Test::CreateTestC(builder, name);
+    // builder.Finish(testClass);
+    // uint8_t* bufferPointer = reinterpret_cast<uint8_t*>(input);
+    auto testC = Test::GetMutableTestC(&input[0]);
+    // testC->mutate_name(builder.CreateString("test1"));
     // add property to json object
     // j["wasm_bridge_version"] = "0.0.1";
     // convert json to string
     // std::string s = j.dump();
-	  return str;
+	  return testC->name()->str();
   }
 
   static std::string getStringFromInstance(const BridgeClass& instance) {

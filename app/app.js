@@ -99,7 +99,7 @@ var messageLoop = coroutine(function*() {
                 timestamp: Date.now(),
                 version:"0.1.0"
             }
-            console.log(pose["fitting"])
+            // console.log(pose["fitting"])
             delete pose.keypoints
             delete pose.keypoints3D
             pose.timeProfiling.beforeSendTime = Date.now()

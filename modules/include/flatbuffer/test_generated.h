@@ -26,6 +26,9 @@ struct TestC FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *name() const {
     return GetPointer<const flatbuffers::String *>(VT_NAME);
   }
+  flatbuffers::String *mutable_name() {
+    return GetPointer<flatbuffers::String *>(VT_NAME);
+  }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_NAME) &&
@@ -75,6 +78,14 @@ inline const Test::TestC *GetTestC(const void *buf) {
 
 inline const Test::TestC *GetSizePrefixedTestC(const void *buf) {
   return flatbuffers::GetSizePrefixedRoot<Test::TestC>(buf);
+}
+
+inline TestC *GetMutableTestC(void *buf) {
+  return flatbuffers::GetMutableRoot<TestC>(buf);
+}
+
+inline Test::TestC *GetMutableSizePrefixedTestC(void *buf) {
+  return flatbuffers::GetMutableSizePrefixedRoot<Test::TestC>(buf);
 }
 
 inline bool VerifyTestCBuffer(
