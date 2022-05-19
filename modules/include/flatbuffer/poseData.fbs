@@ -1,0 +1,16 @@
+namespace PoseData;
+
+table Pose {
+  keypoints:[Point];
+  keypoints3D:[Point];
+}
+
+table Point {
+  x:float;
+  y:float;
+  z:float;
+  score:float;
+  name:string;
+}
+
+root_type Pose;
