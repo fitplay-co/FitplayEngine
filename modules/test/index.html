@@ -1,0 +1,18 @@
+<script src='https://git.io/glm-js.min.js'></script>
+<script>
+  console.log('loaded glm-js version: ', glm.version);
+  console.log('vec3 example: ', glm.vec3(1,2,3));
+
+  //x y z w
+  orig = glm.quat(0.5, -0.5, 0.5, 0.5)
+  console.log("origin:  x " + orig.x + " y " + orig.y + " z " + orig.z + " w " + orig.w )
+  console.log("origin degree: " + glm.degrees(glm.eulerAngles(orig)))
+
+  q = glm.quat(0.5, -0.5, -0.5, -0.5)
+  console.log("q:  x " + q.x + " y " + q.y + " z " + q.z + " w " + q.w )
+  console.log("q degree: " + glm.degrees(glm.eulerAngles(q)))
+
+  result = orig['*'](q)
+  console.log("result:  x " + result.x + " y " + result.y + " z " + result.z + " w " + result.w )
+  console.log("result degree: " + glm.degrees(glm.eulerAngles(result)))
+</script>
