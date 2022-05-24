@@ -1,3 +1,6 @@
+#ifndef FITPLAY_fitting
+#define FITPLAY_fitting
+
 #include <string>
 #include <vector>
 #include "json.hpp"
@@ -48,7 +51,7 @@ namespace fitplay {
             ~ fitting();
             void addJointPoint(jointPoint& p, std::string name, int parentIndex, float boneLength,  vec3 const& tposeDirection, vec3 const& upward);
             //update joint point in each process, to calculate fk landmark and rotation and do fitting
-            void updateJointPoint(jointPoint& p, vec3 startPoint, vec3 endPoint, json &data);
+            void updateJointPoint(jointPoint& p, vec3 startPoint, vec3 endPoint);
             void process(json& data);
             vec3 vectorFromToPoint(vec3 const & from, vec3 const & to);
             vec3 readLandmarkPointVector(int point,const json& data);
@@ -81,8 +84,8 @@ namespace fitplay {
         // transfer to vec3 for each landmarks
         vec3 up = vec3 (0.0f, 1.0f, 0.0f);
         vec3 down = vec3 (0.0f, -1.0f, 0.0f);
-        vec3 left = vec3 (1.0f, 0.0f, 0.0f);
-        vec3 right = vec3 (-1.0f, 0.0f, 0.0f);  // TODO still dont know why right direction towards here based on experiment
+        vec3 left = vec3 (-1.0f, 0.0f, 0.0f);
+        vec3 right = vec3 (1.0f, 0.0f, 0.0f);  
         vec3 forward = vec3(0.0f, 0.0f, 1.0f);
         vec3 backward = vec3(0.0f, 0.0f, -1.0f);
 
@@ -117,47 +120,63 @@ namespace fitplay {
         p.boneLength = boneLength;
         p.initRotation = lookatRotationSafe(tposeDirection, upward, vec3 (0.0f, 0.0f, 1.0f));
         p.initRotationInverse = inverse(p.initRotation);
+        // parent.initRot * p.defaultRot = p.initRot;
+        // p.defaultRot =  (parent.initRot)-1 * p,
         p.tposeDefaultJointRotation = jointPoints[p.parentIndex].initRotationInverse * p.initRotation;
         p.tposeDefaultJointRotationInverse = inverse(p.tposeDefaultJointRotation);
+        p.alternativeUp = upward;
     }
 
-    void fitting::updateJointPoint(jointPoint& p, vec3 startPoint, vec3 endPoint, json& data) {
+    void fitting::updateJointPoint(jointPoint& p, vec3 startPoint, vec3 endPoint) {
         //first step update start end points 
-        p.fromPoint = startPoint;
-        p.toPoint = endPoint;
+        p.fromPoint = vec3(startPoint[0], -startPoint[1], startPoint[2]);
+        //y should revert to fit unity standard merics
+        p.toPoint = vec3(endPoint[0], -endPoint[1], endPoint[2]);
 
         //calculate pose Direction 3d  node - child as forward vector 
-        p.posDirection3d = vectorFromToPoint(endPoint, startPoint);
+        p.posDirection3d = vectorFromToPoint(p.toPoint, p.fromPoint);
         //here read from parent pose direction 
         vec3& parentPosDirection3d = jointPoints[p.parentIndex].posDirection3d;
         quat& parentFkRotation = jointPoints[p.parentIndex].fkRotation;
 
-        p.fkRotation = lookatRotationSafe(p.posDirection3d, vec3(0.0f, 1.0f, 0.0f) , p.alternativeUp);
+        //???
+        p.fkRotation = glm::quatLookAt(glm::normalize(vec3(1,1,0)), vec3(0,1,0)); //glm::quatLookAtLH(p.posDirection3d, p.alternativeUp);
+        //p.fkRotation = lookatRotationSafe(p.posDirection3d, p.alternativeUp , p.alternativeUp);
 
         //fkRotation = jointLocationRotation *（parent.fkRotation * defatultJointRotation）
         p.jointLocalRotation = inverse(p.tposeDefaultJointRotation * parentFkRotation) * p.fkRotation ;
 
         //calculate fk
         p.fromPointFk = jointPoints[p.parentIndex].toPointFk;
+        //TODO fk calculation
         p.toPointFk = fkToNextPoint(p.fromPointFk, parentPosDirection3d, p.fkRotation, p.boneLength);
+        
+        // data["fitting"][p.jointName]["fromx"] =  p.fromPoint[0];
+        // data["fitting"][p.jointName]["fromy"] =  p.fromPoint[1];
+        // data["fitting"][p.jointName]["fromz"] =  p.fromPoint[2];
+        // data["fitting"][p.jointName]["tox"] =  p.toPoint[0];
+        // data["fitting"][p.jointName]["toy"] =  p.toPoint[1];
+        // data["fitting"][p.jointName]["toz"] =  p.toPoint[2];
         
         // data["fitting"][p.jointName]["fx"] =  p.posDirection3d[0];
         // data["fitting"][p.jointName]["fy"] =  p.posDirection3d[1];
         // data["fitting"][p.jointName]["fz"] =  p.posDirection3d[2];
 
-        // data["fitting"]["rotationdebug"][p.jointName]["px"] =  parentPosDirection3d[0];
-        // data["fitting"]["rotationdebug"][p.jointName]["py"] =  parentPosDirection3d[1];
-        // data["fitting"]["rotationdebug"][p.jointName]["pz"] =  parentPosDirection3d[2];
-
-        debugPrintQuat(p.jointName, "tposeInitRotation", p.initRotation, data);
-        debugPrintQuat(p.jointName, "fkRotation", p.fkRotation, data);
-        debugPrintQuat(p.jointName, "parentfkRotation", parentFkRotation, data);
-        debugPrintQuat(p.jointName, "tposeDefaultJointRotation", p.tposeDefaultJointRotation, data);
-        debugPrintQuat(p.jointName, "jointLocalRotation", p.jointLocalRotation, data);
-        auto a  = quat(0.5, -0.5, -0.5, -0.5);
-        debugPrintQuat(p.jointName, "zzjointLocalRotation", a, data);
-        auto converted =  cross(p.initRotation , a);
-        debugPrintQuat(p.jointName, "zzjointCrossLocalRotation", converted, data);
+        // data["fitting"][p.jointName]["upx"] =  p.alternativeUp[0];
+        // data["fitting"][p.jointName]["upy"] =  p.alternativeUp[1];
+        // data["fitting"][p.jointName]["upz"] =  p.alternativeUp[2];
+        
+        // data["fitting"][p.jointName]["px"] =  parentPosDirection3d[0];
+        // data["fitting"][p.jointName]["py"] =  parentPosDirection3d[1];
+        // data["fitting"][p.jointName]["pz"] =  parentPosDirection3d[2];
+        
+        // debugPrintQuat(p.jointName, "tposeInitRotation", p.initRotation, data);
+        // debugPrintQuat(p.jointName, "tposeDefaultJointRotation", p.tposeDefaultJointRotation, data);
+        // debugPrintQuat(p.jointName, "fkRotation", p.fkRotation, data);
+        // debugPrintQuat(p.jointName, "parentfkRotation", parentFkRotation, data);
+        // debugPrintQuat(p.jointName, "jointLocalRotation", p.jointLocalRotation, data);
+        
+        //test default joint rotation to fk rotation
 
     }
 
@@ -200,29 +219,29 @@ namespace fitplay {
         //calculate rotation in each joints, to generate bones
         //up half human
         // glm::quat neckRotation = glm::rotation(up, vectorFromToPoint(hipcenter, neck));
-        updateJointPoint(jointPoints[0], hipcenter, neck, data);
-        updateJointPoint(jointPoints[1], neck, head, data);
-        updateJointPoint(jointPoints[2], neck, lshoulder, data);
-        updateJointPoint(jointPoints[3], neck, rshoulder, data);
-        updateJointPoint(jointPoints[4], lshoulder, larm, data);
-        updateJointPoint(jointPoints[5], rshoulder, rarm, data);
-        updateJointPoint(jointPoints[6], larm, lwrist, data);
-        updateJointPoint(jointPoints[7], rarm, rwrist, data);
-        updateJointPoint(jointPoints[8], lwrist, lhand, data);
-        updateJointPoint(jointPoints[9], rwrist, rhand, data);
-        updateJointPoint(jointPoints[10], hipcenter, lhip, data);
-        updateJointPoint(jointPoints[11], hipcenter, rhip, data);
-        updateJointPoint(jointPoints[12], lhip, lknee, data);
-        updateJointPoint(jointPoints[13], rhip, rknee, data);
-        updateJointPoint(jointPoints[14], lknee, lankle, data);
-        updateJointPoint(jointPoints[15], rknee, rankle, data);
-        updateJointPoint(jointPoints[16], lankle, lfoot, data);
-        updateJointPoint(jointPoints[17], rankle, rfoot, data);
+        updateJointPoint(jointPoints[0], hipcenter, neck);
+        updateJointPoint(jointPoints[1], neck, head);
+        updateJointPoint(jointPoints[2], neck, lshoulder);
+        updateJointPoint(jointPoints[3], neck, rshoulder);
+        updateJointPoint(jointPoints[4], lshoulder, larm);
+        updateJointPoint(jointPoints[5], rshoulder, rarm);
+        updateJointPoint(jointPoints[6], larm, lwrist);
+        updateJointPoint(jointPoints[7], rarm, rwrist);
+        updateJointPoint(jointPoints[8], lwrist, lhand);
+        updateJointPoint(jointPoints[9], rwrist, rhand);
+        updateJointPoint(jointPoints[10], hipcenter, lhip);
+        updateJointPoint(jointPoints[11], hipcenter, rhip);
+        updateJointPoint(jointPoints[12], lhip, lknee);
+        updateJointPoint(jointPoints[13], rhip, rknee);
+        updateJointPoint(jointPoints[14], lknee, lankle);
+        updateJointPoint(jointPoints[15], rknee, rankle);
+        updateJointPoint(jointPoints[16], lankle, lfoot);
+        updateJointPoint(jointPoints[17], rankle, rfoot);
 
-        // for(int i = 0; i < jointPointSize; i ++) {
-            // writeRotation(jointPoints[i].tposeDefaultJointRotation, data, i, jointPoints[i].jointName);
-            // writeFK(jointPoints[i].toPointFk, data, i, jointPoints[i].jointName);
-        // }
+        for(int i = 0; i < jointPointSize; i ++) {
+            writeRotation(jointPoints[i].jointLocalRotation, data, i, jointPoints[i].jointName);
+            writeFK(jointPoints[i].toPointFk, data, i, jointPoints[i].jointName);
+        }
     }
 
     void fitting::writeFK(vec3 const& point, json & data, int index, std::string name) {
@@ -249,12 +268,13 @@ namespace fitplay {
             return quat(1.0f, 0.0f, 0.0f, 0.0f) ; // glm::quatLookAtLH(direction, alternativeUp);
         }
         else {
-            return glm::quatLookAtLH(direction, up); //glm::quatLookAtLH(direction, up);
+            return glm::quatLookAtLH(direction, up) * rotateFromLookatZtoX; //glm::quatLookAtLH(direction, up);
         }
     }
 
     vec3 fitting::fkToNextPoint(vec3 const & startPoint, vec3 const & boneDirection, quat const & boneRotation, float const & bontLength) {
-        auto direction = glm::rotate(boneRotation, -boneDirection);
+        //toward x direction 
+        auto direction = glm::rotate(boneRotation, vec3(bontLength, 0.0f, 0.0f));
         return vec3(startPoint[0] + direction[0] * bontLength, startPoint[1] + direction[1] * bontLength, startPoint[2] + direction[2] * bontLength);
     }
 
@@ -273,3 +293,5 @@ namespace fitplay {
 
     // }
 }
+
+#endif

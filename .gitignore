@@ -123,3 +123,5 @@ modules/vendor/emscripten
 modules/legacy
 
 
+*/build/*
+modules/test/build/*
