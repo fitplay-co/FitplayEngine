@@ -4,6 +4,7 @@
 #include <vector>
 #include "json.hpp"
 #include "fitting/fitting.hpp"
+#include "flatbuffer/poseData_generated.h"
 #include "flatbuffer/test_generated.h"
 
 // for convenience
@@ -25,6 +26,42 @@ public:
   void setX(int x_) { x = x_; }
 
   std::string jsonFunc(std::string input) {
+
+    // flatbuffers::FlatBufferBuilder build_data;
+    // auto point1 = PoseData::CreatePoint(build_data, 1, 1, 1, 1, build_data.CreateString("nose"));
+    // auto point2 = PoseData::CreatePoint(build_data, 1, 1, 1, 1, build_data.CreateString("arm"));
+    // auto point3 = PoseData::CreatePoint(build_data, 1, 1, 1, 1, build_data.CreateString("leg"));
+    // std::vector<flatbuffers::Offset<PoseData::Point>> nodeVector;
+    // nodeVector.push_back(point1);
+    // nodeVector.push_back(point2);
+    // nodeVector.push_back(point3);
+    // auto keypoint = build_data.CreateVector(nodeVector);
+    // auto keypoint3d = build_data.CreateVector(nodeVector);
+    // auto pose = PoseData::CreatePose(build_data, keypoint, keypoint3d);
+    // build_data.Finish(pose);
+
+    json j;
+    j["test_ver"] = "0.0.1";
+    auto data = PoseData::GetMutablePose(&input[0]);
+    for(int i = 0; i < 33; i = i + 1 ){
+      j["pose_landmark"]["keypoints"][i]["x"] = data->keypoints()->Get(i)->x();
+      j["pose_landmark"]["keypoints"][i]["y"] = data->keypoints()->Get(i)->y();
+      j["pose_landmark"]["keypoints"][i]["z"] = data->keypoints()->Get(i)->z();
+      j["pose_landmark"]["keypoints"][i]["score"] = data->keypoints()->Get(i)->score();
+      j["pose_landmark"]["keypoints"][i]["name"] = data->keypoints()->Get(i)->name()->str();
+      j["pose_landmark"]["keypoints3D"][i]["x"] = data->keypoints3D()->Get(i)->x();
+      j["pose_landmark"]["keypoints3D"][i]["y"] = data->keypoints3D()->Get(i)->y();
+      j["pose_landmark"]["keypoints3D"][i]["z"] = data->keypoints3D()->Get(i)->z();
+      j["pose_landmark"]["keypoints3D"][i]["score"] = data->keypoints3D()->Get(i)->score();
+      j["pose_landmark"]["keypoints3D"][i]["name"] = data->keypoints3D()->Get(i)->name()->str();
+    }
+    fitInstance.process(j);
+    std::string s = j.dump();
+    std::string name = data->keypoints()->Get(1)->name()->str();
+    // float pos_x = data->keypoints()->Get(1)->x();
+    // j["pose_landmark"]["keypoints"][23]["y"] = pos_x;
+    return name;
+
     // auto j = json::parse(R"({"happy": true, "pi": 3.141})");
     // convert string to json
     // json j = json::parse(str);
@@ -33,18 +70,18 @@ public:
     
     // TODO: process input data
     // fitInstance.process(j);
-    flatbuffers::FlatBufferBuilder builder(1024);
+    //flatbuffers::FlatBufferBuilder builder(1024);
     // auto name = builder.CreateString("test");
     // auto testClass = Test::CreateTestC(builder, name);
     // builder.Finish(testClass);
     // uint8_t* bufferPointer = reinterpret_cast<uint8_t*>(input);
-    auto testC = Test::GetMutableTestC(&input[0]);
+    //auto testC = Test::GetMutableTestC(&input[0]);
     // testC->mutate_name(builder.CreateString("test1"));
     // add property to json object
     // j["wasm_bridge_version"] = "0.0.1";
     // convert json to string
     // std::string s = j.dump();
-	  return testC->name()->str();
+	  //return testC->name()->str();
   }
 
   static std::string getStringFromInstance(const BridgeClass& instance) {
