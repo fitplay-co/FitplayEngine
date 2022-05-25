@@ -229,10 +229,31 @@ namespace fitplay {
         landmarkData.neck = vec3((landmarkData.lshoulder[0] 
                 + landmarkData.rshoulder[0])/2.0f, (landmarkData.lshoulder[1] 
                 + landmarkData.rshoulder[1])/2.0f, (landmarkData.lshoulder[2] + landmarkData.rshoulder[2])/2.0f);
-        
+
+        updateLandmarks(landmarkData);
+
+        writeFK(landmarkData.hipcenter, data, 0 , "hipcenter");
+        writeFK(landmarkData.head, data, 1, 'head');
+        writeFK(landmarkData.lshoulder, data, 2,"lshoulder");
+        writeFK(landmarkData.rshoulder, data, 3, "rshoulder");
+        writeFK(landmarkData.larm, data, 4, "larm");
+        writeFK(landmarkData.rarm, data, 5, "rarm");
+        writeFK(landmarkData.lwrist, data, 6, "lwrist");
+        writeFK(landmarkData.rwrist, data, 7, "rwrist");
+        writeFK(landmarkData.lhand, data, 8, "lhand");
+        writeFK(landmarkData.rhand, data, 9, "rhand");
+        writeFK(landmarkData.lhip, data, 10, "lhip");
+        writeFK(landmarkData.rhip, data, 11, "rhip");
+        writeFK(landmarkData.lknee, data, 12, "lknee");
+        writeFK(landmarkData.rknee, data, 13, "rknee");
+        writeFK(landmarkData.lankle, data, 14, "lankle");
+        writeFK(landmarkData.rankle, data, 15, "rankle");
+        writeFK(landmarkData.lfoot, data, 16, "lfoot");
+        writeFK(landmarkData.rfoot, data, 17, "rfoot");
+        writeFK(landmarkData.neck, data, 18, "neck");
+
         for(int i = 0; i < jointPointSize; i ++) {
             writeRotation(jointPoints[i].jointLocalRotation, data, i, jointPoints[i].jointName);
-            writeFK(jointPoints[i].toPointFk, data, i, jointPoints[i].jointName);
         }
     }
     
@@ -349,8 +370,6 @@ namespace fitplay {
 }
 
 #endif
-
-
         // data["fitting"][p.jointName]["fromx"] =  p.fromPoint[0];
         // data["fitting"][p.jointName]["fromy"] =  p.fromPoint[1];
         // data["fitting"][p.jointName]["fromz"] =  p.fromPoint[2];

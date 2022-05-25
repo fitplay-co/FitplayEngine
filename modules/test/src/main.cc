@@ -34,7 +34,11 @@ int main() {
     cout << "starting module testing." << endl;
     testGlmLookat();
     testDefaultTPose(fitInstance);
+
+    //default stand pose testing
     testDefaultStandPose1(fitInstance);
     testDefaultStandPose2(fitInstance);
+    testDefaultStandPose3(fitInstance);
+    testDefaultStandPose4(fitInstance);
 }
 
