@@ -15,6 +15,12 @@ vec3 testright = vec3 (1.0f, 0.0f, 0.0f);
 vec3 testforward = vec3(0.0f, 0.0f, 1.0f);
 vec3 testbackward = vec3(0.0f, 0.0f, -1.0f);
 
+void printVector(vec3 v) {
+    cout << "       x " << v.x 
+    << "       y " << v.y
+    << "       z " << v.z  << endl;
+}
+
 float filterTooSmallFloat(float s) {
     if(s< 0.00001 && s > -0.00001) {
         return 0;
@@ -23,16 +29,16 @@ float filterTooSmallFloat(float s) {
 }
 
 void testPrintQuat(quat q){
-    cout << " x: " << q.x << " y: " << q.y << " z: " << q.z << " w: " << q.w << endl;
+    cout << "    x: " << q.x << " y: " << q.y << " z: " << q.z << " w: " << q.w << endl;
     vec3 rotatedX = q * testright;
     vec3 rotatedY = q * testup;
     vec3 rotatedZ = q * testforward;
     cout << "    - x axis ";
-    cout << " x " << filterTooSmallFloat(rotatedX.x) << " y " << filterTooSmallFloat(rotatedX.y) << " z " << filterTooSmallFloat(rotatedX.z) << endl;
+    cout << "      x " << filterTooSmallFloat(rotatedX.x) << " y " << filterTooSmallFloat(rotatedX.y) << " z " << filterTooSmallFloat(rotatedX.z) << endl;
     cout << "    - y axis ";
-    cout << " x " << filterTooSmallFloat(rotatedY.x) << " y " << filterTooSmallFloat(rotatedY.y) << " z " << filterTooSmallFloat(rotatedY.z)  << endl;
+    cout << "      x " << filterTooSmallFloat(rotatedY.x) << " y " << filterTooSmallFloat(rotatedY.y) << " z " << filterTooSmallFloat(rotatedY.z)  << endl;
     cout << "    - z axis ";
-    cout << " x " << filterTooSmallFloat(rotatedZ.x) << " y " << filterTooSmallFloat(rotatedZ.y) << " z " << filterTooSmallFloat(rotatedZ.z)  << endl;
+    cout << "      x " << filterTooSmallFloat(rotatedZ.x) << " y " << filterTooSmallFloat(rotatedZ.y) << " z " << filterTooSmallFloat(rotatedZ.z)  << endl;
 }
 
 bool testUtilsAssertEqual(vec3 left ,vec3 right) {
@@ -66,7 +72,7 @@ bool testUtilsAssertEqual(quat left ,quat right){
                         filterTooSmallFloat(left.x) - filterTooSmallFloat(right.x) < -0.01 ||
                             filterTooSmallFloat(left.y) - filterTooSmallFloat(right.y) < -0.01 ||
                                 filterTooSmallFloat(left.z) - filterTooSmallFloat(right.z) < -0.01 ||
-                                    filterTooSmallFloat(left.w) - filterTooSmallFloat(right.w) > 0.01 ) {
+                                    filterTooSmallFloat(left.w) - filterTooSmallFloat(right.w) < -0.01 ) {
         cout << " = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = ="  << endl; 
         cout << " = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = ="  << endl; 
         cout << " error occured in test utils equal quat assertion" << endl;
@@ -77,7 +83,7 @@ bool testUtilsAssertEqual(quat left ,quat right){
             << endl;
         cout << " right " << endl;
         cout << " x " << filterTooSmallFloat(right.x) << " y " << filterTooSmallFloat(right.y) << " z " << filterTooSmallFloat(right.z) 
-            << " w " << filterTooSmallFloat(left.w) 
+            << " w " << filterTooSmallFloat(right.w) 
             << endl;
 
         cout << " = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =" << endl; 

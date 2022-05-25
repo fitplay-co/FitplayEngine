@@ -159,21 +159,21 @@ namespace fitplay {
         p.tposeDefaultJointRotation = jointPoints[p.parentIndex].initRotationInverse * p.initRotation;
         p.tposeDefaultJointRotationInverse = inverse(p.tposeDefaultJointRotation);
 
-        p.alternativeUp = upward;
+        p.alternativeUp = fitplay::forward;
     }
 
     void fitting::updateJointPoint(jointPoint& p, vec3 const& startPoint, vec3 const& endPoint, vec3 const& jointForward) {
         //first step update start end points  here change from left hand to right hand landmarks
-        p.fromPoint = vec3(startPoint[0], -startPoint[1], startPoint[2]);
+        p.fromPoint = vec3(startPoint[0], startPoint[1], startPoint[2]);
         //y should revert to fit unity standard merics
-        p.toPoint = vec3(endPoint[0], -endPoint[1], endPoint[2]);
+        p.toPoint = vec3(endPoint[0], endPoint[1], endPoint[2]);
 
         //calculate pose Direction 3d  node - child as forward vector 
         p.posDirection3d = vectorFromToPoint(p.toPoint, p.fromPoint);
         //tpose forward as right eusure right direction poing to forward 
         p.posForward3d = jointForward;
         //add forward axis 0.1 to enforce zero rotation to z axis 
-        p.posLeft3d = crossSafe(p.posDirection3d, jointForward);
+        p.posLeft3d = normalize(crossSafe(p.posDirection3d, jointForward));
         p.fkRotation = lookatRotationSafe(p.posDirection3d, p.posLeft3d, p.alternativeUp);
         //glm::quatLookAtLH(p.posDirection3d, p.alternativeUp);
         //p.fkRotation = lookatRotationSafe(p.posDirection3d, p.alternativeUp , p.alternativeUp);
@@ -233,7 +233,7 @@ namespace fitplay {
         updateLandmarks(landmarkData);
 
         writeFK(landmarkData.hipcenter, data, 0 , "hipcenter");
-        writeFK(landmarkData.head, data, 1, 'head');
+        writeFK(landmarkData.head, data, 1, "head");
         writeFK(landmarkData.lshoulder, data, 2,"lshoulder");
         writeFK(landmarkData.rshoulder, data, 3, "rshoulder");
         writeFK(landmarkData.larm, data, 4, "larm");
@@ -273,9 +273,16 @@ namespace fitplay {
         // add 0.1 forward to affiate default totate to font
         vec3 rshoulderToArmKinamaticForwarding = normalize(landmarkData.rwrist - landmarkData.rarm);
         vec3 lshoulderToArmKinamaticForwarding = normalize(landmarkData.lwrist - landmarkData.larm);
-        // knee forwarding 
-        vec3 rlegToAnkleKinamaticForwarding = normalize(landmarkData.rankle - landmarkData.rknee);
-        vec3 llegToAnkleKinamaticForwarding = normalize(landmarkData.lankle - landmarkData.lknee);
+        vec3 rarmToShoulderKinamaticForwarding = normalize(landmarkData.rshoulder - landmarkData.rarm);
+        vec3 larmToShoulderKinamaticForwarding = normalize(landmarkData.lshoulder - landmarkData.larm);
+
+        // knee forwarding  
+        /** TODO need test */
+        vec3 rlegToAnkleKinamaticForwarding = - normalize(landmarkData.rankle - landmarkData.rknee);
+        vec3 llegToAnkleKinamaticForwarding = - normalize(landmarkData.lankle - landmarkData.lknee);
+        vec3 rankleToLegKinamaticForwarding = - normalize(landmarkData.rhip - landmarkData.rknee);
+        vec3 lAnkleToLegKinamaticForwarding = - normalize(landmarkData.lhip - landmarkData.lknee);
+
         // wrist forwarding 
         vec3 rwristForwarding = fitplay::forward;
         vec3 lwristForwarding = fitplay::forward;
@@ -292,16 +299,16 @@ namespace fitplay {
         updateJointPoint(jointPoints[3], landmarkData.neck, landmarkData.rshoulder, spineTwistingForwarding);
         updateJointPoint(jointPoints[4], landmarkData.lshoulder, landmarkData.larm, lshoulderToArmKinamaticForwarding);
         updateJointPoint(jointPoints[5], landmarkData.rshoulder, landmarkData.rarm, rshoulderToArmKinamaticForwarding);
-        updateJointPoint(jointPoints[6], landmarkData.larm, landmarkData.lwrist, lshoulderToArmKinamaticForwarding);
-        updateJointPoint(jointPoints[7], landmarkData.rarm, landmarkData.rwrist, rshoulderToArmKinamaticForwarding);
+        updateJointPoint(jointPoints[6], landmarkData.larm, landmarkData.lwrist, larmToShoulderKinamaticForwarding);
+        updateJointPoint(jointPoints[7], landmarkData.rarm, landmarkData.rwrist, rarmToShoulderKinamaticForwarding);
         updateJointPoint(jointPoints[8], landmarkData.lwrist, landmarkData.lhand, lwristForwarding);
         updateJointPoint(jointPoints[9], landmarkData.rwrist, landmarkData.rhand, rwristForwarding);
         updateJointPoint(jointPoints[10], landmarkData.hipcenter, landmarkData.lhip, hipRightForwarding);
         updateJointPoint(jointPoints[11],  landmarkData.rhip, landmarkData.hipcenter, hipRightForwarding); // rhip sprcial 
         updateJointPoint(jointPoints[12], landmarkData.lhip, landmarkData.lknee, llegToAnkleKinamaticForwarding);
         updateJointPoint(jointPoints[13], landmarkData.rhip, landmarkData.rknee, rlegToAnkleKinamaticForwarding);
-        updateJointPoint(jointPoints[14], landmarkData.lknee, landmarkData.lankle, llegToAnkleKinamaticForwarding);
-        updateJointPoint(jointPoints[15], landmarkData.rknee, landmarkData.rankle, rlegToAnkleKinamaticForwarding);
+        updateJointPoint(jointPoints[14], landmarkData.lknee, landmarkData.lankle, lAnkleToLegKinamaticForwarding);
+        updateJointPoint(jointPoints[15], landmarkData.rknee, landmarkData.rankle, rankleToLegKinamaticForwarding);
         updateJointPoint(jointPoints[16], landmarkData.lankle, landmarkData.lfoot, lankleForwarding);
         updateJointPoint(jointPoints[17], landmarkData.rankle, landmarkData.rfoot, rankleForwarding);
     }

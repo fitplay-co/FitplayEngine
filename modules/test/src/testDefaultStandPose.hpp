@@ -10,12 +10,6 @@
 using namespace std;
 using namespace glm;
 
-void printVector(vec3 v) {
-    cout << "       x " << v.x 
-    << "       y " << v.y
-    << "       z " << v.z  << endl;
-}
-
 //              y
 //    <---- -x    x  ----->  
 //             -y                      head
@@ -37,8 +31,8 @@ void testDefaultStandPose1(fitplay::fitting fitInstance, bool detailPrint = fals
         
     //emulating landmarks reflecting y from right hand camera axis to left hand unity axis
     landmarkData.hipcenter = vec3(0.0f ,0.0f ,0.0f);
-    landmarkData.neck = landmarkData.hipcenter + (-testup);
-    landmarkData.head = landmarkData.neck + (-testup);
+    landmarkData.neck = landmarkData.hipcenter + (testup);
+    landmarkData.head = landmarkData.neck + (testup);
     landmarkData.lshoulder = landmarkData.neck + testleft;
     landmarkData.rshoulder = landmarkData.neck + testright;
     landmarkData.larm = landmarkData.lshoulder + testleft;
@@ -49,12 +43,12 @@ void testDefaultStandPose1(fitplay::fitting fitInstance, bool detailPrint = fals
     landmarkData.rhand = landmarkData.rwrist + testright;
     landmarkData.lhip = landmarkData.hipcenter + testleft;
     landmarkData.rhip = landmarkData.hipcenter + testright;
-    landmarkData.lknee = landmarkData.lhip + (-testdown);
-    landmarkData.rknee = landmarkData.rhip + (-testdown);
-    landmarkData.lankle = landmarkData.lknee + (-testdown);
-    landmarkData.rankle = landmarkData.rknee + (-testdown);
-    landmarkData.lfoot = landmarkData.lankle + (-testdown);
-    landmarkData.rfoot = landmarkData.rankle + (-testdown);
+    landmarkData.lknee = landmarkData.lhip + (testdown);
+    landmarkData.rknee = landmarkData.rhip + (testdown);
+    landmarkData.lankle = landmarkData.lknee + (testdown);
+    landmarkData.rankle = landmarkData.rknee + (testdown);
+    landmarkData.lfoot = landmarkData.lankle + (testdown);
+    landmarkData.rfoot = landmarkData.rankle + (testdown);
 
     fitInstance.updateLandmarks(landmarkData);
     //check fk rotation 
@@ -108,6 +102,14 @@ void testDefaultStandPose1(fitplay::fitting fitInstance, bool detailPrint = fals
                 << "       x " << fitInstance.jointPoints[i].posDirection3d.x 
                 << "       y " << fitInstance.jointPoints[i].posDirection3d.y
                 << "       z " << fitInstance.jointPoints[i].posDirection3d.z  << endl;
+            cout << "    -  jointForward -  " 
+                << "       x " << fitInstance.jointPoints[i].posForward3d.x
+                << "       y " << fitInstance.jointPoints[i].posForward3d.y
+                << "       z " << fitInstance.jointPoints[i].posForward3d.z  << endl;
+            cout << "    -  jointLeft -     " 
+                << "       x " << fitInstance.jointPoints[i].posLeft3d.x 
+                << "       y " << fitInstance.jointPoints[i].posLeft3d.y
+                << "       z " << fitInstance.jointPoints[i].posLeft3d.z  << endl;
             cout << "    -  fromPoint -     " 
                 << "       x " << fitInstance.jointPoints[i].fromPoint.x 
                 << "       y " << fitInstance.jointPoints[i].fromPoint.y
@@ -154,24 +156,24 @@ void testDefaultStandPose2(fitplay::fitting fitInstance, bool detailPrint = fals
         
     //emulating landmarks reflecting y from right hand camera axis to left hand unity axis
     landmarkData.hipcenter = vec3(0.0f ,0.0f ,0.0f);
-    landmarkData.neck = landmarkData.hipcenter + (-testup);
-    landmarkData.head = landmarkData.neck + (-testup);
+    landmarkData.neck = landmarkData.hipcenter + (testup);
+    landmarkData.head = landmarkData.neck + (testup);
     landmarkData.lshoulder = landmarkData.neck + testleft;
     landmarkData.rshoulder = landmarkData.neck + testright;
     landmarkData.larm = landmarkData.lshoulder + testleft;
     landmarkData.rarm = landmarkData.rshoulder + testright;
-    landmarkData.lwrist = landmarkData.larm + (-testdown);
+    landmarkData.lwrist = landmarkData.larm + (testdown);
     landmarkData.rwrist = landmarkData.rarm + testright;
-    landmarkData.lhand = landmarkData.lwrist + (-testdown);
+    landmarkData.lhand = landmarkData.lwrist + (testdown);
     landmarkData.rhand = landmarkData.rwrist + testright;
     landmarkData.lhip = landmarkData.hipcenter + testleft;
     landmarkData.rhip = landmarkData.hipcenter + testright;
-    landmarkData.lknee = landmarkData.lhip + (-testdown);
-    landmarkData.rknee = landmarkData.rhip + (-testdown);
-    landmarkData.lankle = landmarkData.lknee + (-testdown);
-    landmarkData.rankle = landmarkData.rknee + (-testdown);
-    landmarkData.lfoot = landmarkData.lankle + (-testdown);
-    landmarkData.rfoot = landmarkData.rankle + (-testdown);
+    landmarkData.lknee = landmarkData.lhip + (testdown);
+    landmarkData.rknee = landmarkData.rhip + (testdown);
+    landmarkData.lankle = landmarkData.lknee + (testdown);
+    landmarkData.rankle = landmarkData.rknee + (testdown);
+    landmarkData.lfoot = landmarkData.lankle + (testdown);
+    landmarkData.rfoot = landmarkData.rankle + (testdown);
 
     fitInstance.updateLandmarks(landmarkData);
     //check fk rotation 
@@ -212,9 +214,11 @@ void testDefaultStandPose2(fitplay::fitting fitInstance, bool detailPrint = fals
         //assert all local rotation identity
         bool correct = false;
         if (name == "luparm") {
-            correct = testUtilsAssertEqual(fitInstance.jointPoints[i].jointLocalRotation, quat(0.707107, -0.707107, 0, 0));    // unity  [ x: -90, y: 0, z: 0 ]
+            correct = testUtilsAssertEqual(fitInstance.jointPoints[i].jointLocalRotation, quat(-0.707107, -0.707107, 0, 0));    // unity  [ x: 90, y: 0, z: 0 ]
         } else if (name == "llowarm") {
-            correct = testUtilsAssertEqual(fitInstance.jointPoints[i].jointLocalRotation, quat(-0.5, -0.5, -0.5, -0.5));   // unity [ x: 0, y: 90, z: 90 ]
+            correct = testUtilsAssertEqual(fitInstance.jointPoints[i].jointLocalRotation, quat(0.707107, 0, 0, -0.707107));   // unity [ x: 0, y: 0, z: -90 ]
+        } else if (name == "lhand") {
+            correct = testUtilsAssertEqual(fitInstance.jointPoints[i].jointLocalRotation, quat(0.707107, -0.707107, 0, 0));   // unity [ x:-90, y: 0, z: 0 ]
         } else {
             correct = testUtilsAssertEqual(fitInstance.jointPoints[i].jointLocalRotation, quat(1, 0, 0, 0));   
         }
@@ -227,6 +231,14 @@ void testDefaultStandPose2(fitplay::fitting fitInstance, bool detailPrint = fals
                 << "       x " << fitInstance.jointPoints[i].posDirection3d.x 
                 << "       y " << fitInstance.jointPoints[i].posDirection3d.y
                 << "       z " << fitInstance.jointPoints[i].posDirection3d.z  << endl;
+            cout << "    -  jointForward -  " 
+                << "       x " << fitInstance.jointPoints[i].posForward3d.x
+                << "       y " << fitInstance.jointPoints[i].posForward3d.y
+                << "       z " << fitInstance.jointPoints[i].posForward3d.z  << endl;
+            cout << "    -  jointLeft -     " 
+                << "       x " << fitInstance.jointPoints[i].posLeft3d.x 
+                << "       y " << fitInstance.jointPoints[i].posLeft3d.y
+                << "       z " << fitInstance.jointPoints[i].posLeft3d.z  << endl;
             cout << "    -  alternativeUp - " 
                 << "       x " << fitInstance.jointPoints[i].alternativeUp.x 
                 << "       y " << fitInstance.jointPoints[i].alternativeUp.y
@@ -277,24 +289,24 @@ void testDefaultStandPose3(fitplay::fitting fitInstance, bool detailPrint = fals
         
     //emulating landmarks reflecting y from right hand camera axis to left hand unity axis
     landmarkData.hipcenter = vec3(0.0f ,0.0f ,0.0f);
-    landmarkData.neck = landmarkData.hipcenter + (-testup);
-    landmarkData.head = landmarkData.neck + (-testup);
+    landmarkData.neck = landmarkData.hipcenter + (testup);
+    landmarkData.head = landmarkData.neck + (testup);
     landmarkData.lshoulder = landmarkData.neck + testleft;
     landmarkData.rshoulder = landmarkData.neck + testright;
     landmarkData.larm = landmarkData.lshoulder + testleft;
-    landmarkData.rarm = landmarkData.rshoulder +  (-testdown);
-    landmarkData.lwrist = landmarkData.larm + (-testdown);
-    landmarkData.rwrist = landmarkData.rarm +  (-testdown);
-    landmarkData.lhand = landmarkData.lwrist + (-testdown);
-    landmarkData.rhand = landmarkData.rwrist +  (-testdown);
+    landmarkData.rarm = landmarkData.rshoulder +  (testdown);
+    landmarkData.lwrist = landmarkData.larm + (testdown);
+    landmarkData.rwrist = landmarkData.rarm +  (testdown);
+    landmarkData.lhand = landmarkData.lwrist + (testdown);
+    landmarkData.rhand = landmarkData.rwrist +  (testdown);
     landmarkData.lhip = landmarkData.hipcenter + testleft;
     landmarkData.rhip = landmarkData.hipcenter + testright;
-    landmarkData.lknee = landmarkData.lhip + (-testdown);
-    landmarkData.rknee = landmarkData.rhip + (-testdown);
-    landmarkData.lankle = landmarkData.lknee + (-testdown);
-    landmarkData.rankle = landmarkData.rknee + (-testdown);
-    landmarkData.lfoot = landmarkData.lankle + (-testdown);
-    landmarkData.rfoot = landmarkData.rankle + (-testdown);
+    landmarkData.lknee = landmarkData.lhip + (testdown);
+    landmarkData.rknee = landmarkData.rhip + (testdown);
+    landmarkData.lankle = landmarkData.lknee + (testdown);
+    landmarkData.rankle = landmarkData.rknee + (testdown);
+    landmarkData.lfoot = landmarkData.lankle + (testdown);
+    landmarkData.rfoot = landmarkData.rankle + (testdown);
 
     fitInstance.updateLandmarks(landmarkData);
     //check fk rotation 
@@ -314,6 +326,10 @@ void testDefaultStandPose3(fitplay::fitting fitInstance, bool detailPrint = fals
                 << "       x " << fitInstance.jointPoints[i].fromPoint.x 
                 << "       y " << fitInstance.jointPoints[i].fromPoint.y
                 << "       z " << fitInstance.jointPoints[i].fromPoint.z  << endl;
+            cout << "    -  jointForward -  " 
+                << "       x " << fitInstance.jointPoints[i].posForward3d.x
+                << "       y " << fitInstance.jointPoints[i].posForward3d.y
+                << "       z " << fitInstance.jointPoints[i].posForward3d.z  << endl;
             cout << "    -  toPoint -       " 
                 << "       x " << fitInstance.jointPoints[i].toPoint.x 
                 << "       y " << fitInstance.jointPoints[i].toPoint.y
@@ -335,9 +351,11 @@ void testDefaultStandPose3(fitplay::fitting fitInstance, bool detailPrint = fals
         //assert all local rotation identity
         bool correct = false;
         if (name == "luparm") {
-            correct = testUtilsAssertEqual(fitInstance.jointPoints[i].jointLocalRotation, quat(0.707107, -0.707107, 0, 0));    // unity  [ x: -90, y: 0, z: 0 ]
+            correct = testUtilsAssertEqual(fitInstance.jointPoints[i].jointLocalRotation, quat(-0.707107, -0.707107, 0, 0));    // unity  [ x: 90, y: 0, z: 0 ]
         } else if (name == "llowarm") {
-            correct = testUtilsAssertEqual(fitInstance.jointPoints[i].jointLocalRotation, quat(-0.5, -0.5, -0.5, -0.5));   // unity [ x: 0, y: 90, z: 90 ]
+            correct = testUtilsAssertEqual(fitInstance.jointPoints[i].jointLocalRotation, quat(0.707107, 0, 0, -0.707107));   // unity [ x: 0, y: 0, z: -90 ]
+        } else if (name == "lhand") {
+            correct = testUtilsAssertEqual(fitInstance.jointPoints[i].jointLocalRotation, quat(0.707107, -0.707107, 0, 0));   // unity [ x:-90, y: 0, z: 0 ]
         } else if (name == "ruparm") {
             correct = testUtilsAssertEqual(fitInstance.jointPoints[i].jointLocalRotation, quat(0.707107, 0, -0.707107, 0));   // unity [ x: 0, y: -90, z: 0 ]
         } else {
@@ -403,24 +421,24 @@ void testDefaultStandPose4(fitplay::fitting fitInstance, bool detailPrint = fals
         
     //emulating landmarks reflecting y from right hand camera axis to left hand unity axis
     landmarkData.hipcenter = vec3(0.0f ,0.0f ,0.0f);
-    landmarkData.neck = landmarkData.hipcenter + (-testup);
-    landmarkData.head = landmarkData.neck + (-testup);
+    landmarkData.neck = landmarkData.hipcenter + (testup);
+    landmarkData.head = landmarkData.neck + (testup);
     landmarkData.lshoulder = landmarkData.neck + testleft;
     landmarkData.rshoulder = landmarkData.neck + testright;
     landmarkData.larm = landmarkData.lshoulder + testleft;
     landmarkData.rarm = landmarkData.rshoulder + testright;
-    landmarkData.lwrist = landmarkData.larm + (-testdown) + testleft;
+    landmarkData.lwrist = landmarkData.larm + (testdown) + testleft;
     landmarkData.rwrist = landmarkData.rarm + testright;
-    landmarkData.lhand = landmarkData.lwrist + (-testdown) + testright;
+    landmarkData.lhand = landmarkData.lwrist + (testdown) + testright;
     landmarkData.rhand = landmarkData.rwrist + testright;
     landmarkData.lhip = landmarkData.hipcenter + testleft;
     landmarkData.rhip = landmarkData.hipcenter + testright;
-    landmarkData.lknee = landmarkData.lhip + (-testdown);
-    landmarkData.rknee = landmarkData.rhip + (-testdown);
-    landmarkData.lankle = landmarkData.lknee + (-testdown);
-    landmarkData.rankle = landmarkData.rknee + (-testdown);
-    landmarkData.lfoot = landmarkData.lankle + (-testdown);
-    landmarkData.rfoot = landmarkData.rankle + (-testdown);
+    landmarkData.lknee = landmarkData.lhip + (testdown);
+    landmarkData.rknee = landmarkData.rhip + (testdown);
+    landmarkData.lankle = landmarkData.lknee + (testdown);
+    landmarkData.rankle = landmarkData.rknee + (testdown);
+    landmarkData.lfoot = landmarkData.lankle + (testdown);
+    landmarkData.rfoot = landmarkData.rankle + (testdown);
 
     fitInstance.updateLandmarks(landmarkData);
     //check fk rotation 
@@ -461,11 +479,11 @@ void testDefaultStandPose4(fitplay::fitting fitInstance, bool detailPrint = fals
         //assert all local rotation identity
         bool correct = false;
         if (name == "luparm") {
-            correct = testUtilsAssertEqual(fitInstance.jointPoints[i].jointLocalRotation, quat(0.707107, -0.707107, 0, 0));    // unity  [ x: -90, y: 0, z: 0 ]
+            correct = testUtilsAssertEqual(fitInstance.jointPoints[i].jointLocalRotation, quat(-0.707107, -0.707107, 0, 0));    // unity  [ x: 90, y: 0, z: 0 ]
         } else if (name == "llowarm") {
-            correct = testUtilsAssertEqual(fitInstance.jointPoints[i].jointLocalRotation, quat(0.92388, 0, 0, 0.382683));   // unity [ x: 0, y: 0, z: 44.9999314 ]
-        } else if (name == "llowarm") {
-            correct = testUtilsAssertEqual(fitInstance.jointPoints[i].jointLocalRotation, quat(-0.5, -0.5, -0.5, -0.5));  // unity [ x: 0, y: 90, z: 90 ]
+            correct = testUtilsAssertEqual(fitInstance.jointPoints[i].jointLocalRotation, quat(0.92388, 0, 0, -0.382683));   // unity [ x: 0, y: 0, z: -44.9999314 ]
+        } else if (name == "lhand") {
+            correct = testUtilsAssertEqual(fitInstance.jointPoints[i].jointLocalRotation, quat(0.5, -0.5, 0.5, -0.5));  // unity [ x: 0, y: 90, z: -90 ]
         } else {
             correct = testUtilsAssertEqual(fitInstance.jointPoints[i].jointLocalRotation, quat(1, 0, 0, 0));   
         }
@@ -482,6 +500,14 @@ void testDefaultStandPose4(fitplay::fitting fitInstance, bool detailPrint = fals
                 << "       x " << fitInstance.jointPoints[i].alternativeUp.x 
                 << "       y " << fitInstance.jointPoints[i].alternativeUp.y
                 << "       z " << fitInstance.jointPoints[i].alternativeUp.z  << endl;
+            cout << "    -  jointLeft -     " 
+                << "       x " << fitInstance.jointPoints[i].posLeft3d.x 
+                << "       y " << fitInstance.jointPoints[i].posLeft3d.y
+                << "       z " << fitInstance.jointPoints[i].posLeft3d.z  << endl;
+            cout << "    -  jointForward -  " 
+                << "       x " << fitInstance.jointPoints[i].posForward3d.x
+                << "       y " << fitInstance.jointPoints[i].posForward3d.y
+                << "       z " << fitInstance.jointPoints[i].posForward3d.z  << endl;
             cout << "    -  fromPoint -     " 
                 << "       x " << fitInstance.jointPoints[i].fromPoint.x 
                 << "       y " << fitInstance.jointPoints[i].fromPoint.y

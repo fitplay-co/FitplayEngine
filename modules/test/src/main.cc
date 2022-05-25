@@ -9,6 +9,7 @@
 #include "testGlm.hpp"
 #include "testDefaultTPose.hpp"
 #include "testDefaultStandPose.hpp"
+#include "testCapturedStandPose.hpp"
 
 using namespace std;
 using namespace glm;
@@ -40,5 +41,8 @@ int main() {
     testDefaultStandPose2(fitInstance);
     testDefaultStandPose3(fitInstance);
     testDefaultStandPose4(fitInstance);
+
+    //test on a captured pose
+    testCapturedStandPose(fitInstance , true);
 }
 
