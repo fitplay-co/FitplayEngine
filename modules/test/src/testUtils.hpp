@@ -35,7 +35,7 @@ void testPrintQuat(quat q){
     cout << " x " << filterTooSmallFloat(rotatedZ.x) << " y " << filterTooSmallFloat(rotatedZ.y) << " z " << filterTooSmallFloat(rotatedZ.z)  << endl;
 }
 
-void testUtilsAssertEqual(vec3 left ,vec3 right){
+bool testUtilsAssertEqual(vec3 left ,vec3 right) {
     if(filterTooSmallFloat(left.x) - filterTooSmallFloat(right.x) > 0.01 ||
             filterTooSmallFloat(left.y) - filterTooSmallFloat(right.y) > 0.01|| 
                 filterTooSmallFloat(left.z) - filterTooSmallFloat(right.z) > 0.01 || 
@@ -53,10 +53,12 @@ void testUtilsAssertEqual(vec3 left ,vec3 right){
 
         cout << " = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =" << endl; 
         cout << " = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =" << endl; 
+        return false;
     }
+    return true;
 }
 
-void testUtilsAssertEqual(quat left ,quat right){
+bool testUtilsAssertEqual(quat left ,quat right){
     if(filterTooSmallFloat(left.x) - filterTooSmallFloat(right.x) > 0.01 ||
             filterTooSmallFloat(left.y) - filterTooSmallFloat(right.y) > 0.01|| 
                 filterTooSmallFloat(left.z) - filterTooSmallFloat(right.z) > 0.01 || 
@@ -80,6 +82,8 @@ void testUtilsAssertEqual(quat left ,quat right){
 
         cout << " = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =" << endl; 
         cout << " = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =" << endl; 
+        return false;
     }
+    return true;
 }
 #endif

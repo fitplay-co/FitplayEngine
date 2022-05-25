@@ -12,8 +12,13 @@ using namespace glm;
 
 ///https://www.andre-gaschler.com/rotationconverter/ 
 // using eular Y Z X
-void testGlmLookat(){
+void testGlmLookat(bool detailPrint = false){
     cout << "starting glm lookat testing." << 1 << endl ;
+
+    if(!detailPrint) {
+        cout << "skip glm lookat testing." << 1 << endl ;
+        return;
+    }
 
     cout << "___________________________________________________" << endl;
 

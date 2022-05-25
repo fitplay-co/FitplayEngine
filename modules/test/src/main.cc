@@ -8,6 +8,7 @@
 //test cases
 #include "testGlm.hpp"
 #include "testDefaultTPose.hpp"
+#include "testDefaultStandPose.hpp"
 
 using namespace std;
 using namespace glm;
@@ -31,7 +32,9 @@ fitplay::fitting fitInstance;
 
 int main() {
     cout << "starting module testing." << endl;
-    //testGlmLookat();
-    //testDefaultTPose(fitInstance);
+    testGlmLookat();
+    testDefaultTPose(fitInstance);
+    testDefaultStandPose1(fitInstance);
+    testDefaultStandPose2(fitInstance);
 }
 
