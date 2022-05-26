@@ -253,7 +253,7 @@ namespace fitplay {
         writeFK(landmarkData.neck, data, 18, "neck");
 
         for(int i = 0; i < jointPointSize; i ++) {
-            writeRotation(jointPoints[i].jointLocalRotation, data, i, jointPoints[i].jointName);
+            writeRotation(jointPoints[i].fkRotation, data, i, jointPoints[i].jointName);
         }
     }
     
@@ -366,7 +366,7 @@ namespace fitplay {
 
     vec3 fitting::readLandmarkPointVector(int point,const json& data) {
         float xStart = data["keypoints3D"][point]["x"];
-        float yStart = data["keypoints3D"][point]["y"];
+        float yStart = (0.0f - float(data["keypoints3D"][point]["y"]));
         float zStart = data["keypoints3D"][point]["z"];
         return vec3(xStart, yStart, zStart);
     }

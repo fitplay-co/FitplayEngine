@@ -68,7 +68,7 @@ void testCapturedStandPose(fitplay::fitting fitInstance, bool detailPrint = fals
                 << "       z " << fitInstance.jointPoints[i].toPoint.z  << endl;
             cout << "    -  fkrotation -    " << endl;
             testPrintQuat(fkRotation);
-            
+            cout << "    - unity - new Quaternion( " << fkRotation.x << ", " <<  fkRotation.y << ", " <<  fkRotation.z << ", " <<  fkRotation.w << ");" << endl;
             cout << "    -  globalRotation - " << endl;
             quat globalRotation = fitInstance.jointPoints[i].jointGlobalRotation;
             testPrintQuat(globalRotation);
