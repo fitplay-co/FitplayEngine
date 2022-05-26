@@ -134,8 +134,8 @@ namespace fitplay {
         addJointPoint(jointPoints[7], "rlowarm", 5, 0.2f, left);
         addJointPoint(jointPoints[8], "lhand", 6, 0.1f, right);
         addJointPoint(jointPoints[9], "rhand", 7, 0.1f, left);
-        addJointPoint(jointPoints[10], "lhip", 18, 0.1f, right);
-        addJointPoint(jointPoints[11], "rhip", 18, 0.1f, right);
+        addJointPoint(jointPoints[10], "lhip", 18, 0.1f, down);
+        addJointPoint(jointPoints[11], "rhip", 18, 0.1f, down);
         addJointPoint(jointPoints[12], "lupleg", 10, 0.3, up);
         addJointPoint(jointPoints[13], "rupleg", 11, 0.3f, up);
         addJointPoint(jointPoints[14], "llowleg", 12, 0.3f, up);
@@ -303,8 +303,8 @@ namespace fitplay {
         updateJointPoint(jointPoints[7], landmarkData.rarm, landmarkData.rwrist, rarmToShoulderKinamaticForwarding);
         updateJointPoint(jointPoints[8], landmarkData.lwrist, landmarkData.lhand, lwristForwarding);
         updateJointPoint(jointPoints[9], landmarkData.rwrist, landmarkData.rhand, rwristForwarding);
-        updateJointPoint(jointPoints[10], landmarkData.hipcenter, landmarkData.lhip, hipRightForwarding);
-        updateJointPoint(jointPoints[11],  landmarkData.rhip, landmarkData.hipcenter, hipRightForwarding); // rhip sprcial 
+        updateJointPoint(jointPoints[10], fitplay::down, landmarkData.hipcenter, hipRightForwarding);
+        updateJointPoint(jointPoints[11], fitplay::down, landmarkData.hipcenter, hipRightForwarding); // rhip sprcial 
         updateJointPoint(jointPoints[12], landmarkData.lhip, landmarkData.lknee, llegToAnkleKinamaticForwarding);
         updateJointPoint(jointPoints[13], landmarkData.rhip, landmarkData.rknee, rlegToAnkleKinamaticForwarding);
         updateJointPoint(jointPoints[14], landmarkData.lknee, landmarkData.lankle, lAnkleToLegKinamaticForwarding);
