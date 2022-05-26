@@ -27,7 +27,7 @@ var messageBuffer = {
                 this.messageBufferMap.get(messageType).shift()
             }
             this.messageBufferMap.get(messageType).push({'message': message, 'webSocket': webSocket})
-            console.log('add new message:'+message.type+"|"+this.messageBufferMap.get(messageType).length)
+            // console.log('add new message:'+message.type+"|"+this.messageBufferMap.get(messageType).length)
         }
     },
 
