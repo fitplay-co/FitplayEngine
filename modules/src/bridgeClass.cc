@@ -1,5 +1,6 @@
 #include <emscripten.h>
 #include <emscripten/bind.h>
+#include <emscripten/val.h>
 #include <string>
 #include <vector>
 #include "json.hpp"
@@ -25,42 +26,50 @@ public:
   int getX() const { return x; }
   void setX(int x_) { x = x_; }
 
-  std::string jsonFunc(std::string input) {
-
-    // flatbuffers::FlatBufferBuilder build_data;
-    // auto point1 = PoseData::CreatePoint(build_data, 1, 1, 1, 1, build_data.CreateString("nose"));
-    // auto point2 = PoseData::CreatePoint(build_data, 1, 1, 1, 1, build_data.CreateString("arm"));
-    // auto point3 = PoseData::CreatePoint(build_data, 1, 1, 1, 1, build_data.CreateString("leg"));
-    // std::vector<flatbuffers::Offset<PoseData::Point>> nodeVector;
-    // nodeVector.push_back(point1);
-    // nodeVector.push_back(point2);
-    // nodeVector.push_back(point3);
-    // auto keypoint = build_data.CreateVector(nodeVector);
-    // auto keypoint3d = build_data.CreateVector(nodeVector);
-    // auto pose = PoseData::CreatePose(build_data, keypoint, keypoint3d);
-    // build_data.Finish(pose);
+  val jsonFunc(std::string input) {
 
     json j;
     j["test_ver"] = "0.0.1";
     auto data = PoseData::GetMutablePose(&input[0]);
-    for(int i = 0; i < 33; i = i + 1 ){
-      j["pose_landmark"]["keypoints"][i]["x"] = data->keypoints()->Get(i)->x();
-      j["pose_landmark"]["keypoints"][i]["y"] = data->keypoints()->Get(i)->y();
-      j["pose_landmark"]["keypoints"][i]["z"] = data->keypoints()->Get(i)->z();
-      j["pose_landmark"]["keypoints"][i]["score"] = data->keypoints()->Get(i)->score();
-      j["pose_landmark"]["keypoints"][i]["name"] = data->keypoints()->Get(i)->name()->str();
-      j["pose_landmark"]["keypoints3D"][i]["x"] = data->keypoints3D()->Get(i)->x();
-      j["pose_landmark"]["keypoints3D"][i]["y"] = data->keypoints3D()->Get(i)->y();
-      j["pose_landmark"]["keypoints3D"][i]["z"] = data->keypoints3D()->Get(i)->z();
-      j["pose_landmark"]["keypoints3D"][i]["score"] = data->keypoints3D()->Get(i)->score();
-      j["pose_landmark"]["keypoints3D"][i]["name"] = data->keypoints3D()->Get(i)->name()->str();
+    for(int i = 0; i < 33; i++ ){
+      j["keypoints"][i]["x"] = data->keypoints()->Get(i)->x();
+      j["keypoints"][i]["y"] = data->keypoints()->Get(i)->y();
+      j["keypoints"][i]["z"] = data->keypoints()->Get(i)->z();
+      j["keypoints"][i]["score"] = data->keypoints()->Get(i)->score();
+      j["keypoints"][i]["name"] = data->keypoints()->Get(i)->name()->str();
+      j["keypoints3D"][i]["x"] = data->keypoints3D()->Get(i)->x();
+      j["keypoints3D"][i]["y"] = data->keypoints3D()->Get(i)->y();
+      j["keypoints3D"][i]["z"] = data->keypoints3D()->Get(i)->z();
+      j["keypoints3D"][i]["score"] = data->keypoints3D()->Get(i)->score();
+      j["keypoints3D"][i]["name"] = data->keypoints3D()->Get(i)->name()->str();
     }
     fitInstance.process(j);
     std::string s = j.dump();
-    std::string name = data->keypoints()->Get(1)->name()->str();
-    // float pos_x = data->keypoints()->Get(1)->x();
-    // j["pose_landmark"]["keypoints"][23]["y"] = pos_x;
-    return name;
+
+    flatbuffers::FlatBufferBuilder build_data(1024);
+    auto point1 = PoseData::CreatePoint(build_data, 1, 1, 1, 1, build_data.CreateString("nose"));
+    auto point2 = PoseData::CreatePoint(build_data, 1, 1, 1, 1, build_data.CreateString("arm"));
+    auto point3 = PoseData::CreatePoint(build_data, 1, 1, 1, 1, build_data.CreateString("leg"));
+    std::vector<flatbuffers::Offset<PoseData::Point>> nodeVector;
+    nodeVector.push_back(point1);
+    nodeVector.push_back(point2);
+    nodeVector.push_back(point3);
+    auto keypoint = build_data.CreateVector(nodeVector);
+    auto keypoint3d = build_data.CreateVector(nodeVector);
+    auto pose = PoseData::CreatePose(build_data, keypoint, keypoint3d);
+    build_data.Finish(pose);
+    // auto test = PoseData::GetPose(build_data.GetBufferPointer());
+    // std::string res = test->keypoints3D()->Get(1)->name()->str();
+    // return res;
+    uint8_t *byteBuffer = build_data.GetBufferPointer();
+    size_t bufferLength = build_data.GetSize();
+    // return reinterpret_cast<char*>(build_data.GetBufferPointer());
+    // return reinterpret_cast<uint8_t*>(build_data.GetBufferPointer());
+    // flatbuffers::SaveFile("pose.bin", reinterpret_cast<char*>(build_data.GetBufferPointer()), build_data.GetSize(), true);
+    return val(typed_memory_view(bufferLength, byteBuffer));
+    //flatbuffers::SaveFile("layer.bin", reinterpret_cast<char*>(build_data.GetBufferPointer()), build_data.GetSize(), true);
+    //return reinterpret_cast<char*>(build_data.GetBufferPointer());
+    // return s;
 
     // auto j = json::parse(R"({"happy": true, "pi": 3.141})");
     // convert string to json
@@ -98,7 +107,7 @@ private:
 EMSCRIPTEN_BINDINGS(my_class_example) {
   class_<BridgeClass>("BridgeClass")
     .constructor<int, std::string>()
-    .function("jsonFunc", &BridgeClass::jsonFunc)
+    .function("jsonFunc", &BridgeClass::jsonFunc, allow_raw_pointers())
     .property("x", &BridgeClass::getX, &BridgeClass::setX)
     .class_function("getStringFromInstance", &BridgeClass::getStringFromInstance)
     ;
