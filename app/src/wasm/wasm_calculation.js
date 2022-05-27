@@ -53,13 +53,64 @@ var wasm_processor = {
         var result = this.instance.jsonFunc(builder.asUint8Array())
         console.log(result)
         var data = new Uint8Array(result)
+        // console.log("result length:"+result.length)
+        // for (let i = 0; i < result.length; i++) {
+        //     data[i] = result.charAt(i)
+        // }
         var buf = new flatbuffers.ByteBuffer(data)
         var temp = Pose.getRootAsPose(buf)
-        var temp2 = temp.keypoints3DLength
+        // var temp2 = temp.keypoints3DLength
         console.log(temp.keypoints3D(1).x())
+        this.instance.release()
+
         // result = JSON.parse(this.instance.jsonFunc(JSON.stringify(pose)))
         // pose.fitting = result.fitting
         //console.log(this.instance.jsonFunc(jsonstr))
+
+        // builder = new flatbuffers.Builder(1024)
+        // keyPoints = new Array(3)
+        // var name = builder.createString('nose')
+        // Point.startPoint(builder)
+        // Point.addX(builder, 1)
+        // Point.addY(builder, 1)
+        // Point.addZ(builder, 1)
+        // Point.addScore(builder, 1)
+        // Point.addName(builder,name)
+        // var point = Point.endPoint(builder)
+        // //console.log(point)
+        // keyPoints[0] = point
+
+        // name = builder.createString('arm')
+        // Point.startPoint(builder)
+        // Point.addX(builder, 1)
+        // Point.addY(builder, 1)
+        // Point.addZ(builder, 1)
+        // Point.addScore(builder, 1)
+        // Point.addName(builder,name)
+        // point = Point.endPoint(builder)
+        // //console.log(point)
+        // keyPoints[1] = point
+
+        // name = builder.createString('leg')
+        // Point.startPoint(builder)
+        // Point.addX(builder, 1)
+        // Point.addY(builder, 1)
+        // Point.addZ(builder, 1)
+        // Point.addScore(builder, 1)
+        // Point.addName(builder,name)
+        // point = Point.endPoint(builder)
+        // //console.log(point)
+        // keyPoints[2] = point
+
+        // KeyPoints = Pose.createKeypointsVector(builder,keyPoints)
+        // //console.log(KeyPoints)
+        // keyPoints3d = Pose.createKeypoints3DVector(builder,keyPoints)
+        // Pose.startPose(builder)
+        // Pose.addKeypoints(builder,KeyPoints)
+        // Pose.addKeypoints3D(builder,keyPoints3d)
+        // var poseT = Pose.endPose(builder)
+        // builder.finish(poseT)
+        // console.log("after: "+builder.asUint8Array())
     }, 
 }
 

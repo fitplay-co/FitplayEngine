@@ -26,6 +26,12 @@ public:
   int getX() const { return x; }
   void setX(int x_) { x = x_; }
 
+  void release() {
+    if (build_data.GetSize() > 0) {
+      build_data.Release();
+    }
+  }
+
   val jsonFunc(std::string input) {
 
     json j;
@@ -46,7 +52,7 @@ public:
     fitInstance.process(j);
     std::string s = j.dump();
 
-    flatbuffers::FlatBufferBuilder build_data(1024);
+    // flatbuffers::FlatBufferBuilder build_data(1024);
     auto point1 = PoseData::CreatePoint(build_data, 1, 1, 1, 1, build_data.CreateString("nose"));
     auto point2 = PoseData::CreatePoint(build_data, 1, 1, 1, 1, build_data.CreateString("arm"));
     auto point3 = PoseData::CreatePoint(build_data, 1, 1, 1, 1, build_data.CreateString("leg"));
@@ -63,12 +69,17 @@ public:
     // return res;
     uint8_t *byteBuffer = build_data.GetBufferPointer();
     size_t bufferLength = build_data.GetSize();
+    // std::string temp;
+    // for (int i = 0; i < bufferLength; i++) {
+    //   temp += byteBuffer[i];
+    // }
+    // return val(temp);
     // return reinterpret_cast<char*>(build_data.GetBufferPointer());
     // return reinterpret_cast<uint8_t*>(build_data.GetBufferPointer());
     // flatbuffers::SaveFile("pose.bin", reinterpret_cast<char*>(build_data.GetBufferPointer()), build_data.GetSize(), true);
     return val(typed_memory_view(bufferLength, byteBuffer));
     //flatbuffers::SaveFile("layer.bin", reinterpret_cast<char*>(build_data.GetBufferPointer()), build_data.GetSize(), true);
-    //return reinterpret_cast<char*>(build_data.GetBufferPointer());
+    // return build_data.GetBufferPointer();
     // return s;
 
     // auto j = json::parse(R"({"happy": true, "pi": 3.141})");
@@ -101,6 +112,7 @@ private:
   int x;
   std::string y;
   fitplay::fitting fitInstance;
+  flatbuffers::FlatBufferBuilder build_data;
 };
 
 // Binding code
@@ -108,6 +120,7 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
   class_<BridgeClass>("BridgeClass")
     .constructor<int, std::string>()
     .function("jsonFunc", &BridgeClass::jsonFunc, allow_raw_pointers())
+    .function("release", &BridgeClass::release)
     .property("x", &BridgeClass::getX, &BridgeClass::setX)
     .class_function("getStringFromInstance", &BridgeClass::getStringFromInstance)
     ;
