@@ -53,16 +53,15 @@ var wasm_processor = {
         var result = this.instance.jsonFunc(builder.asUint8Array())
         console.log(result)
         var data = new Uint8Array(result)
+        var buf = new flatbuffers.ByteBuffer(data)
+        var temp = Pose.getRootAsPose(buf)
+        console.log(temp.keypoints3D(1).x())
+        this.instance.release()
+
         // console.log("result length:"+result.length)
         // for (let i = 0; i < result.length; i++) {
         //     data[i] = result.charAt(i)
         // }
-        var buf = new flatbuffers.ByteBuffer(data)
-        var temp = Pose.getRootAsPose(buf)
-        // var temp2 = temp.keypoints3DLength
-        console.log(temp.keypoints3D(1).x())
-        this.instance.release()
-
         // result = JSON.parse(this.instance.jsonFunc(JSON.stringify(pose)))
         // pose.fitting = result.fitting
         //console.log(this.instance.jsonFunc(jsonstr))
