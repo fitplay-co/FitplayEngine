@@ -3,13 +3,11 @@
 #include <emscripten/val.h>
 #include <string>
 #include <vector>
-#include "json.hpp"
 #include "fitting/fitting.hpp"
 #include "flatbuffer/poseData_generated.h"
+#include "flatbuffer/actionData_generated.h"
 #include "actionDetection/walkDetection.hpp"
 
-// for convenience
-using json = nlohmann::json;
 using namespace emscripten;
 
 class BridgeClass {
@@ -27,20 +25,34 @@ public:
   void setX(int x_) { x = x_; }
 
   void release() {
-    if (walk_data.GetSize() > 0) {
-      walk_data.Release();
+    if (action_data.GetSize() > 0) {
+      action_data.Release();
     }
   }
 
-  void entry(std::string input) {
-    data = PoseData::GetMutablePose(&input[0]);
-  }
-  val walk_pose() {
-    walk_data = walkInstance.process(data);
-    uint8_t *byteBuffer = walk_data.GetBufferPointer();
-    size_t bufferLength = walk_data.GetSize();
+  val entry(std::string input) {
+    PoseData::Pose* data = PoseData::GetMutablePose(&input[0]);
+
+    float walk_data[3]={0,0,0};
+    float jump_data[2]={0,0};
+
+    walkInstance.process(walk_data, data);
+
+    auto p0 = actionData::CreateWalk(action_data, walk_data[0], walk_data[1], walk_data[2]);
+    auto p1 = actionData::CreateJump(action_data, jump_data[0], jump_data[1]);
+    //walkInstance.process(action_data, data)
+    auto build = actionData::CreateAction(action_data, p0, p1);
+    action_data.Finish(build);
+    uint8_t *byteBuffer = action_data.GetBufferPointer();
+    size_t bufferLength = action_data.GetSize();
     return val(typed_memory_view(bufferLength, byteBuffer));
   }
+  // val jump_pose() {
+  //   jump_data = jumpInstance.process(data);
+  //   uint8_t *byteBuffer = jump_data.GetBufferPointer();
+  //   size_t bufferLength = jump_data.GetSize();
+  //   return val(typed_memory_view(bufferLength, byteBuffer));
+  // }
 
   static std::string getStringFromInstance(const BridgeClass& instance) {
     return instance.y;
@@ -50,9 +62,8 @@ private:
   int x;
   std::string y;
   fitplay::fitting fitInstance;
-  action::walk walkInstance;
-  flatbuffers::FlatBufferBuilder walk_data;
-  PoseData::Pose* data;
+  actionwalk::walk walkInstance;
+  flatbuffers::FlatBufferBuilder action_data;
 };
 
 // Binding code
@@ -60,7 +71,6 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
   class_<BridgeClass>("BridgeClass")
     .constructor<int, std::string>()
     .function("entry", &BridgeClass::entry)
-    .function("walk_pose", &BridgeClass::walk_pose)
     .function("release", &BridgeClass::release)
     .property("x", &BridgeClass::getX, &BridgeClass::setX)
     .class_function("getStringFromInstance", &BridgeClass::getStringFromInstance)

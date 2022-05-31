@@ -2,9 +2,9 @@
 #include <vector>
 #include <list>
 #include <chrono> 
-#include "flatbuffer/walkData_generated.h"
+#include "flatbuffer/actionData_generated.h"
 
-namespace action {
+namespace actionwalk {
     class walk {
         private:
             float current_distance_mean = 0;
@@ -21,7 +21,8 @@ namespace action {
         public:
             walk();
             ~ walk();
-            flatbuffers::FlatBufferBuilder process(PoseData::Pose* data);
+            //flatbuffers::Offset<actionData::Walk> process(flatbuffers::FlatBufferBuilder build_data, PoseData::Pose* data);
+            void process(float walk_data[], PoseData::Pose* data);
             void calculate_current_frame_distance(PoseData::Pose* data);
             void calculate_current_distance_mean();
             void calculate_current_direction();
@@ -30,13 +31,17 @@ namespace action {
 
     walk::walk() {}
     walk::~walk() {}
-    flatbuffers::FlatBufferBuilder walk::process(PoseData::Pose* data) {
+    void walk::process(float walk_data[], PoseData::Pose* data) {
         calculate_current_frame_distance(data);
         calculate_current_distance_mean();
         calculate_current_direction();
-        flatbuffers::FlatBufferBuilder build_data(1024);
-        auto pose = walkData::CreateWalk(build_data, current_leg, fpm, current_speed_mean);
-        build_data.Finish(pose);
+        walk_data[0] = current_leg;
+        walk_data[1] = fpm;
+        walk_data[2] = current_speed_mean;
+        // auto pose = actionData::CreateWalk(build_data, current_leg, fpm, current_speed_mean);
+        // build_data.Finish(pose);
+        // return pose;
+
         // flatbuffers::FlatBufferBuilder build_data(1024);
         // PoseData::PoseBuilder build_pose(build_data);
         // auto point1 = PoseData::CreatePoint(build_data, 1, 1, 1, 1, build_data.CreateString("nose"));
@@ -62,7 +67,6 @@ namespace action {
         // auto keypoint3d = build_data.CreateVector(nodeVector);
         // auto pose = PoseData::CreatePose(build_data, keypoint, keypoint3d);
         // build_data.Finish(pose);
-        return build_data;
     }
 
     void walk::calculate_current_frame_distance(PoseData::Pose* data) {
