@@ -51,20 +51,19 @@ var wasm_processor = {
         Pose.addKeypoints3D(builder,keyPoints3d)
         var res = Pose.endPose(builder)
         builder.finish(res)
-<<<<<<< HEAD
         
        
         
        var walkResult =  this.instance.entry(builder.asUint8Array())
-        // var walkData = new Uint8Array(walkResult)
-        // var walkBuf = new flatbuffers.ByteBuffer(walkData)
-        // var walkTemp = Walk.getRootAsWalk(walkBuf)
+        var walkData = new Uint8Array(walkResult)
+        var walkBuf = new flatbuffers.ByteBuffer(walkData)
+        var walkTemp = Walk.getRootAsWalk(walkBuf)
         
-        // pose.action_detection = {
-        //      "legUp" : walkTemp.legUp(),
-        //      "frequency" : walkTemp.frequency(),
-        //      "strength" : walkTemp.strength()
-        //  }
+        pose.action_detection = {
+             "legUp" : walkTemp.legUp(),
+             "frequency" : walkTemp.frequency(),
+             "strength" : walkTemp.strength()
+         }
         // console.log(pose.action_detection)
          this.instance.release()
         
@@ -115,22 +114,7 @@ var wasm_processor = {
         // // var temp2 = temp.keypoints3DLength
         // //console.log(temp.keypoints3D(1).x())
         // this.instance.release()
-=======
-        // var result = JSON.parse(this.instance.jsonFunc(JSON.stringify(res)))
-        // pose.fitting = result.fitting
-        var result = this.instance.jsonFunc(builder.asUint8Array())
-        console.log(result)
-        var data = new Uint8Array(result)
-        var buf = new flatbuffers.ByteBuffer(data)
-        var temp = Pose.getRootAsPose(buf)
-        console.log(temp.keypoints3D(1).x())
-        this.instance.release()
->>>>>>> 0b23f33703442957b97d55b03901424ed0f71c18
 
-        // console.log("result length:"+result.length)
-        // for (let i = 0; i < result.length; i++) {
-        //     data[i] = result.charAt(i)
-        // }
         // result = JSON.parse(this.instance.jsonFunc(JSON.stringify(pose)))
 
         // pose.fitting = result.fitting
