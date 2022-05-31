@@ -3,7 +3,9 @@ var flatbuffers = require('./flatbuffers/flatbuffers.js');
 var Point = require('./flatbuffers/point').Point
 var Pose = require('./flatbuffers/pose.js').Pose;
 var test = require('./test')
-var fs = require('fs')
+var fs = require('fs');
+const { Walk } = require('./flatbuffers/walk');
+var walk = require('./flatbuffers/walk').Walk
 var wasm_processor = {
     initialized : false ,
     process : function(pose, monitor = false){
@@ -44,11 +46,26 @@ var wasm_processor = {
         var KeyPoints = Pose.createKeypointsVector(builder,keyPoints)
         //console.log(KeyPoints)
         var keyPoints3d = Pose.createKeypoints3DVector(builder,keypoints3d)
-       Pose.startPose(builder)
-       Pose.addKeypoints(builder,KeyPoints)
-       Pose.addKeypoints3D(builder,keyPoints3d)
-       var res = Pose.endPose(builder)
+        Pose.startPose(builder)
+        Pose.addKeypoints(builder,KeyPoints)
+        Pose.addKeypoints3D(builder,keyPoints3d)
+        var res = Pose.endPose(builder)
         builder.finish(res)
+        
+       
+        
+       var walkResult =  this.instance.entry(builder.asUint8Array())
+        // var walkData = new Uint8Array(walkResult)
+        // var walkBuf = new flatbuffers.ByteBuffer(walkData)
+        // var walkTemp = Walk.getRootAsWalk(walkBuf)
+        
+        // pose.action_detection = {
+        //      "legUp" : walkTemp.legUp(),
+        //      "frequency" : walkTemp.frequency(),
+        //      "strength" : walkTemp.strength()
+        //  }
+        // console.log(pose.action_detection)
+         this.instance.release()
         
         // var bbb = builder.asUint8Array()
         // fs.writeFileSync('pose.bin',bbb,'binary')
@@ -80,42 +97,73 @@ var wasm_processor = {
 }
         //test.process()
 
-        var result = this.instance.jsonFunc(builder.asUint8Array())
-        
-        function ltrim(s){     
-            return s.replace(/(^\s*)/, "");  
-         }   
-         //去右空格;   
-        function rtrim(s){   
-          return s.replace(/(\s*$)/, "");  
-        }   
-         //去左右空格;   
-         function trim(s){  
-           s.replace(/(^\s*)|(\s*$)/, "");  
-          return rtrim(ltrim(s));   
-         
-         }   
-        //var data = toUint8Arr(result)
-        // //var data = toUint8Arr(result)
-        var buf = new flatbuffers.ByteBuffer(result)
-        // //console.log(stringToUint8Array(result))
-        var test = Pose.getRootAsPose(buf)
-        console.dir(test.bb.bytes_,{'maxArrayLength': null})
-        var key = test.keypoints(1).x()
-        // //var x = key.x()
-        // //var poi = Point.getRootAsPoint(buf)
-        console.log(key)
-        //console.log(name)
-        //var bytes = new Uint8Array(ReadableStream(result))
-        //var buf = new flatbuffers.ByteBuffer(bytes)
-        //var test = Pose.getRootAsPose(buf)
-        //console.log(test.keypoints)
-        //pose.fitting = result.fitting
         //var result = this.instance.jsonFunc(builder.asUint8Array())
-        //console.log('wasm bridge result:'+result)
-        // result = JSON.parse(this.instance.jsonFunc(JSON.stringify(res)))
+
+        
+        
+       
+        // console.log(result)
+        // var data = new Uint8Array(result)
+
+        // // console.log("result length:"+result.length)
+        // // for (let i = 0; i < result.length; i++) {
+        // //     data[i] = result.charAt(i)
+        // // }
+        // var buf = new flatbuffers.ByteBuffer(data)
+        // var temp = Pose.getRootAsPose(buf)
+        // // var temp2 = temp.keypoints3DLength
+        // //console.log(temp.keypoints3D(1).x())
+        // this.instance.release()
+
+        // result = JSON.parse(this.instance.jsonFunc(JSON.stringify(pose)))
+
         // pose.fitting = result.fitting
         //console.log(this.instance.jsonFunc(jsonstr))
+
+        // builder = new flatbuffers.Builder(1024)
+        // keyPoints = new Array(3)
+        // var name = builder.createString('nose')
+        // Point.startPoint(builder)
+        // Point.addX(builder, 1)
+        // Point.addY(builder, 1)
+        // Point.addZ(builder, 1)
+        // Point.addScore(builder, 1)
+        // Point.addName(builder,name)
+        // var point = Point.endPoint(builder)
+        // //console.log(point)
+        // keyPoints[0] = point
+
+        // name = builder.createString('arm')
+        // Point.startPoint(builder)
+        // Point.addX(builder, 1)
+        // Point.addY(builder, 1)
+        // Point.addZ(builder, 1)
+        // Point.addScore(builder, 1)
+        // Point.addName(builder,name)
+        // point = Point.endPoint(builder)
+        // //console.log(point)
+        // keyPoints[1] = point
+
+        // name = builder.createString('leg')
+        // Point.startPoint(builder)
+        // Point.addX(builder, 1)
+        // Point.addY(builder, 1)
+        // Point.addZ(builder, 1)
+        // Point.addScore(builder, 1)
+        // Point.addName(builder,name)
+        // point = Point.endPoint(builder)
+        // //console.log(point)
+        // keyPoints[2] = point
+
+        // KeyPoints = Pose.createKeypointsVector(builder,keyPoints)
+        // //console.log(KeyPoints)
+        // keyPoints3d = Pose.createKeypoints3DVector(builder,keyPoints)
+        // Pose.startPose(builder)
+        // Pose.addKeypoints(builder,KeyPoints)
+        // Pose.addKeypoints3D(builder,keyPoints3d)
+        // var poseT = Pose.endPose(builder)
+        // builder.finish(poseT)
+        // console.log("after: "+builder.asUint8Array())
     }, 
 }
 

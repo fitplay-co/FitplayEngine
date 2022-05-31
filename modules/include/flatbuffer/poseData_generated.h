@@ -30,8 +30,14 @@ struct Pose FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::Vector<flatbuffers::Offset<PoseData::Point>> *keypoints() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<PoseData::Point>> *>(VT_KEYPOINTS);
   }
+  flatbuffers::Vector<flatbuffers::Offset<PoseData::Point>> *mutable_keypoints() {
+    return GetPointer<flatbuffers::Vector<flatbuffers::Offset<PoseData::Point>> *>(VT_KEYPOINTS);
+  }
   const flatbuffers::Vector<flatbuffers::Offset<PoseData::Point>> *keypoints3D() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<PoseData::Point>> *>(VT_KEYPOINTS3D);
+  }
+  flatbuffers::Vector<flatbuffers::Offset<PoseData::Point>> *mutable_keypoints3D() {
+    return GetPointer<flatbuffers::Vector<flatbuffers::Offset<PoseData::Point>> *>(VT_KEYPOINTS3D);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -100,17 +106,32 @@ struct Point FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   float x() const {
     return GetField<float>(VT_X, 0.0f);
   }
+  bool mutate_x(float _x = 0.0f) {
+    return SetField<float>(VT_X, _x, 0.0f);
+  }
   float y() const {
     return GetField<float>(VT_Y, 0.0f);
+  }
+  bool mutate_y(float _y = 0.0f) {
+    return SetField<float>(VT_Y, _y, 0.0f);
   }
   float z() const {
     return GetField<float>(VT_Z, 0.0f);
   }
+  bool mutate_z(float _z = 0.0f) {
+    return SetField<float>(VT_Z, _z, 0.0f);
+  }
   float score() const {
     return GetField<float>(VT_SCORE, 0.0f);
   }
+  bool mutate_score(float _score = 0.0f) {
+    return SetField<float>(VT_SCORE, _score, 0.0f);
+  }
   const flatbuffers::String *name() const {
     return GetPointer<const flatbuffers::String *>(VT_NAME);
+  }
+  flatbuffers::String *mutable_name() {
+    return GetPointer<flatbuffers::String *>(VT_NAME);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -193,6 +214,14 @@ inline const PoseData::Pose *GetPose(const void *buf) {
 
 inline const PoseData::Pose *GetSizePrefixedPose(const void *buf) {
   return flatbuffers::GetSizePrefixedRoot<PoseData::Pose>(buf);
+}
+
+inline Pose *GetMutablePose(void *buf) {
+  return flatbuffers::GetMutableRoot<Pose>(buf);
+}
+
+inline PoseData::Pose *GetMutableSizePrefixedPose(void *buf) {
+  return flatbuffers::GetMutableSizePrefixedRoot<PoseData::Pose>(buf);
 }
 
 inline bool VerifyPoseBuffer(
