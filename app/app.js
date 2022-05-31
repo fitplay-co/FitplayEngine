@@ -13,6 +13,7 @@ const gazeTracking = require('./src/midware_gaze_tracking');
 //const { type } = require('os');
 const {performance} = require('perf_hooks');
 const messageBuffer = require('./src/message_buffer');
+const childProcess = require('child_process');
 
 var app = express();
 
@@ -212,3 +213,19 @@ function coroutine(f) {
         o.next(x);
     }
 }
+
+
+//启动串口连接dongle程序
+var workerProcess = childProcess.exec('node ../client/imuClient.js ', function (error, stdout, stderr) {
+    if (error) {
+        console.log(error.stack);
+        console.log('Error code: '+error.code);
+        console.log('Signal received: '+error.signal);
+    }
+    console.log('stdout: ' + stdout);
+    console.log('stderr: ' + stderr);
+});
+
+workerProcess.on('exit', function (code) {
+    console.log('子进程已退出，退出码 '+code);
+});
