@@ -6,7 +6,7 @@ var messageBuffer = {
 
     init: function() {
         this.messageBufferMap.set('pose_landmark', []) //摄像头输入缓冲
-        // this.messageBufferMap.set('imu', []) //IMU输入缓冲
+        this.messageBufferMap.set('imu', []) //IMU输入缓冲
         this.messageBufferMap.set('control', []) //控制消息队列，包括客户端注册及订阅、传感器注册等
     },
 
@@ -14,6 +14,8 @@ var messageBuffer = {
         var messageType = ''
         if (message.type === 'pose_landmark') {
             messageType = 'pose_landmark'
+        } else if (message.type === 'imu') {
+            messageType = 'imu'
         } else if (message.type === 'application_control' 
                    || message.type === 'application_client' 
                    || message.type === 'sensor_client') {
