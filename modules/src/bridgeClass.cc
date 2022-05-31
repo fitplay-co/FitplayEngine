@@ -7,6 +7,7 @@
 #include "flatbuffer/poseData_generated.h"
 #include "flatbuffer/actionData_generated.h"
 #include "actionDetection/walkDetection.hpp"
+#include "actionDetection/jumpDetection.hpp"
 
 using namespace emscripten;
 
@@ -37,6 +38,7 @@ public:
     float jump_data[2]={0,0};
 
     walkInstance.process(walk_data, data);
+    jumpInstance.process(jump_data, data);
 
     auto p0 = actionData::CreateWalk(action_data, walk_data[0], walk_data[1], walk_data[2]);
     auto p1 = actionData::CreateJump(action_data, jump_data[0], jump_data[1]);
@@ -63,6 +65,7 @@ private:
   std::string y;
   fitplay::fitting fitInstance;
   actionwalk::walk walkInstance;
+  actionjump::jump jumpInstance;
   flatbuffers::FlatBufferBuilder action_data;
 };
 
