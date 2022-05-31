@@ -2,6 +2,7 @@
 #include <vector>
 #include <list>
 #include <chrono> 
+#include <math.h>
 #include "flatbuffer/actionData_generated.h"
 
 namespace actionjump {
@@ -19,6 +20,9 @@ namespace actionjump {
             std::list<long long> times;
             float fpmStopCount = 0;
             float frameShiftFilterCount = 0;
+            float last_distance_mean = 0;
+            float current_height_mean = 0;
+            float height = 0;
         public:
             jump();
             ~ jump();
@@ -37,7 +41,7 @@ namespace actionjump {
         calculate_current_distance_mean();
         calculate_current_direction();
         jump_data[0] = current_jump;
-        jump_data[1] = current_height;
+        jump_data[1] = height;
     }
     void jump::calculate_current_frame_distance(PoseData::Pose* data) {
         current_distance_mean = 0;
@@ -51,6 +55,7 @@ namespace actionjump {
         current_distance_mean = weighted_sum;
     }
     void jump::calculate_current_distance_mean() {
+        last_distance_mean = current_distance_mean;
         current_distance_mean = current_distance_mean * 0.8 + current_frame_distance * 0.2;
     }
     void jump::calculate_current_direction() {
@@ -90,7 +95,9 @@ namespace actionjump {
         } else {
             fpmStopCount = 0;
         }
-        current_height = current_jump == 1? current_speed_mean:0;
+        current_height = current_distance_mean - last_distance_mean;
+        current_height_mean = current_height_mean * 0.5 + current_height * 0.5;
+        height = fabs(current_height_mean)>0.03? current_height_mean:0;
     }
     void jump::shiftDirectionStepPerMinutes() {
         long long now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();

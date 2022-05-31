@@ -21,6 +21,9 @@ struct WalkBuilder;
 struct Jump;
 struct JumpBuilder;
 
+struct Gaze;
+struct GazeBuilder;
+
 struct Action;
 struct ActionBuilder;
 
@@ -151,11 +154,82 @@ inline flatbuffers::Offset<Jump> CreateJump(
   return builder_.Finish();
 }
 
+struct Gaze FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  typedef GazeBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_X = 4,
+    VT_Y = 6,
+    VT_Z = 8
+  };
+  float x() const {
+    return GetField<float>(VT_X, 0.0f);
+  }
+  bool mutate_x(float _x = 0.0f) {
+    return SetField<float>(VT_X, _x, 0.0f);
+  }
+  float y() const {
+    return GetField<float>(VT_Y, 0.0f);
+  }
+  bool mutate_y(float _y = 0.0f) {
+    return SetField<float>(VT_Y, _y, 0.0f);
+  }
+  float z() const {
+    return GetField<float>(VT_Z, 0.0f);
+  }
+  bool mutate_z(float _z = 0.0f) {
+    return SetField<float>(VT_Z, _z, 0.0f);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<float>(verifier, VT_X, 4) &&
+           VerifyField<float>(verifier, VT_Y, 4) &&
+           VerifyField<float>(verifier, VT_Z, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct GazeBuilder {
+  typedef Gaze Table;
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_x(float x) {
+    fbb_.AddElement<float>(Gaze::VT_X, x, 0.0f);
+  }
+  void add_y(float y) {
+    fbb_.AddElement<float>(Gaze::VT_Y, y, 0.0f);
+  }
+  void add_z(float z) {
+    fbb_.AddElement<float>(Gaze::VT_Z, z, 0.0f);
+  }
+  explicit GazeBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  flatbuffers::Offset<Gaze> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<Gaze>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Gaze> CreateGaze(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    float x = 0.0f,
+    float y = 0.0f,
+    float z = 0.0f) {
+  GazeBuilder builder_(_fbb);
+  builder_.add_z(z);
+  builder_.add_y(y);
+  builder_.add_x(x);
+  return builder_.Finish();
+}
+
 struct Action FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   typedef ActionBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_WALK = 4,
-    VT_JUMP = 6
+    VT_JUMP = 6,
+    VT_GAZE = 8
   };
   const actionData::Walk *walk() const {
     return GetPointer<const actionData::Walk *>(VT_WALK);
@@ -169,12 +243,20 @@ struct Action FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   actionData::Jump *mutable_jump() {
     return GetPointer<actionData::Jump *>(VT_JUMP);
   }
+  const actionData::Gaze *gaze() const {
+    return GetPointer<const actionData::Gaze *>(VT_GAZE);
+  }
+  actionData::Gaze *mutable_gaze() {
+    return GetPointer<actionData::Gaze *>(VT_GAZE);
+  }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_WALK) &&
            verifier.VerifyTable(walk()) &&
            VerifyOffset(verifier, VT_JUMP) &&
            verifier.VerifyTable(jump()) &&
+           VerifyOffset(verifier, VT_GAZE) &&
+           verifier.VerifyTable(gaze()) &&
            verifier.EndTable();
   }
 };
@@ -188,6 +270,9 @@ struct ActionBuilder {
   }
   void add_jump(flatbuffers::Offset<actionData::Jump> jump) {
     fbb_.AddOffset(Action::VT_JUMP, jump);
+  }
+  void add_gaze(flatbuffers::Offset<actionData::Gaze> gaze) {
+    fbb_.AddOffset(Action::VT_GAZE, gaze);
   }
   explicit ActionBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -203,8 +288,10 @@ struct ActionBuilder {
 inline flatbuffers::Offset<Action> CreateAction(
     flatbuffers::FlatBufferBuilder &_fbb,
     flatbuffers::Offset<actionData::Walk> walk = 0,
-    flatbuffers::Offset<actionData::Jump> jump = 0) {
+    flatbuffers::Offset<actionData::Jump> jump = 0,
+    flatbuffers::Offset<actionData::Gaze> gaze = 0) {
   ActionBuilder builder_(_fbb);
+  builder_.add_gaze(gaze);
   builder_.add_jump(jump);
   builder_.add_walk(walk);
   return builder_.Finish();

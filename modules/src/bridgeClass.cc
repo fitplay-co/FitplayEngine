@@ -8,6 +8,7 @@
 #include "flatbuffer/actionData_generated.h"
 #include "actionDetection/walkDetection.hpp"
 #include "actionDetection/jumpDetection.hpp"
+#include "gazeTracking/gazeTracking.hpp"
 
 using namespace emscripten;
 
@@ -34,16 +35,19 @@ public:
   val entry(std::string input) {
     PoseData::Pose* data = PoseData::GetMutablePose(&input[0]);
 
-    float walk_data[3]={0,0,0};
-    float jump_data[2]={0,0};
+    float walk_data[3] = {0,0,0};
+    float jump_data[2] = {0,0};
+    float gaze_data[3] = {0,0,0};
 
     walkInstance.process(walk_data, data);
     jumpInstance.process(jump_data, data);
+    gazeInstance.process(gaze_data, data);
 
     auto p0 = actionData::CreateWalk(action_data, walk_data[0], walk_data[1], walk_data[2]);
     auto p1 = actionData::CreateJump(action_data, jump_data[0], jump_data[1]);
+    auto p2 = actionData::CreateGaze(action_data, gaze_data[0], gaze_data[1], gaze_data[2]);
     //walkInstance.process(action_data, data)
-    auto build = actionData::CreateAction(action_data, p0, p1);
+    auto build = actionData::CreateAction(action_data, p0, p1, p2);
     action_data.Finish(build);
     uint8_t *byteBuffer = action_data.GetBufferPointer();
     size_t bufferLength = action_data.GetSize();
@@ -66,6 +70,7 @@ private:
   fitplay::fitting fitInstance;
   actionwalk::walk walkInstance;
   actionjump::jump jumpInstance;
+  gaze::gazeTracking gazeInstance;
   flatbuffers::FlatBufferBuilder action_data;
 };
 

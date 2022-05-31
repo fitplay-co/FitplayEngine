@@ -11,9 +11,16 @@ table Jump {
   strength:float;
 }
 
+table Gaze {
+  x:float;
+  y:float;
+  z:float;
+}
+
 table Action {
   walk:Walk;
   jump:Jump;
+  gaze:Gaze;
 }
 
 root_type Action;
