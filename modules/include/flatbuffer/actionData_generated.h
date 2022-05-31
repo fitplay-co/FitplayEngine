@@ -24,6 +24,9 @@ struct JumpBuilder;
 struct Gaze;
 struct GazeBuilder;
 
+struct Ground;
+struct GroundBuilder;
+
 struct Action;
 struct ActionBuilder;
 
@@ -224,12 +227,109 @@ inline flatbuffers::Offset<Gaze> CreateGaze(
   return builder_.Finish();
 }
 
+struct Ground FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  typedef GroundBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_X = 4,
+    VT_Y = 6,
+    VT_Z = 8,
+    VT_LEGLENGTH = 10,
+    VT_TRACING = 12
+  };
+  float x() const {
+    return GetField<float>(VT_X, 0.0f);
+  }
+  bool mutate_x(float _x = 0.0f) {
+    return SetField<float>(VT_X, _x, 0.0f);
+  }
+  float y() const {
+    return GetField<float>(VT_Y, 0.0f);
+  }
+  bool mutate_y(float _y = 0.0f) {
+    return SetField<float>(VT_Y, _y, 0.0f);
+  }
+  float z() const {
+    return GetField<float>(VT_Z, 0.0f);
+  }
+  bool mutate_z(float _z = 0.0f) {
+    return SetField<float>(VT_Z, _z, 0.0f);
+  }
+  float legLength() const {
+    return GetField<float>(VT_LEGLENGTH, 0.0f);
+  }
+  bool mutate_legLength(float _legLength = 0.0f) {
+    return SetField<float>(VT_LEGLENGTH, _legLength, 0.0f);
+  }
+  float tracing() const {
+    return GetField<float>(VT_TRACING, 0.0f);
+  }
+  bool mutate_tracing(float _tracing = 0.0f) {
+    return SetField<float>(VT_TRACING, _tracing, 0.0f);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<float>(verifier, VT_X, 4) &&
+           VerifyField<float>(verifier, VT_Y, 4) &&
+           VerifyField<float>(verifier, VT_Z, 4) &&
+           VerifyField<float>(verifier, VT_LEGLENGTH, 4) &&
+           VerifyField<float>(verifier, VT_TRACING, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct GroundBuilder {
+  typedef Ground Table;
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_x(float x) {
+    fbb_.AddElement<float>(Ground::VT_X, x, 0.0f);
+  }
+  void add_y(float y) {
+    fbb_.AddElement<float>(Ground::VT_Y, y, 0.0f);
+  }
+  void add_z(float z) {
+    fbb_.AddElement<float>(Ground::VT_Z, z, 0.0f);
+  }
+  void add_legLength(float legLength) {
+    fbb_.AddElement<float>(Ground::VT_LEGLENGTH, legLength, 0.0f);
+  }
+  void add_tracing(float tracing) {
+    fbb_.AddElement<float>(Ground::VT_TRACING, tracing, 0.0f);
+  }
+  explicit GroundBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  flatbuffers::Offset<Ground> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<Ground>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Ground> CreateGround(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    float x = 0.0f,
+    float y = 0.0f,
+    float z = 0.0f,
+    float legLength = 0.0f,
+    float tracing = 0.0f) {
+  GroundBuilder builder_(_fbb);
+  builder_.add_tracing(tracing);
+  builder_.add_legLength(legLength);
+  builder_.add_z(z);
+  builder_.add_y(y);
+  builder_.add_x(x);
+  return builder_.Finish();
+}
+
 struct Action FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   typedef ActionBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_WALK = 4,
     VT_JUMP = 6,
-    VT_GAZE = 8
+    VT_GAZE = 8,
+    VT_GROUND = 10
   };
   const actionData::Walk *walk() const {
     return GetPointer<const actionData::Walk *>(VT_WALK);
@@ -249,6 +349,12 @@ struct Action FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   actionData::Gaze *mutable_gaze() {
     return GetPointer<actionData::Gaze *>(VT_GAZE);
   }
+  const actionData::Ground *ground() const {
+    return GetPointer<const actionData::Ground *>(VT_GROUND);
+  }
+  actionData::Ground *mutable_ground() {
+    return GetPointer<actionData::Ground *>(VT_GROUND);
+  }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_WALK) &&
@@ -257,6 +363,8 @@ struct Action FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            verifier.VerifyTable(jump()) &&
            VerifyOffset(verifier, VT_GAZE) &&
            verifier.VerifyTable(gaze()) &&
+           VerifyOffset(verifier, VT_GROUND) &&
+           verifier.VerifyTable(ground()) &&
            verifier.EndTable();
   }
 };
@@ -274,6 +382,9 @@ struct ActionBuilder {
   void add_gaze(flatbuffers::Offset<actionData::Gaze> gaze) {
     fbb_.AddOffset(Action::VT_GAZE, gaze);
   }
+  void add_ground(flatbuffers::Offset<actionData::Ground> ground) {
+    fbb_.AddOffset(Action::VT_GROUND, ground);
+  }
   explicit ActionBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -289,8 +400,10 @@ inline flatbuffers::Offset<Action> CreateAction(
     flatbuffers::FlatBufferBuilder &_fbb,
     flatbuffers::Offset<actionData::Walk> walk = 0,
     flatbuffers::Offset<actionData::Jump> jump = 0,
-    flatbuffers::Offset<actionData::Gaze> gaze = 0) {
+    flatbuffers::Offset<actionData::Gaze> gaze = 0,
+    flatbuffers::Offset<actionData::Ground> ground = 0) {
   ActionBuilder builder_(_fbb);
+  builder_.add_ground(ground);
   builder_.add_gaze(gaze);
   builder_.add_jump(jump);
   builder_.add_walk(walk);

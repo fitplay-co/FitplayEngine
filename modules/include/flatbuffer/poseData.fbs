@@ -1,6 +1,7 @@
 namespace PoseData;
 
 table Pose {
+  action:string;
   keypoints:[Point];
   keypoints3D:[Point];
 }

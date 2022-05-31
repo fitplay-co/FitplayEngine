@@ -9,6 +9,7 @@
 #include "actionDetection/walkDetection.hpp"
 #include "actionDetection/jumpDetection.hpp"
 #include "gazeTracking/gazeTracking.hpp"
+#include "groundLocation/groundLocation.hpp"
 
 using namespace emscripten;
 
@@ -38,16 +39,19 @@ public:
     float walk_data[3] = {0,0,0};
     float jump_data[2] = {0,0};
     float gaze_data[3] = {0,0,0};
+    float ground_data[5] = {0,0,0,0,0};
 
     walkInstance.process(walk_data, data);
     jumpInstance.process(jump_data, data);
     gazeInstance.process(gaze_data, data);
+    groundInstance.process(ground_data, data);
 
     auto p0 = actionData::CreateWalk(action_data, walk_data[0], walk_data[1], walk_data[2]);
     auto p1 = actionData::CreateJump(action_data, jump_data[0], jump_data[1]);
     auto p2 = actionData::CreateGaze(action_data, gaze_data[0], gaze_data[1], gaze_data[2]);
+    auto p3 = actionData::CreateGround(action_data, ground_data[0], ground_data[1], ground_data[2], ground_data[3], ground_data[4]);
     //walkInstance.process(action_data, data)
-    auto build = actionData::CreateAction(action_data, p0, p1, p2);
+    auto build = actionData::CreateAction(action_data, p0, p1, p2, p3);
     action_data.Finish(build);
     uint8_t *byteBuffer = action_data.GetBufferPointer();
     size_t bufferLength = action_data.GetSize();
@@ -71,6 +75,7 @@ private:
   actionwalk::walk walkInstance;
   actionjump::jump jumpInstance;
   gaze::gazeTracking gazeInstance;
+  ground::groundLocation groundInstance;
   flatbuffers::FlatBufferBuilder action_data;
 };
 

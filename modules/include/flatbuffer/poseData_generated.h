@@ -24,9 +24,16 @@ struct PointBuilder;
 struct Pose FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   typedef PoseBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_KEYPOINTS = 4,
-    VT_KEYPOINTS3D = 6
+    VT_ACTION = 4,
+    VT_KEYPOINTS = 6,
+    VT_KEYPOINTS3D = 8
   };
+  const flatbuffers::String *action() const {
+    return GetPointer<const flatbuffers::String *>(VT_ACTION);
+  }
+  flatbuffers::String *mutable_action() {
+    return GetPointer<flatbuffers::String *>(VT_ACTION);
+  }
   const flatbuffers::Vector<flatbuffers::Offset<PoseData::Point>> *keypoints() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<PoseData::Point>> *>(VT_KEYPOINTS);
   }
@@ -41,6 +48,8 @@ struct Pose FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_ACTION) &&
+           verifier.VerifyString(action()) &&
            VerifyOffset(verifier, VT_KEYPOINTS) &&
            verifier.VerifyVector(keypoints()) &&
            verifier.VerifyVectorOfTables(keypoints()) &&
@@ -55,6 +64,9 @@ struct PoseBuilder {
   typedef Pose Table;
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
+  void add_action(flatbuffers::Offset<flatbuffers::String> action) {
+    fbb_.AddOffset(Pose::VT_ACTION, action);
+  }
   void add_keypoints(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<PoseData::Point>>> keypoints) {
     fbb_.AddOffset(Pose::VT_KEYPOINTS, keypoints);
   }
@@ -74,22 +86,27 @@ struct PoseBuilder {
 
 inline flatbuffers::Offset<Pose> CreatePose(
     flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::String> action = 0,
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<PoseData::Point>>> keypoints = 0,
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<PoseData::Point>>> keypoints3D = 0) {
   PoseBuilder builder_(_fbb);
   builder_.add_keypoints3D(keypoints3D);
   builder_.add_keypoints(keypoints);
+  builder_.add_action(action);
   return builder_.Finish();
 }
 
 inline flatbuffers::Offset<Pose> CreatePoseDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
+    const char *action = nullptr,
     const std::vector<flatbuffers::Offset<PoseData::Point>> *keypoints = nullptr,
     const std::vector<flatbuffers::Offset<PoseData::Point>> *keypoints3D = nullptr) {
+  auto action__ = action ? _fbb.CreateString(action) : 0;
   auto keypoints__ = keypoints ? _fbb.CreateVector<flatbuffers::Offset<PoseData::Point>>(*keypoints) : 0;
   auto keypoints3D__ = keypoints3D ? _fbb.CreateVector<flatbuffers::Offset<PoseData::Point>>(*keypoints3D) : 0;
   return PoseData::CreatePose(
       _fbb,
+      action__,
       keypoints__,
       keypoints3D__);
 }
