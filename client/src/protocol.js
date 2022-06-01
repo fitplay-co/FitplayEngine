@@ -48,7 +48,8 @@ let imuObj={
 };
 
 let inputObj={
-  "type": "input",
+  "type": "sensor_frame",
+  "sensor_type": "input",
   "version": "0.0.0",
   "device_id": 255,
   "timestamp": 0,
@@ -71,7 +72,8 @@ let inputObj={
 };
 
 let deviceObj={
-  "type": "device_info",
+  "type": "sensor_frame",
+  "sensor_type": "device_info",
   "version": "0.0.0",
   "device_id": 0,
   "key_size": 0,
@@ -104,10 +106,10 @@ module.exports=function(){
     
    this.pack=((jsObj,callback)=>{
       let jsonObj=JSON.parse(jsObj);
-      console.log("pack jsonObj.cmd:%d",jsonObj.cmd);
+      console.log("pack jsonObj.type:%s",jsonObj.type);
 
-      switch(jsonObj.cmd){
-        case CMD_VIRBACTION:
+      switch(jsonObj.type){
+        case "vibration":
           {
             let uint8arr=new Uint8Array(CMD_VIRBACTION_LEN);
             let dataview=new DataView(uint8arr.buffer);
@@ -116,7 +118,7 @@ module.exports=function(){
             console.log(timestamp);
 
             dataview.setUint8(0,START_CODE);
-            dataview.setUint8(1,jsonObj.cmd);
+            dataview.setUint8(1,CMD_VIRBACTION);
             dataview.setUint8(2,CMD_VIRBACTION_LEN);
             dataview.setUint8(3,0);
             dataview.setUint8(4,jsonObj.device_id);

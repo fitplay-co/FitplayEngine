@@ -78,6 +78,7 @@ function opening(){
   port = new SerialPort({ path: portPath, baudRate: 115200,autoOpen:false });
 
   //webServer.setSerialPort(port);
+  webClient.setSerialPort(port);
 
   console.log("正在打开串口"+portPath);
 
@@ -167,6 +168,7 @@ function openSerial(){
 
    port.on('close', function () {
     port=null;
+    webClient.setSerialPort(port);
     portPath=null;
     console.log('CLOSE');
     parseEvent.removeAllListeners();
