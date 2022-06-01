@@ -154,7 +154,9 @@ var messageLoop = coroutine(function*() {
             console.log(`application client with id "${message.id}" attached`)
         } else if (type === 'sensor_client') {
             messageBuffer.createSensorBuffer(message.sensor_type)
-        } else if (type === 'sensor_frame' && message.sensor_type === 'imu') {
+        } else if (type === 'sensor_frame' || type === 'sensor_control') {
+            message.type = message.sensor_type
+            message.sensor_type = ''
             activeApplicationClient.forEach(function(ws){
                 if(!ws.notActived) {
                     messageContent = JSON.stringify(message)

@@ -24,7 +24,7 @@ var messageBuffer = {
             messageType = message.sensor_type
         }
         if (messageType) {
-            if ((messageType === 'pose_landmark' || messageType === 'sensor_frame') && this.messageBufferMap.get(messageType).length >= MAX_BUFFER_SIZE) {
+            if ((messageType === 'pose_landmark' || messageType === 'imu') && this.messageBufferMap.get(messageType).length >= MAX_BUFFER_SIZE) {
                 console.log('drop earliest frame!!!')
                 this.messageBufferMap.get(messageType).shift()
             }
