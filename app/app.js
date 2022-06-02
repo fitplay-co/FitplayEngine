@@ -105,10 +105,7 @@ var messageLoop = coroutine(function*() {
                 timestamp: Date.now(),
                 version:"0.1.0"
             }
-<<<<<<< HEAD
-            // console.log(pose["fitting"])
-=======
->>>>>>> develop
+            
             delete pose.keypoints
             delete pose.keypoints3D
 
