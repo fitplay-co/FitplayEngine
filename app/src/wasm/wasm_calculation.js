@@ -6,8 +6,7 @@ var test = require('./test')
 var fs = require('fs');
 const { z } = require('../midware_gaze_tracking.js');
 const { type } = require('os');
-var walk = require('/Users/nixiaofeng/develop/feature/os_dev_docker/modules/include/flatbuffer/action-data/walk.js').Walk
-var action = require('/Users/nixiaofeng/develop/feature/os_dev_docker/modules/include/flatbuffer/action-data/action.js').Action
+var action = require('../../../modules/include/flatbuffer/action-data/action').Action
 var wasm_processor = {
     initialized : false ,
     process : function(pose, monitor = false){
