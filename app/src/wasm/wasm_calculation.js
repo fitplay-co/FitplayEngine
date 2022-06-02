@@ -1,11 +1,13 @@
 var Module = require('../../wasm_modules/processor.js');
-var flatbuffers = require('./flatbuffers/flatbuffers.js');
+var flatbuffers = require('flatbuffers');
 var Point = require('./flatbuffers/point').Point
 var Pose = require('./flatbuffers/pose.js').Pose;
 var test = require('./test')
 var fs = require('fs');
-const { Walk } = require('./flatbuffers/walk');
-var walk = require('./flatbuffers/walk').Walk
+const { z } = require('../midware_gaze_tracking.js');
+const { type } = require('os');
+var walk = require('/Users/nixiaofeng/develop/feature/os_dev_docker/modules/include/flatbuffer/action-data/walk.js').Walk
+var action = require('/Users/nixiaofeng/develop/feature/os_dev_docker/modules/include/flatbuffer/action-data/action.js').Action
 var wasm_processor = {
     initialized : false ,
     process : function(pose, monitor = false){
@@ -15,6 +17,7 @@ var wasm_processor = {
             this.initialized = true
             //console.log("initialized")
         }
+        
         var builder = new flatbuffers.Builder(1024)
         var keyPoints = new Array(33)
         var keypoints3d = new Array(33)
@@ -54,17 +57,34 @@ var wasm_processor = {
         
        
         
-       var walkResult =  this.instance.entry(builder.asUint8Array())
-        var walkData = new Uint8Array(walkResult)
-        var walkBuf = new flatbuffers.ByteBuffer(walkData)
-        var walkTemp = Walk.getRootAsWalk(walkBuf)
-        
-        pose.action_detection = {
-             "legUp" : walkTemp.legUp(),
-             "frequency" : walkTemp.frequency(),
-             "strength" : walkTemp.strength()
-         }
-        // console.log(pose.action_detection)
+       var actionResult =  this.instance.entry(builder.asUint8Array())
+        var actionData = new Uint8Array(actionResult)
+        var actionBuf = new flatbuffers.ByteBuffer(actionData)
+        var actionTemp = action.getRootAsAction(actionBuf)
+        pose.action_detection = {}
+        pose.action_detection.walk = {
+             "legUp" : actionTemp.walk().legUp(),
+             "frequency" : actionTemp.walk().frequency(),
+             "strength" : actionTemp.walk().strength()
+        }
+        pose.action_detection.jump = {
+            "up" : actionTemp.jump().up(),
+            "strength" : actionTemp.jump().strength()
+        }
+        pose.ground_location = {
+            "x" : actionTemp.ground().x(),
+            "y" : actionTemp.ground().y(),
+            "z" : actionTemp.ground().z(),
+            "legLength" : actionTemp.ground().legLength(),
+            "tracing" : actionTemp.ground().tracing()
+        }
+        pose.gaze_tracking = {
+            "x" : actionTemp.gaze().x(),
+            "y" : actionTemp.gaze().y(),
+            "z" : actionTemp.gaze().z()
+        }
+            
+           
          this.instance.release()
         
         // var bbb = builder.asUint8Array()
