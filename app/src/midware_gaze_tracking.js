@@ -45,8 +45,12 @@ var gaze_tracking = {
         //res = this.matrixMultiplication(arr_2,res);
 
         res[0][0] = res[0][0]*0.1+this.pre_x*0.9
+        //console.log(res[0][0])
         res[1][0] = res[1][0]*0.1+this.pre_y*0.9
         z = z*0.1+this.pre_z*0.9
+        //console.log(z)
+        var distance = Math.sqrt(Math.pow(res[0][0],2)+Math.pow(z,2))
+        //console.log(distance)
         //console.log(res)
         const resultData = {}
         if(monitor) {
@@ -63,7 +67,10 @@ var gaze_tracking = {
             x: res[0][0],
             y: res[1][0],
             z: z,
+            d : distance
         }
+        
+        console.log(resultData.gaze_tracking)
         this.pre_x = res[0][0]
         //console.log(this.pre_x)
         this.pre_y = res[1][0]

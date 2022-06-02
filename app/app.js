@@ -67,13 +67,17 @@ var messageLoop = coroutine(function*() {
         const message = bufferData.message
         const ws = bufferData.webSocket
         type = message.type
+
         messageTime = Math.round(performance.now()*1000)+'μs'
+
         if(type === 'pose_landmark') {
             //TODO for now only pose provided in message as pose landmark
             pose = message
             pose.timeProfiling.serverReceive = messageTime
+
             pose.timeProfiling.processingTime = Math.round(performance.now()*1000)+'μs'
             //jump if process jobs too much 
+
             //TODO process Input here for input 
             //此处开始写局部坐标的初始化（地面坐标系）
             //depth correction
@@ -104,8 +108,11 @@ var messageLoop = coroutine(function*() {
             // console.log(pose["fitting"])
             delete pose.keypoints
             delete pose.keypoints3D
+
             pose.timeProfiling.beforeSendTime = Math.round(performance.now()*1000)+'μs'
-            console.log(pose.timeProfiling)
+
+
+
             activeApplicationClient.forEach(function(ws){
                 if(!ws.notActived) {
                     if (clientSubscriptionMap.has(ws)) {
@@ -188,12 +195,14 @@ wss.on('connection', function (ws) {
         counter = counter + 1;
 
         messageContent = message.toString('ascii');
+
         message = JSON.parse(messageContent);
         messageBuffer.addNewMessage(message, ws)
         setImmediate (function(){
             const theMessage = messageBuffer.peekMessage()
             if (theMessage !== undefined) {
                 messageLoop(theMessage)
+
             }
         })
     });

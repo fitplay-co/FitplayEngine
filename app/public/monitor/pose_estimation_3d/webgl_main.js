@@ -251,7 +251,7 @@ render_skelton_3d (gl, landmarks)
         }
 
         /* joint point */
-        for (let i = 0; i < kPoseKeyNum - 1; i ++)
+        for (let i = 0; i < kPoseKeyNum ; i ++)
         {
             const keyx = pose.key3d[i].x;
             const keyy = pose.key3d[i].y;
@@ -711,9 +711,9 @@ async function startWebGL()
         str = "TF.js0  : " + time_invoke0.toFixed(1)  + " [ms]";
         dbgstr.draw_dbgstr (gl, str, 10, 10 + 22 * 1);
 
-        str = "BACKEND: " + tf.getBackend();
-        dbgstr.draw_dbgstr_ex (gl, str, win_w - 220, win_h - 22 * 3, 
-            1, [0.0, 1.0, 1.0, 1.0], [0.2, 0.2, 0.2, 1.0]);
+        // str = "BACKEND: " + tf.getBackend();
+        // dbgstr.draw_dbgstr_ex (gl, str, win_w - 220, win_h - 22 * 3, 
+            // 1, [0.0, 1.0, 1.0, 1.0], [0.2, 0.2, 0.2, 1.0]);
 
         str = "window(" + win_w + ", " + win_h + ")";
         dbgstr.draw_dbgstr (gl, str, win_w - 220, win_h - 22 * 2);

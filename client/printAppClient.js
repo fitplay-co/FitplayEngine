@@ -18,7 +18,7 @@ client.on('connect', function(connection) {
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
             var profilingTime = JSON.parse(message.utf8Data).timeProfiling 
-            profilingTime.clientReceiveTime = Date.now()
+            profilingTime.clientReceiveTime = performance.now()*1000
             console.log(profilingTime);
         }
 
