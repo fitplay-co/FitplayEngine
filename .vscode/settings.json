@@ -93,6 +93,7 @@
         "iterator": "cpp",
         "utility": "cpp",
         "span": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "cassert": "cpp"
     }
 }
