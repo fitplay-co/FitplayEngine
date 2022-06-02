@@ -83,7 +83,6 @@ var wasm_processor = {
             "z" : actionTemp.gaze().z()
         }
             
-           
          this.instance.release()
         
         // var bbb = builder.asUint8Array()
