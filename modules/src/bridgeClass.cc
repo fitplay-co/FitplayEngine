@@ -1,12 +1,16 @@
 #include <emscripten.h>
 #include <emscripten/bind.h>
+#include <emscripten/val.h>
 #include <string>
 #include <vector>
-#include "json.hpp"
 #include "fitting/fitting.hpp"
+#include "flatbuffer/poseData_generated.h"
+#include "flatbuffer/actionData_generated.h"
+#include "actionDetection/walkDetection.hpp"
+#include "actionDetection/jumpDetection.hpp"
+#include "gazeTracking/gazeTracking.hpp"
+#include "groundLocation/groundLocation.hpp"
 
-// for convenience
-using json = nlohmann::json;
 using namespace emscripten;
 
 class BridgeClass {
@@ -23,22 +27,42 @@ public:
   int getX() const { return x; }
   void setX(int x_) { x = x_; }
 
-  std::string jsonFunc(const std::string &str) {
-    // auto j = json::parse(R"({"happy": true, "pi": 3.141})");
-    // convert string to json
-    json j = json::parse(str);
-    // get data from json
-    // float num = j["pose_landmark"]["keypoints"][1]["y"];
-    
-    // TODO: process input data
-    fitInstance.process(j);
-  
-    // add property to json object
-    j["wasm_bridge_version"] = "0.0.1";
-    // convert json to string
-    std::string s = j.dump();
-	  return s;
+  void release() {
+    if (action_data.GetSize() > 0) {
+      action_data.Release();
+    }
   }
+
+  val entry(std::string input) {
+    PoseData::Pose* data = PoseData::GetMutablePose(&input[0]);
+
+    float walk_data[3] = {0,0,0};
+    float jump_data[2] = {0,0};
+    float gaze_data[3] = {0,0,0};
+    float ground_data[5] = {0,0,0,0,0};
+
+    walkInstance.process(walk_data, data);
+    jumpInstance.process(jump_data, data);
+    gazeInstance.process(gaze_data, data);
+    groundInstance.process(ground_data, data);
+
+    auto p0 = actionData::CreateWalk(action_data, walk_data[0], walk_data[1], walk_data[2]);
+    auto p1 = actionData::CreateJump(action_data, jump_data[0], jump_data[1]);
+    auto p2 = actionData::CreateGaze(action_data, gaze_data[0], gaze_data[1], gaze_data[2]);
+    auto p3 = actionData::CreateGround(action_data, ground_data[0], ground_data[1], ground_data[2], ground_data[3], ground_data[4]);
+    //walkInstance.process(action_data, data)
+    auto build = actionData::CreateAction(action_data, p0, p1, p2, p3);
+    action_data.Finish(build);
+    uint8_t *byteBuffer = action_data.GetBufferPointer();
+    size_t bufferLength = action_data.GetSize();
+    return val(typed_memory_view(bufferLength, byteBuffer));
+  }
+  // val jump_pose() {
+  //   jump_data = jumpInstance.process(data);
+  //   uint8_t *byteBuffer = jump_data.GetBufferPointer();
+  //   size_t bufferLength = jump_data.GetSize();
+  //   return val(typed_memory_view(bufferLength, byteBuffer));
+  // }
 
   static std::string getStringFromInstance(const BridgeClass& instance) {
     return instance.y;
@@ -48,13 +72,19 @@ private:
   int x;
   std::string y;
   fitplay::fitting fitInstance;
+  actionwalk::walk walkInstance;
+  actionjump::jump jumpInstance;
+  gaze::gazeTracking gazeInstance;
+  ground::groundLocation groundInstance;
+  flatbuffers::FlatBufferBuilder action_data;
 };
 
 // Binding code
 EMSCRIPTEN_BINDINGS(my_class_example) {
   class_<BridgeClass>("BridgeClass")
     .constructor<int, std::string>()
-    .function("jsonFunc", &BridgeClass::jsonFunc)
+    .function("entry", &BridgeClass::entry)
+    .function("release", &BridgeClass::release)
     .property("x", &BridgeClass::getX, &BridgeClass::setX)
     .class_function("getStringFromInstance", &BridgeClass::getStringFromInstance)
     ;

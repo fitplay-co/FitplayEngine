@@ -1,0 +1,35 @@
+namespace actionData;
+
+table Walk {
+  legUp:float;
+  frequency:float;
+  strength:float;
+}
+
+table Jump {
+  up:float;
+  strength:float;
+}
+
+table Gaze {
+  x:float;
+  y:float;
+  z:float;
+}
+
+table Ground {
+  x:float;
+  y:float;
+  z:float;
+  legLength:float;
+  tracing:float;
+}
+
+table Action {
+  walk:Walk;
+  jump:Jump;
+  gaze:Gaze;
+  ground:Ground;
+}
+
+root_type Action;

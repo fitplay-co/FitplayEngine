@@ -67,19 +67,26 @@ var messageLoop = coroutine(function*() {
         const message = bufferData.message
         const ws = bufferData.webSocket
         type = message.type
-        messageTime = performance.now()*1000
+
+        messageTime = Math.round(performance.now()*1000)+'μs'
+
         if(type === 'pose_landmark') {
             //TODO for now only pose provided in message as pose landmark
             pose = message
             pose.timeProfiling.serverReceive = messageTime
-            pose.timeProfiling.processingTime = performance.now()*1000
+
+            pose.timeProfiling.processingTime = Math.round(performance.now()*1000)+'μs'
+            //jump if process jobs too much 
+
             //TODO process Input here for input 
             //此处开始写局部坐标的初始化（地面坐标系）
             //depth correction
             //readPose.process(pose)
 
             // 只有当至少1个客户端订阅了高级能力时再进行相关计算
+            //console.log(Math.round(performance.now()*1000)+'μs')
             wasm.process(pose)
+            //console.log(performance.now()*1000)
             var groundLocationData, actionDetectionData, gazeTrackingData
             if (advancedFeaturesSubscriptionsMap.has('ground_loccation')) {
                 groundLocationData = groundLocation.process(pose)
@@ -98,10 +105,14 @@ var messageLoop = coroutine(function*() {
                 timestamp: Date.now(),
                 version:"0.1.0"
             }
+            
             delete pose.keypoints
             delete pose.keypoints3D
-            pose.timeProfiling.beforeSendTime = performance.now()*1000
-            // console.log(pose.timeProfiling)
+
+            pose.timeProfiling.beforeSendTime = Math.round(performance.now()*1000)+'μs'
+
+
+
             activeApplicationClient.forEach(function(ws){
                 if(!ws.notActived) {
                     if (clientSubscriptionMap.has(ws)) {

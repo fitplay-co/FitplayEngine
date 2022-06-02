@@ -92,7 +92,8 @@
         "functional": "cpp",
         "iterator": "cpp",
         "utility": "cpp",
-        "climits": "cpp",
+        "span": "cpp",
+        "*.ipp": "cpp",
         "cassert": "cpp"
     }
 }
