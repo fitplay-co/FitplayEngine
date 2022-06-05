@@ -22,8 +22,8 @@ namespace actionwalk {
             walk();
             ~ walk();
             //flatbuffers::Offset<actionData::Walk> process(flatbuffers::FlatBufferBuilder build_data, PoseData::Pose* data);
-            void process(float walk_data[], PoseData::Pose* data);
-            void calculate_current_frame_distance(PoseData::Pose* data);
+            void process(float walk_data[],const PoseData::Pose* data);
+            void calculate_current_frame_distance(const PoseData::Pose* data);
             void calculate_current_distance_mean();
             void calculate_current_direction();
             void shiftDirectionStepPerMinutes();
@@ -31,7 +31,7 @@ namespace actionwalk {
 
     walk::walk() {}
     walk::~walk() {}
-    void walk::process(float walk_data[], PoseData::Pose* data) {
+    void walk::process(float walk_data[], const PoseData::Pose* data) {
         calculate_current_frame_distance(data);
         calculate_current_distance_mean();
         calculate_current_direction();
@@ -69,7 +69,7 @@ namespace actionwalk {
         // build_data.Finish(pose);
     }
 
-    void walk::calculate_current_frame_distance(PoseData::Pose* data) {
+    void walk::calculate_current_frame_distance(const PoseData::Pose* data) {
         current_distance_mean = 0;
         float num1 = data->keypoints()->Get(26)->y();
         float num2 = data->keypoints()->Get(25)->y();

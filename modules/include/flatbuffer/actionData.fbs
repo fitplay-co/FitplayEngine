@@ -25,11 +25,20 @@ table Ground {
   tracing:float;
 }
 
+table Joint {
+  w:float;
+  x:float;
+  y:float;
+  z:float;
+  name:string;
+}
+
 table Action {
   walk:Walk;
   jump:Jump;
   gaze:Gaze;
   ground:Ground;
+  joints:[Joint];
 }
 
 root_type Action;

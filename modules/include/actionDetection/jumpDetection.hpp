@@ -27,8 +27,8 @@ namespace actionjump {
             jump();
             ~ jump();
             //flatbuffers::Offset<actionData::Walk> process(flatbuffers::FlatBufferBuilder build_data, PoseData::Pose* data);
-            void process(float jump_data[], PoseData::Pose* data);
-            void calculate_current_frame_distance(PoseData::Pose* data);
+            void process(float jump_data[], const PoseData::Pose* data);
+            void calculate_current_frame_distance(const PoseData::Pose* data);
             void calculate_current_distance_mean();
             void calculate_current_direction();
             void shiftDirectionStepPerMinutes();
@@ -36,14 +36,14 @@ namespace actionjump {
     };
     jump::jump() {}
     jump::~jump() {}
-    void jump::process(float jump_data[], PoseData::Pose* data) {
+    void jump::process(float jump_data[], const PoseData::Pose* data) {
         calculate_current_frame_distance(data);
         calculate_current_distance_mean();
         calculate_current_direction();
         jump_data[0] = current_jump;
         jump_data[1] = height;
     }
-    void jump::calculate_current_frame_distance(PoseData::Pose* data) {
+    void jump::calculate_current_frame_distance(const PoseData::Pose* data) {
         current_distance_mean = 0;
         float num1 = data->keypoints()->Get(23)->y();
         float num2 = data->keypoints()->Get(24)->y();
