@@ -86,6 +86,7 @@ namespace fitplay {
             /* data */
         public:
             jointPoint jointPoints[jointPointSize + 1];
+            bool mirror = true;
             fitting();
             ~ fitting();
             void addJointPoint(jointPoint& p, std::string name, int parentIndex, float boneLength,  vec3 const& tposeDirection);
@@ -96,6 +97,7 @@ namespace fitplay {
             void updateLandmarks(landmarks const & landmarkData);
             vec3 vectorFromToPoint(vec3 const & from, vec3 const & to);
             vec3 readLandmarkPointVector(int point, const PoseData::Pose* data);
+            vec3 readLandmarkPointVectorMirror(int point, const PoseData::Pose* data);
             vec3 fkToNextPoint(vec3 const& startPoint, vec3 const& boneDirection, quat const& boneRotation, float const& bontLength);
             vec3 crossSafe(glm::vec3 const& direction, glm::vec3 const& fov);
             quat lookatRotationSafe(glm::vec3 const& direction, glm::vec3 const& up, glm::vec3 const& alternativeUp);
@@ -128,8 +130,8 @@ namespace fitplay {
 
         //last point for root reference from neck, hip points
         addJointPoint(jointPoints[18], "root", -1, 0.4f, down);
-        addJointPoint(jointPoints[0], "neck", 18, 0.4f, down);
-        addJointPoint(jointPoints[1], "head", 0, 0.1f, down);
+        addJointPoint(jointPoints[0], "spine", 18, 0.4f, down);
+        addJointPoint(jointPoints[1], "neck", 0, 0.1f, down);
         addJointPoint(jointPoints[2], "lshoulder", 0, 0.1f, right);
         addJointPoint(jointPoints[3], "rshoulder", 0, 0.1f, left);
         addJointPoint(jointPoints[4], "luparm", 2, 0.2f, right);
@@ -197,23 +199,45 @@ namespace fitplay {
     void fitting::process(const PoseData::Pose* data) {
         landmarks landmarkData;
 
-        landmarkData.head = readLandmarkPointVector(0, data);
-        landmarkData.lshoulder = readLandmarkPointVector(11, data); 
-        landmarkData.rshoulder = readLandmarkPointVector(12, data);
-        landmarkData.larm = readLandmarkPointVector(13, data);
-        landmarkData.rarm = readLandmarkPointVector(14, data); 
-        landmarkData.lwrist = readLandmarkPointVector(15, data); 
-        landmarkData.rwrist = readLandmarkPointVector(16, data); 
-        landmarkData.lhand = readLandmarkPointVector(19, data); 
-        landmarkData.rhand = readLandmarkPointVector(20, data);
-        landmarkData.lhip = readLandmarkPointVector(23, data);
-        landmarkData.rhip = readLandmarkPointVector(24, data);
-        landmarkData.lknee = readLandmarkPointVector(25, data);
-        landmarkData.rknee = readLandmarkPointVector(26, data);
-        landmarkData.lankle = readLandmarkPointVector(27, data);
-        landmarkData.rankle = readLandmarkPointVector(28, data);
-        landmarkData.lfoot = readLandmarkPointVector(31, data);
-        landmarkData.rfoot = readLandmarkPointVector(32, data); 
+        if(mirror) {
+            landmarkData.head = readLandmarkPointVectorMirror(0, data);
+            landmarkData.lshoulder = readLandmarkPointVectorMirror(12, data); 
+            landmarkData.rshoulder = readLandmarkPointVectorMirror(11, data);
+            landmarkData.larm = readLandmarkPointVectorMirror(14, data);
+            landmarkData.rarm = readLandmarkPointVectorMirror(13, data); 
+            landmarkData.lwrist = readLandmarkPointVectorMirror(16, data); 
+            landmarkData.rwrist = readLandmarkPointVectorMirror(15, data); 
+            landmarkData.lhand = readLandmarkPointVectorMirror(20, data); 
+            landmarkData.rhand = readLandmarkPointVectorMirror(19, data);
+            landmarkData.lhip = readLandmarkPointVectorMirror(24, data);
+            landmarkData.rhip = readLandmarkPointVectorMirror(23, data);
+            landmarkData.lknee = readLandmarkPointVectorMirror(26, data);
+            landmarkData.rknee = readLandmarkPointVectorMirror(25, data);
+            landmarkData.lankle = readLandmarkPointVectorMirror(28, data);
+            landmarkData.rankle = readLandmarkPointVectorMirror(27, data);
+            landmarkData.lfoot = readLandmarkPointVectorMirror(32, data);
+            landmarkData.rfoot = readLandmarkPointVectorMirror(31, data); 
+        } else {
+            //read inverse by mirror 
+            landmarkData.head = readLandmarkPointVector(0, data);
+            landmarkData.lshoulder = readLandmarkPointVector(11, data); 
+            landmarkData.rshoulder = readLandmarkPointVector(12, data);
+            landmarkData.larm = readLandmarkPointVector(13, data);
+            landmarkData.rarm = readLandmarkPointVector(14, data); 
+            landmarkData.lwrist = readLandmarkPointVector(15, data); 
+            landmarkData.rwrist = readLandmarkPointVector(16, data); 
+            landmarkData.lhand = readLandmarkPointVector(19, data); 
+            landmarkData.rhand = readLandmarkPointVector(20, data);
+            landmarkData.lhip = readLandmarkPointVector(23, data);
+            landmarkData.rhip = readLandmarkPointVector(24, data);
+            landmarkData.lknee = readLandmarkPointVector(25, data);
+            landmarkData.rknee = readLandmarkPointVector(26, data);
+            landmarkData.lankle = readLandmarkPointVector(27, data);
+            landmarkData.rankle = readLandmarkPointVector(28, data);
+            landmarkData.lfoot = readLandmarkPointVector(31, data);
+            landmarkData.rfoot = readLandmarkPointVector(32, data); 
+        }
+
         // infer nect and hip center
         landmarkData.hipcenter = vec3(0.0f ,0.0f ,0.0f);
         landmarkData.neck = vec3((landmarkData.lshoulder[0] 
@@ -317,6 +341,13 @@ namespace fitplay {
 
     vec3 fitting::readLandmarkPointVector(int point, const PoseData::Pose* data) {
         float xStart = data->keypoints3D()->Get(point)->x();
+        float yStart = 0.0f - data->keypoints3D()->Get(point)->y();
+        float zStart = data->keypoints3D()->Get(point)->z();
+        return vec3(xStart, yStart, zStart);
+    }
+
+    vec3 fitting::readLandmarkPointVectorMirror(int point, const PoseData::Pose* data) {
+        float xStart = 0.0f - data->keypoints3D()->Get(point)->x();
         float yStart = 0.0f - data->keypoints3D()->Get(point)->y();
         float zStart = data->keypoints3D()->Get(point)->z();
         return vec3(xStart, yStart, zStart);

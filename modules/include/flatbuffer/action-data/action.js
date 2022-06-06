@@ -3,9 +3,9 @@
 exports.__esModule = true;
 exports.Action = void 0;
 var flatbuffers = require("../../../../app/src/wasm/flatbuffers/flatbuffers");
+var fitting_1 = require("../action-data/fitting");
 var gaze_1 = require("../action-data/gaze");
 var ground_1 = require("../action-data/ground");
-var joint_1 = require("../action-data/joint");
 var jump_1 = require("../action-data/jump");
 var walk_1 = require("../action-data/walk");
 var Action = /** @class */ (function () {
@@ -41,13 +41,9 @@ var Action = /** @class */ (function () {
         var offset = this.bb.__offset(this.bb_pos, 10);
         return offset ? (obj || new ground_1.Ground()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
     };
-    Action.prototype.joints = function (index, obj) {
+    Action.prototype.fitting = function (obj) {
         var offset = this.bb.__offset(this.bb_pos, 12);
-        return offset ? (obj || new joint_1.Joint()).__init(this.bb.__indirect(this.bb.__vector(this.bb_pos + offset) + index * 4), this.bb) : null;
-    };
-    Action.prototype.jointsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 12);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+        return offset ? (obj || new fitting_1.Fitting()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
     };
     Action.startAction = function (builder) {
         builder.startObject(5);
@@ -64,18 +60,8 @@ var Action = /** @class */ (function () {
     Action.addGround = function (builder, groundOffset) {
         builder.addFieldOffset(3, groundOffset, 0);
     };
-    Action.addJoints = function (builder, jointsOffset) {
-        builder.addFieldOffset(4, jointsOffset, 0);
-    };
-    Action.createJointsVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addOffset(data[i]);
-        }
-        return builder.endVector();
-    };
-    Action.startJointsVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
+    Action.addFitting = function (builder, fittingOffset) {
+        builder.addFieldOffset(4, fittingOffset, 0);
     };
     Action.endAction = function (builder) {
         var offset = builder.endObject();

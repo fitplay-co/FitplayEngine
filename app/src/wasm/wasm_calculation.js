@@ -117,18 +117,28 @@ var wasm_processor = {
         
         pose.fitting = {}
         pose.fitting.rotation = []
+        pose.fitting.mirrorRotation = []
+
         for(var i = 0; i<18; i++) {
             pose.fitting.rotation.push({
-                "name" : actionTemp.joints(i).name(),
-                "w" : actionTemp.joints(i).w(),
-                "x" : actionTemp.joints(i).x(),
-                "y" : actionTemp.joints(i).y(),
-                "z" : actionTemp.joints(i).z(),
+                "name" : actionTemp.fitting().rotation(i).name(),
+                "w" : actionTemp.fitting().rotation(i).w(),
+                "x" : actionTemp.fitting().rotation(i).x(),
+                "y" : actionTemp.fitting().rotation(i).y(),
+                "z" : actionTemp.fitting().rotation(i).z(),
             })
         }
 
-        // console.log(pose.fitting)
-        console.log(pose)
+        for(var i = 0; i<18; i++) {
+            pose.fitting.mirrorRotation.push({
+                "name" : actionTemp.fitting().mirrorRotation(i).name(),
+                "w" : actionTemp.fitting().mirrorRotation(i).w(),
+                "x" : actionTemp.fitting().mirrorRotation(i).x(),
+                "y" : actionTemp.fitting().mirrorRotation(i).y(),
+                "z" : actionTemp.fitting().mirrorRotation(i).z(),
+            })
+        }
+        console.log(pose.fitting);
         this.instance.release()
         
         // var bbb = builder.asUint8Array()

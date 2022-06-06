@@ -30,6 +30,9 @@ struct GroundBuilder;
 struct Joint;
 struct JointBuilder;
 
+struct Fitting;
+struct FittingBuilder;
+
 struct Action;
 struct ActionBuilder;
 
@@ -386,6 +389,73 @@ inline flatbuffers::Offset<Joint> CreateJointDirect(
       name__);
 }
 
+struct Fitting FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  typedef FittingBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ROTATION = 4,
+    VT_MIRRORROTATION = 6
+  };
+  const flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>> *rotation() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>> *>(VT_ROTATION);
+  }
+  const flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>> *mirrorRotation() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>> *>(VT_MIRRORROTATION);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_ROTATION) &&
+           verifier.VerifyVector(rotation()) &&
+           verifier.VerifyVectorOfTables(rotation()) &&
+           VerifyOffset(verifier, VT_MIRRORROTATION) &&
+           verifier.VerifyVector(mirrorRotation()) &&
+           verifier.VerifyVectorOfTables(mirrorRotation()) &&
+           verifier.EndTable();
+  }
+};
+
+struct FittingBuilder {
+  typedef Fitting Table;
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_rotation(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>>> rotation) {
+    fbb_.AddOffset(Fitting::VT_ROTATION, rotation);
+  }
+  void add_mirrorRotation(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>>> mirrorRotation) {
+    fbb_.AddOffset(Fitting::VT_MIRRORROTATION, mirrorRotation);
+  }
+  explicit FittingBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  flatbuffers::Offset<Fitting> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<Fitting>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Fitting> CreateFitting(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>>> rotation = 0,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>>> mirrorRotation = 0) {
+  FittingBuilder builder_(_fbb);
+  builder_.add_mirrorRotation(mirrorRotation);
+  builder_.add_rotation(rotation);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<Fitting> CreateFittingDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<flatbuffers::Offset<actionData::Joint>> *rotation = nullptr,
+    const std::vector<flatbuffers::Offset<actionData::Joint>> *mirrorRotation = nullptr) {
+  auto rotation__ = rotation ? _fbb.CreateVector<flatbuffers::Offset<actionData::Joint>>(*rotation) : 0;
+  auto mirrorRotation__ = mirrorRotation ? _fbb.CreateVector<flatbuffers::Offset<actionData::Joint>>(*mirrorRotation) : 0;
+  return actionData::CreateFitting(
+      _fbb,
+      rotation__,
+      mirrorRotation__);
+}
+
 struct Action FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   typedef ActionBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -393,7 +463,7 @@ struct Action FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_JUMP = 6,
     VT_GAZE = 8,
     VT_GROUND = 10,
-    VT_JOINTS = 12
+    VT_FITTING = 12
   };
   const actionData::Walk *walk() const {
     return GetPointer<const actionData::Walk *>(VT_WALK);
@@ -407,8 +477,8 @@ struct Action FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const actionData::Ground *ground() const {
     return GetPointer<const actionData::Ground *>(VT_GROUND);
   }
-  const flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>> *joints() const {
-    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>> *>(VT_JOINTS);
+  const actionData::Fitting *fitting() const {
+    return GetPointer<const actionData::Fitting *>(VT_FITTING);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -420,9 +490,8 @@ struct Action FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            verifier.VerifyTable(gaze()) &&
            VerifyOffset(verifier, VT_GROUND) &&
            verifier.VerifyTable(ground()) &&
-           VerifyOffset(verifier, VT_JOINTS) &&
-           verifier.VerifyVector(joints()) &&
-           verifier.VerifyVectorOfTables(joints()) &&
+           VerifyOffset(verifier, VT_FITTING) &&
+           verifier.VerifyTable(fitting()) &&
            verifier.EndTable();
   }
 };
@@ -443,8 +512,8 @@ struct ActionBuilder {
   void add_ground(flatbuffers::Offset<actionData::Ground> ground) {
     fbb_.AddOffset(Action::VT_GROUND, ground);
   }
-  void add_joints(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>>> joints) {
-    fbb_.AddOffset(Action::VT_JOINTS, joints);
+  void add_fitting(flatbuffers::Offset<actionData::Fitting> fitting) {
+    fbb_.AddOffset(Action::VT_FITTING, fitting);
   }
   explicit ActionBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -463,31 +532,14 @@ inline flatbuffers::Offset<Action> CreateAction(
     flatbuffers::Offset<actionData::Jump> jump = 0,
     flatbuffers::Offset<actionData::Gaze> gaze = 0,
     flatbuffers::Offset<actionData::Ground> ground = 0,
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>>> joints = 0) {
+    flatbuffers::Offset<actionData::Fitting> fitting = 0) {
   ActionBuilder builder_(_fbb);
-  builder_.add_joints(joints);
+  builder_.add_fitting(fitting);
   builder_.add_ground(ground);
   builder_.add_gaze(gaze);
   builder_.add_jump(jump);
   builder_.add_walk(walk);
   return builder_.Finish();
-}
-
-inline flatbuffers::Offset<Action> CreateActionDirect(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<actionData::Walk> walk = 0,
-    flatbuffers::Offset<actionData::Jump> jump = 0,
-    flatbuffers::Offset<actionData::Gaze> gaze = 0,
-    flatbuffers::Offset<actionData::Ground> ground = 0,
-    const std::vector<flatbuffers::Offset<actionData::Joint>> *joints = nullptr) {
-  auto joints__ = joints ? _fbb.CreateVector<flatbuffers::Offset<actionData::Joint>>(*joints) : 0;
-  return actionData::CreateAction(
-      _fbb,
-      walk,
-      jump,
-      gaze,
-      ground,
-      joints__);
 }
 
 inline const actionData::Action *GetAction(const void *buf) {

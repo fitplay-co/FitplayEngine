@@ -19,7 +19,10 @@ public:
   BridgeClass(int x, std::string y)
     : x(x)
     , y(y)
-  {}
+  {
+    fitInstance.mirror = false;
+    mirrorFitInstance.mirror = true;
+  }
 
   void incrementX() {
     ++x;
@@ -76,7 +79,11 @@ public:
     }
 
     fitInstance.process(data);
-    auto fitting = fitInstance.writeFlatBuffer(action_data);
+    mirrorFitInstance.process(data);
+    auto p1 = fitInstance.writeFlatBuffer(action_data);
+    auto p2 = mirrorFitInstance.writeFlatBuffer(action_data);
+    auto fitting = actionData::CreateFitting(action_data, p1, p2);
+
     actionData::ActionBuilder actionBuilder(action_data);
     actionBuilder.add_joints(fitting);
 
@@ -112,6 +119,7 @@ private:
   int x;
   std::string y;
   fitplay::fitting fitInstance;
+  fitplay::fitting mirrorFitInstance;
   actionwalk::walk walkInstance;
   actionjump::jump jumpInstance;
   gaze::gazeTracking gazeInstance;
