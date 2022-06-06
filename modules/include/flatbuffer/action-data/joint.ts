@@ -2,40 +2,40 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-export class Point {
+export class Joint {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
-__init(i:number, bb:flatbuffers.ByteBuffer):Point {
+__init(i:number, bb:flatbuffers.ByteBuffer):Joint {
   this.bb_pos = i;
   this.bb = bb;
   return this;
 }
 
-static getRootAsPoint(bb:flatbuffers.ByteBuffer, obj?:Point):Point {
-  return (obj || new Point()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+static getRootAsJoint(bb:flatbuffers.ByteBuffer, obj?:Joint):Joint {
+  return (obj || new Joint()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 }
 
-static getSizePrefixedRootAsPoint(bb:flatbuffers.ByteBuffer, obj?:Point):Point {
+static getSizePrefixedRootAsJoint(bb:flatbuffers.ByteBuffer, obj?:Joint):Joint {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-  return (obj || new Point()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+  return (obj || new Joint()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 }
 
-x():number {
+w():number {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.0;
 }
 
-y():number {
+x():number {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.0;
 }
 
-z():number {
+y():number {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.0;
 }
 
-score():number {
+z():number {
   const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.0;
 }
@@ -47,42 +47,42 @@ name(optionalEncoding?:any):string|Uint8Array|null {
   return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
 }
 
-static startPoint(builder:flatbuffers.Builder) {
+static startJoint(builder:flatbuffers.Builder) {
   builder.startObject(5);
 }
 
+static addW(builder:flatbuffers.Builder, w:number) {
+  builder.addFieldFloat32(0, w, 0.0);
+}
+
 static addX(builder:flatbuffers.Builder, x:number) {
-  builder.addFieldFloat32(0, x, 0.0);
+  builder.addFieldFloat32(1, x, 0.0);
 }
 
 static addY(builder:flatbuffers.Builder, y:number) {
-  builder.addFieldFloat32(1, y, 0.0);
+  builder.addFieldFloat32(2, y, 0.0);
 }
 
 static addZ(builder:flatbuffers.Builder, z:number) {
-  builder.addFieldFloat32(2, z, 0.0);
-}
-
-static addScore(builder:flatbuffers.Builder, score:number) {
-  builder.addFieldFloat32(3, score, 0.0);
+  builder.addFieldFloat32(3, z, 0.0);
 }
 
 static addName(builder:flatbuffers.Builder, nameOffset:flatbuffers.Offset) {
   builder.addFieldOffset(4, nameOffset, 0);
 }
 
-static endPoint(builder:flatbuffers.Builder):flatbuffers.Offset {
+static endJoint(builder:flatbuffers.Builder):flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
 }
 
-static createPoint(builder:flatbuffers.Builder, x:number, y:number, z:number, score:number, nameOffset:flatbuffers.Offset):flatbuffers.Offset {
-  Point.startPoint(builder);
-  Point.addX(builder, x);
-  Point.addY(builder, y);
-  Point.addZ(builder, z);
-  Point.addScore(builder, score);
-  Point.addName(builder, nameOffset);
-  return Point.endPoint(builder);
+static createJoint(builder:flatbuffers.Builder, w:number, x:number, y:number, z:number, nameOffset:flatbuffers.Offset):flatbuffers.Offset {
+  Joint.startJoint(builder);
+  Joint.addW(builder, w);
+  Joint.addX(builder, x);
+  Joint.addY(builder, y);
+  Joint.addZ(builder, z);
+  Joint.addName(builder, nameOffset);
+  return Joint.endJoint(builder);
 }
 }

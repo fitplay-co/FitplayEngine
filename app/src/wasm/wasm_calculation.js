@@ -1,8 +1,7 @@
 var Module = require('../../wasm_modules/processor.js');
 var flatbuffers = require('flatbuffers');
-var Point = require('./flatbuffers/point').Point
-var Pose = require('./flatbuffers/pose.js').Pose;
-var test = require('./test')
+var Point = require('../../../modules/include/flatbuffer/pose-data/point').Point
+var Pose = require('../../../modules/include/flatbuffer/pose-data/pose').Pose;
 var fs = require('fs');
 const { z } = require('../midware_gaze_tracking.js');
 const { type } = require('os');
@@ -17,9 +16,9 @@ var wasm_processor = {
             //console.log("initialized")
         }
         
-        var builder = new flatbuffers.Builder(1024)
+        var builder = new flatbuffers.Builder(1024)     
+        var actionName = builder.createString("aciton_detection, gaze_tracking, ground_location, fitting")   
         var keyPoints = new Array(33)
-        var keypoints3d = new Array(33)
         for (var i = 0;i<33;i++){
             var name = builder.createString(pose.keypoints[i].name)
             Point.startPoint(builder)
@@ -32,6 +31,10 @@ var wasm_processor = {
             //console.log(point)
             keyPoints[i] = point
         }
+        //console.log(keyPoints)
+        var KeyPoints = Pose.createKeypointsVector(builder,keyPoints)
+
+        var keypoints3d = new Array(33)
         for (var i = 0;i<33;i++){
             var name = builder.createString(pose.keypoints3D[i].name)
             Point.startPoint(builder)
@@ -44,19 +47,17 @@ var wasm_processor = {
             //console.log(point)
             keypoints3d[i] = point
         }
-        //console.log(keyPoints)
-        var KeyPoints = Pose.createKeypointsVector(builder,keyPoints)
         //console.log(KeyPoints)
         var keyPoints3d = Pose.createKeypoints3DVector(builder,keypoints3d)
+
         Pose.startPose(builder)
+        Pose.addAction(builder, actionName)
         Pose.addKeypoints(builder,KeyPoints)
         Pose.addKeypoints3D(builder,keyPoints3d)
         var res = Pose.endPose(builder)
         builder.finish(res)
-        
-       
-        
-       var actionResult =  this.instance.entry(builder.asUint8Array())
+
+        var actionResult =  this.instance.entry(builder.asUint8Array())
         var actionData = new Uint8Array(actionResult)
         var actionBuf = new flatbuffers.ByteBuffer(actionData)
         var actionTemp = action.getRootAsAction(actionBuf)
@@ -82,8 +83,20 @@ var wasm_processor = {
             "y" : actionTemp.gaze().y(),
             "z" : actionTemp.gaze().z()
         }
-            
-         this.instance.release()
+        pose.fitting = {}
+        pose.fitting.rotation = []
+        for(var i = 0; i<18; i++) {
+            pose.fitting.rotation.push({
+                "name" : actionTemp.joints(i).name(),
+                "w" : actionTemp.joints(i).w(),
+                "x" : actionTemp.joints(i).x(),
+                "y" : actionTemp.joints(i).y(),
+                "z" : actionTemp.joints(i).z(),
+            })
+        }
+
+        console.log(pose.fitting)
+        this.instance.release()
         
         // var bbb = builder.asUint8Array()
         // fs.writeFileSync('pose.bin',bbb,'binary')

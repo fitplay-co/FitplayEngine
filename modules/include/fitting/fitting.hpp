@@ -7,11 +7,14 @@
 #include "glm/glm.hpp"
 #include "glm/gtx/quaternion.hpp"
 
+#include "flatbuffer/poseData_generated.h"
+#include "flatbuffer/actionData_generated.h"
+
 using namespace nlohmann;
 using namespace glm;
 using namespace std;
 
-const int jointPointSize = 18;
+static constexpr int jointPointSize = 18;
 static constexpr quat rotateFromLookatZtoX = quat(0.5, -0.5, -0.5, -0.5);
 
 namespace fitplay {
@@ -24,6 +27,7 @@ namespace fitplay {
 
     struct jointPoint {
         std::string jointName;
+
         int parentIndex = 0;
         float boneLength = 0.0f;
 
@@ -88,16 +92,17 @@ namespace fitplay {
             //update joint point in each process, to calculate fk landmark and rotation and do fitting
             //joint jointForward is right aixs of joint look at and refers to t pose y asix in unity 
             void updateJointPoint(jointPoint& p, vec3 const& startPoint, vec3 const& endPoint, vec3 const& jointForward);
-            void process(json& data);
+            void process(const PoseData::Pose* data);
             void updateLandmarks(landmarks const & landmarkData);
             vec3 vectorFromToPoint(vec3 const & from, vec3 const & to);
-            vec3 readLandmarkPointVector(int point,const json& data);
+            vec3 readLandmarkPointVector(int point, const PoseData::Pose* data);
             vec3 fkToNextPoint(vec3 const& startPoint, vec3 const& boneDirection, quat const& boneRotation, float const& bontLength);
             vec3 crossSafe(glm::vec3 const& direction, glm::vec3 const& fov);
             quat lookatRotationSafe(glm::vec3 const& direction, glm::vec3 const& up, glm::vec3 const& alternativeUp);
-            void debugPrintQuat(std::string jointName, std::string name, quat& quat, json &data);
-            void writeRotation(glm::quat const & r, json & data, int index, std::string name);
-            void writeFK(vec3 const& point, json & data, int index, std::string name);
+            flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>>> writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder);
+            // void debugPrintQuat(std::string jointName, std::string name, quat& quat, json &data);
+            // void writeRotation(glm::quat const & r, json & data, int index, std::string name);
+            // void writeFK(vec3 const& point, json & data, int index, std::string name);
     };
 
     fitting::fitting() {
@@ -123,7 +128,6 @@ namespace fitplay {
 
         //last point for root reference from neck, hip points
         addJointPoint(jointPoints[18], "root", -1, 0.4f, down);
-
         addJointPoint(jointPoints[0], "neck", 18, 0.4f, down);
         addJointPoint(jointPoints[1], "head", 0, 0.1f, down);
         addJointPoint(jointPoints[2], "lshoulder", 0, 0.1f, right);
@@ -188,23 +192,9 @@ namespace fitplay {
         p.fromPointFk = jointPoints[p.parentIndex].toPointFk;
         //TODO fk calculation
         p.toPointFk = fkToNextPoint(p.fromPointFk, parentPosDirection3d, p.fkRotation, p.boneLength);
-    } 
-
-    void fitting::debugPrintQuat(std::string jointName, std::string quatName, quat& quat, json& data) {
-        glm::vec3 euler = eulerAngles(quat) * 180.f/ 3.14159f ;
-        data["fitting"][jointName][quatName]["x"] =  quat.x;
-        data["fitting"][jointName][quatName]["y"] =  quat.y;
-        data["fitting"][jointName][quatName]["z"] =  quat.z;
-        data["fitting"][jointName][quatName]["w"] =  quat.w;
-
-        data["fitting"][jointName][quatName]["e1"] =  euler[0];
-        data["fitting"][jointName][quatName]["e2"] =  euler[1];
-        data["fitting"][jointName][quatName]["e3"] =  euler[2];
-
     }
 
-    void fitting::process(json& data) {
-        data["fitting"]["wasm_fitting_version"] = "0.0.1";
+    void fitting::process(const PoseData::Pose* data) {
         landmarks landmarkData;
 
         landmarkData.head = readLandmarkPointVector(0, data);
@@ -231,30 +221,6 @@ namespace fitplay {
                 + landmarkData.rshoulder[1])/2.0f, (landmarkData.lshoulder[2] + landmarkData.rshoulder[2])/2.0f);
 
         updateLandmarks(landmarkData);
-
-        writeFK(landmarkData.hipcenter, data, 0 , "hipcenter");
-        writeFK(landmarkData.head, data, 1, "head");
-        writeFK(landmarkData.lshoulder, data, 2,"lshoulder");
-        writeFK(landmarkData.rshoulder, data, 3, "rshoulder");
-        writeFK(landmarkData.larm, data, 4, "larm");
-        writeFK(landmarkData.rarm, data, 5, "rarm");
-        writeFK(landmarkData.lwrist, data, 6, "lwrist");
-        writeFK(landmarkData.rwrist, data, 7, "rwrist");
-        writeFK(landmarkData.lhand, data, 8, "lhand");
-        writeFK(landmarkData.rhand, data, 9, "rhand");
-        writeFK(landmarkData.lhip, data, 10, "lhip");
-        writeFK(landmarkData.rhip, data, 11, "rhip");
-        writeFK(landmarkData.lknee, data, 12, "lknee");
-        writeFK(landmarkData.rknee, data, 13, "rknee");
-        writeFK(landmarkData.lankle, data, 14, "lankle");
-        writeFK(landmarkData.rankle, data, 15, "rankle");
-        writeFK(landmarkData.lfoot, data, 16, "lfoot");
-        writeFK(landmarkData.rfoot, data, 17, "rfoot");
-        writeFK(landmarkData.neck, data, 18, "neck");
-
-        for(int i = 0; i < jointPointSize; i ++) {
-            writeRotation(jointPoints[i].fkRotation, data, i, jointPoints[i].jointName);
-        }
     }
     
     void fitting::updateLandmarks(landmarks const & landmarkData) {
@@ -313,21 +279,6 @@ namespace fitplay {
         updateJointPoint(jointPoints[17], landmarkData.rankle, landmarkData.rfoot, rankleForwarding);
     }
 
-    void fitting::writeFK(vec3 const& point, json & data, int index, std::string name) {
-        data["fitting"]["keypoints3D"][index]["x"] = point[0];
-        data["fitting"]["keypoints3D"][index]["y"] = point[1];
-        data["fitting"]["keypoints3D"][index]["z"] = point[2];
-        data["fitting"]["keypoints3D"][index]["name"] = name;
-    }
-
-    void fitting::writeRotation(glm::quat const & r, json & data, int index, std::string name) {
-        data["fitting"]["rotation"][index]["w"] = r.w;
-        data["fitting"]["rotation"][index]["x"] = r.x;
-        data["fitting"]["rotation"][index]["y"] = r.y;
-        data["fitting"]["rotation"][index]["z"] = r.z;
-        data["fitting"]["rotation"][index]["name"] = name;
-    }
-
     vec3 fitting::crossSafe(glm::vec3 const& direction, glm::vec3 const& fov) {
         //in unity backend and camera / depth model using left hand  
         //look at will rotate to z axis and y as up; whiles joints has x axis as direction and z as up; 
@@ -364,16 +315,26 @@ namespace fitplay {
         return glm::normalize(vec3(to[0] - from[0], to[1] - from[1], to[2] - from[2]));
     }
 
-    vec3 fitting::readLandmarkPointVector(int point,const json& data) {
-        float xStart = data["keypoints3D"][point]["x"];
-        float yStart = (0.0f - float(data["keypoints3D"][point]["y"]));
-        float zStart = data["keypoints3D"][point]["z"];
+    vec3 fitting::readLandmarkPointVector(int point, const PoseData::Pose* data) {
+        float xStart = data->keypoints3D()->Get(point)->x();
+        float yStart = 0.0f - data->keypoints3D()->Get(point)->y();
+        float zStart = data->keypoints3D()->Get(point)->z();
         return vec3(xStart, yStart, zStart);
     }
 
-    // vec3 fitting::calculatejointQuat(int startPoint, int endPoint) {
-
-    // }
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>>> fitting::writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder) {
+        std::vector<flatbuffers::Offset<actionData::Joint>> nodeVector;
+        for(int i = 0; i < jointPointSize; i ++) {
+            auto nodeOffset = actionData::CreateJointDirect(resultBuilder,
+                jointPoints[i].fkRotation.w, 
+                jointPoints[i].fkRotation.x, 
+                jointPoints[i].fkRotation.y, 
+                jointPoints[i].fkRotation.z, 
+                jointPoints[i].jointName.c_str());
+            nodeVector.push_back(nodeOffset);
+        }
+        return resultBuilder.CreateVector(nodeVector);
+    }
 }
 
 #endif

@@ -31,15 +31,15 @@ namespace ground {
         public:
             groundLocation();
             ~groundLocation();
-            void process(float ground_data[], PoseData::Pose* data);
-            float distance_finder_z_filtered(PoseData::Pose* data, int num1, int num2);
-            void distance_finder_leg(PoseData::Pose* data);
+            void process(float ground_data[], const PoseData::Pose* data);
+            float distance_finder_z_filtered(const PoseData::Pose* data, int num1, int num2);
+            void distance_finder_leg(const PoseData::Pose* data);
     };
 
     groundLocation::groundLocation() {}
     groundLocation::~groundLocation() {}
 
-    void groundLocation::process(float ground_data[], PoseData::Pose* data) {
+    void groundLocation::process(float ground_data[], const PoseData::Pose* data) {
         std::string re = data->action()->str();
         if (re == "reset"){
             startX = pre_x;
@@ -82,7 +82,7 @@ namespace ground {
         pre_z = z_down;
     }
 
-    float groundLocation::distance_finder_z_filtered(PoseData::Pose* data, int num1, int num2) {
+    float groundLocation::distance_finder_z_filtered(const PoseData::Pose* data, int num1, int num2) {
         float x1 = data->keypoints()->Get(num1)->x();
         float x2 = data->keypoints()->Get(num2)->x();
         float u1 = widthScale * x1;
@@ -90,7 +90,7 @@ namespace ground {
         return 35/fabs(0.8*(u2-u1));
     } 
 
-    void groundLocation::distance_finder_leg(PoseData::Pose* data) {
+    void groundLocation::distance_finder_leg(const PoseData::Pose* data) {
         float y_1 = fabs(data->keypoints3D()->Get(31)->y() - data->keypoints3D()->Get(23)->y());
         float y_2 = fabs(data->keypoints3D()->Get(32)->y() - data->keypoints3D()->Get(24)->y());
         if(y_1 > legLength){

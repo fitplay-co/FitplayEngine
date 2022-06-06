@@ -23,32 +23,43 @@ static getSizePrefixedRootAsPose(bb:flatbuffers.ByteBuffer, obj?:Pose):Pose {
   return (obj || new Pose()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 }
 
-keypoints(index: number, obj?:Point):Point|null {
+action():string|null
+action(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+action(optionalEncoding?:any):string|Uint8Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+}
+
+keypoints(index: number, obj?:Point):Point|null {
+  const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? (obj || new Point()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
 }
 
 keypointsLength():number {
-  const offset = this.bb!.__offset(this.bb_pos, 4);
+  const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
 }
 
 keypoints3D(index: number, obj?:Point):Point|null {
-  const offset = this.bb!.__offset(this.bb_pos, 6);
+  const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? (obj || new Point()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
 }
 
 keypoints3DLength():number {
-  const offset = this.bb!.__offset(this.bb_pos, 6);
+  const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
 }
 
 static startPose(builder:flatbuffers.Builder) {
-  builder.startObject(2);
+  builder.startObject(3);
+}
+
+static addAction(builder:flatbuffers.Builder, actionOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(0, actionOffset, 0);
 }
 
 static addKeypoints(builder:flatbuffers.Builder, keypointsOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(0, keypointsOffset, 0);
+  builder.addFieldOffset(1, keypointsOffset, 0);
 }
 
 static createKeypointsVector(builder:flatbuffers.Builder, data:flatbuffers.Offset[]):flatbuffers.Offset {
@@ -64,7 +75,7 @@ static startKeypointsVector(builder:flatbuffers.Builder, numElems:number) {
 }
 
 static addKeypoints3D(builder:flatbuffers.Builder, keypoints3DOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(1, keypoints3DOffset, 0);
+  builder.addFieldOffset(2, keypoints3DOffset, 0);
 }
 
 static createKeypoints3DVector(builder:flatbuffers.Builder, data:flatbuffers.Offset[]):flatbuffers.Offset {
@@ -92,8 +103,9 @@ static finishSizePrefixedPoseBuffer(builder:flatbuffers.Builder, offset:flatbuff
   builder.finish(offset, undefined, true);
 }
 
-static createPose(builder:flatbuffers.Builder, keypointsOffset:flatbuffers.Offset, keypoints3DOffset:flatbuffers.Offset):flatbuffers.Offset {
+static createPose(builder:flatbuffers.Builder, actionOffset:flatbuffers.Offset, keypointsOffset:flatbuffers.Offset, keypoints3DOffset:flatbuffers.Offset):flatbuffers.Offset {
   Pose.startPose(builder);
+  Pose.addAction(builder, actionOffset);
   Pose.addKeypoints(builder, keypointsOffset);
   Pose.addKeypoints3D(builder, keypoints3DOffset);
   return Pose.endPose(builder);

@@ -23,14 +23,14 @@ namespace gaze {
         public:
             gazeTracking();
             ~gazeTracking();
-            void process(float gaze_data[], PoseData::Pose* data);
-            float distance_finder_z_filtered(PoseData::Pose* data, int num1, int num2);
+            void process(float gaze_data[],const  PoseData::Pose* data);
+            float distance_finder_z_filtered(const PoseData::Pose* data, int num1, int num2);
     };
 
     gazeTracking::gazeTracking() {}
     gazeTracking::~gazeTracking() {}
 
-    void gazeTracking::process(float gaze_data[], PoseData::Pose* data) {
+    void gazeTracking::process(float gaze_data[], const PoseData::Pose* data) {
         mat3 cameraParam = mat3(f_dx, 0, centerPointX,
                                 0, f_dy, centerPointY,
                                 0, 0, 1);
@@ -49,7 +49,7 @@ namespace gaze {
         pre_z = z;
     }
 
-    float gazeTracking::distance_finder_z_filtered(PoseData::Pose* data, int num1, int num2) {
+    float gazeTracking::distance_finder_z_filtered(const PoseData::Pose* data, int num1, int num2) {
         float x1 = data->keypoints()->Get(num1)->x();
         float x2 = data->keypoints()->Get(num2)->x();
         float u1 = widthScale * x1;

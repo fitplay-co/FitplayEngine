@@ -94,6 +94,7 @@
         "utility": "cpp",
         "span": "cpp",
         "*.ipp": "cpp",
-        "cassert": "cpp"
+        "cassert": "cpp",
+        "filesystem": "cpp"
     }
 }
