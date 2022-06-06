@@ -108,7 +108,7 @@ module.exports=function(){
       let jsonObj=JSON.parse(jsObj);
       console.log("pack jsonObj.type:%s",jsonObj.type);
 
-      switch(jsonObj.type){
+      switch(jsonObj.sensor_type){
         case "vibration":
           {
             let uint8arr=new Uint8Array(CMD_VIRBACTION_LEN);

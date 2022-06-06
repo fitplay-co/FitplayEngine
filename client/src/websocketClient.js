@@ -81,7 +81,8 @@ function websocketReconnect(){
       let message=e.data;
       let jsonObj=JSON.parse(message);
 
-      if(jsonObj.type !="vibration")
+
+      if(jsonObj.sensor_type !="vibration")
       {
         //console.log("[websocketClient] is not support type:%s",jsonObj.type);
         return ;

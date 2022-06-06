@@ -147,14 +147,14 @@ function addData(inputData){
   let jsonObj=JSON.parse(inputData);
   let index=0;
   let deviceId=jsonObj.device_id;
-  let type=jsonObj.type;
+  let type=jsonObj.sensor_type;
   let imuJsonData;
 
   //console.log(jsonObj.type);
 
   if(type!="imu" && type!="input")
   {
-    console.log("data error ");
+     //console.log("data is not monitor need! type:%s ",type);
      return;
   }
 
@@ -300,7 +300,7 @@ function DisplayData(data) {
     }
   }
 
-  if(jsonObj.type=="imu")
+  if(jsonObj.sensor_type=="imu")
   {
 
     if(deviceId==jsonObj.device_id)
@@ -346,7 +346,7 @@ function DisplayData(data) {
     }
   }
 
-  if(jsonObj.type=="input")
+  if(jsonObj.sensor_type=="input")
   {
     if(deviceId==jsonObj.device_id)
     {
