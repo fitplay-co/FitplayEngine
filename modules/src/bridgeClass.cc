@@ -18,7 +18,10 @@ public:
   BridgeClass(int x, std::string y)
     : x(x)
     , y(y)
-  {}
+  {
+    fitInstance.mirror = false;
+    mirrorFitInstance.mirror = true;
+  }
 
   void incrementX() {
     ++x;
@@ -46,14 +49,19 @@ public:
     gazeInstance.process(gaze_data, data);
     groundInstance.process(ground_data, data);
     fitInstance.process(data);
+    mirrorFitInstance.process(data);
 
     auto p0 = actionData::CreateWalk(action_data, walk_data[0], walk_data[1], walk_data[2]);
     auto p1 = actionData::CreateJump(action_data, jump_data[0], jump_data[1]);
     auto p2 = actionData::CreateGaze(action_data, gaze_data[0], gaze_data[1], gaze_data[2]);
     auto p3 = actionData::CreateGround(action_data, ground_data[0], ground_data[1], ground_data[2], ground_data[3], ground_data[4]);
-    auto p4 = fitInstance.writeFlatBuffer(action_data);
 
-    auto build = actionData::CreateAction(action_data, p0, p1, p2, p3, p4);
+    //mirror and camera fit inatance combined to fitting 
+    auto p4 = fitInstance.writeFlatBuffer(action_data);
+    auto p5 = mirrorFitInstance.writeFlatBuffer(action_data);
+    auto fitting = actionData::CreateFitting(action_data, p4, p5);
+
+    auto build = actionData::CreateAction(action_data, p0, p1, p2, p3, fitting);
     action_data.Finish(build);
     uint8_t *byteBuffer = action_data.GetBufferPointer();
     size_t bufferLength = action_data.GetSize();
@@ -74,6 +82,7 @@ private:
   int x;
   std::string y;
   fitplay::fitting fitInstance;
+  fitplay::fitting mirrorFitInstance;
   actionwalk::walk walkInstance;
   actionjump::jump jumpInstance;
   gaze::gazeTracking gazeInstance;
