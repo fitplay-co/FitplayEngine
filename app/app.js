@@ -56,6 +56,7 @@ var clientMap = new Map() // id -> client映射
 var clientIdMap = new Map() // client -> id映射
 var clientSubscriptionMap = new Map() // client订阅的高级能力
 var advancedFeaturesSubscriptionsMap = new Map() // 每个高级能力订阅的客户端数
+var resetGroundLocation = false
 var times = [];
 var counter = 0
 var processingJob = 0
@@ -98,21 +99,26 @@ var messageLoop = coroutine(function*() {
             if (advancedFeaturesSubscriptionsMap.has('gaze_tracking')) {
                 gazeTrackingEnable = true
             }
+            var groundLocationAction = ''
+            if (resetGroundLocation) {
+                groundLocationAction = 'reset'
+                resetGroundLocation = false
+            }
             featureConfigs.push({
                 featureId: 'ground_loccation',
-                enable: true,//groundLocationEnable,
-                action: '',
+                enable: groundLocationEnable,
+                action: groundLocationAction,
                 data: ''
             })
             featureConfigs.push({
                 featureId: 'action_detection',
-                enable: true,//actionDetectionEnable,
+                enable: actionDetectionEnable,
                 action: '',
                 data: ''
             })
             featureConfigs.push({
                 featureId: 'gaze_tracking',
-                enable: true,//gazeTrackingEnable,
+                enable: gazeTrackingEnable,
                 action: '',
                 data: ''
             })
@@ -142,23 +148,31 @@ var messageLoop = coroutine(function*() {
 
             pose.timeProfiling.beforeSendTime = Math.round(performance.now()*1000)+'μs'
 
-
-
             activeApplicationClient.forEach(function(ws){
                 if(!ws.notActived) {
+                    const poseDataForClient = Object.assign({}, pose)
+                    if ('ground_location' in poseDataForClient) {
+                        delete poseDataForClient.ground_location
+                    }
+                    if ('action_detection' in poseDataForClient) {
+                        delete poseDataForClient.action_detection
+                    }
+                    if ('gaze_tracking' in poseDataForClient) {
+                        delete poseDataForClient.gaze_tracking
+                    }
                     if (clientSubscriptionMap.has(ws)) {
                         const featureSubscriptions = clientSubscriptionMap.get(ws)
                         if (featureSubscriptions.indexOf('ground_loccation') >= 0) {
-                            pose.ground_location = groundLocationData.ground_location
+                            poseDataForClient.ground_location = pose.ground_location
                         }
                         if (featureSubscriptions.indexOf('action_detection') >= 0) {
-                            pose.action_detection = actionDetectionData.action_detection
+                            poseDataForClient.action_detection = pose.action_detection
                         }
                         if (featureSubscriptions.indexOf('gaze_tracking') >= 0) {
-                            pose.gaze_tracking = gazeTrackingData.gaze_tracking
+                            poseDataForClient.gaze_tracking = pose.gaze_tracking
                         }
                     }
-                    messageContent = JSON.stringify(pose)
+                    messageContent = JSON.stringify(poseDataForClient)
                     ws.send(messageContent)
                 }
             });
@@ -183,6 +197,8 @@ var messageLoop = coroutine(function*() {
                         console.log(`client with id "${clientIdMap.get(ws)}" release ${message.feature_id}`)
                     }
                 }
+            } else if (message.feature_id === 'ground_loccation' && message.action === 'reset') {
+                resetGroundLocation = true
             }
         } else if (type === 'application_client') {
             activeApplicationClient.push(ws)

@@ -44,13 +44,15 @@ public:
     bool actionDetectionEnable = false;
     bool gazeTrackingEnable = false;
     bool groundLocationEnable = false;
+    bool groundLocationReset = false;
     for(int i = 0; i < featureConfigs->configs()->Length(); i++) {
       auto config = featureConfigs->configs()->Get(i);
-      if (std::string("action_detection").compare(config->feature_id()->str()) == 0) {
+      if ("action_detection" == config->feature_id()->str()) {
         actionDetectionEnable = config->enable();
-      } else if (std::string("ground_loccation").compare(config->feature_id()->str()) == 0) {
+      } else if ("ground_loccation" == config->feature_id()->str()) {
         groundLocationEnable = config->enable();
-      } else if (std::string("gaze_tracking").compare(config->feature_id()->str()) == 0) {
+        groundLocationReset = config->action()->str() == "reset";
+      } else if ("gaze_tracking" == config->feature_id()->str()) {
         gazeTrackingEnable = config->enable();
       }
     }
@@ -74,7 +76,7 @@ public:
       gazeOffset = actionData::CreateGaze(action_data, gaze_data[0], gaze_data[1], gaze_data[2]);
     }
     if (groundLocationEnable) {
-      groundInstance.process(ground_data, data);
+      groundInstance.process(ground_data, data, groundLocationReset);
       groundLocation = actionData::CreateGround(action_data, ground_data[0], ground_data[1], ground_data[2], ground_data[3], ground_data[4]);
     }
 
@@ -85,7 +87,7 @@ public:
     auto fitting = actionData::CreateFitting(action_data, p1, p2);
 
     actionData::ActionBuilder actionBuilder(action_data);
-    actionBuilder.add_joints(fitting);
+    actionBuilder.add_fitting(fitting);
 
     if (actionDetectionEnable) {
       actionBuilder.add_walk(walk);

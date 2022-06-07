@@ -31,7 +31,7 @@ namespace ground {
         public:
             groundLocation();
             ~groundLocation();
-            void process(float ground_data[], const PoseData::Pose* data);
+            void process(float ground_data[], const PoseData::Pose* data, const bool reset);
             float distance_finder_z_filtered(const PoseData::Pose* data, int num1, int num2);
             void distance_finder_leg(const PoseData::Pose* data);
     };
@@ -39,13 +39,11 @@ namespace ground {
     groundLocation::groundLocation() {}
     groundLocation::~groundLocation() {}
 
-    void groundLocation::process(float ground_data[], const PoseData::Pose* data) {
-        std::string re = data->action()->str();
-        if (re == "reset"){
+    void groundLocation::process(float ground_data[], const PoseData::Pose* data, const bool reset) {
+        if (reset){
             startX = pre_x;
             startY = pre_y;
             startZ = pre_z;
-            return;
         }
         mat3 cameraParam = mat3(f_dx, 0, centerPointX,
                                 0, f_dy, centerPointY,
