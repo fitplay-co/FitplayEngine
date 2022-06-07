@@ -6,6 +6,7 @@
 #include "fitting/fitting.hpp"
 #include "flatbuffer/poseData_generated.h"
 #include "flatbuffer/actionData_generated.h"
+#include "flatbuffer/featureConfig_generated.h"
 #include "actionDetection/walkDetection.hpp"
 #include "actionDetection/jumpDetection.hpp"
 #include "gazeTracking/gazeTracking.hpp"
@@ -36,32 +37,70 @@ public:
     }
   }
 
-  val entry(std::string input) {
-    const PoseData::Pose* data = PoseData::GetPose(&input[0]);
+  val entry(std::string inputData, std::string configs) {
+    const PoseData::Pose* data = PoseData::GetPose(&inputData[0]);
+    const FeatureConfigs::FeatureConfigList* featureConfigs = FeatureConfigs::GetFeatureConfigList(&configs[0]);
+
+    bool actionDetectionEnable = false;
+    bool gazeTrackingEnable = false;
+    bool groundLocationEnable = false;
+    bool groundLocationReset = false;
+    for(int i = 0; i < featureConfigs->configs()->Length(); i++) {
+      auto config = featureConfigs->configs()->Get(i);
+      if ("action_detection" == config->feature_id()->str()) {
+        actionDetectionEnable = config->enable();
+      } else if ("ground_loccation" == config->feature_id()->str()) {
+        groundLocationEnable = config->enable();
+        groundLocationReset = config->action()->str() == "reset";
+      } else if ("gaze_tracking" == config->feature_id()->str()) {
+        gazeTrackingEnable = config->enable();
+      }
+    }
 
     float walk_data[3] = {0,0,0};
     float jump_data[2] = {0,0};
     float gaze_data[3] = {0,0,0};
     float ground_data[5] = {0,0,0,0,0};
+    flatbuffers::Offset<actionData::Walk> walk;
+    flatbuffers::Offset<actionData::Jump> jump;
+    flatbuffers::Offset<actionData::Gaze> gazeOffset; 
+    flatbuffers::Offset<actionData::Ground> groundLocation;
+    if (actionDetectionEnable) {
+      walkInstance.process(walk_data, data);
+      jumpInstance.process(jump_data, data);
+      walk = actionData::CreateWalk(action_data, walk_data[0], walk_data[1], walk_data[2]);
+      jump = actionData::CreateJump(action_data, jump_data[0], jump_data[1]);
+    }
+    if (gazeTrackingEnable) {
+      gazeInstance.process(gaze_data, data);
+      gazeOffset = actionData::CreateGaze(action_data, gaze_data[0], gaze_data[1], gaze_data[2]);
+    }
+    if (groundLocationEnable) {
+      groundInstance.process(ground_data, data, groundLocationReset);
+      groundLocation = actionData::CreateGround(action_data, ground_data[0], ground_data[1], ground_data[2], ground_data[3], ground_data[4]);
+    }
 
-    walkInstance.process(walk_data, data);
-    jumpInstance.process(jump_data, data);
-    gazeInstance.process(gaze_data, data);
-    groundInstance.process(ground_data, data);
     fitInstance.process(data);
     mirrorFitInstance.process(data);
+    auto p1 = fitInstance.writeFlatBuffer(action_data);
+    auto p2 = mirrorFitInstance.writeFlatBuffer(action_data);
+    auto fitting = actionData::CreateFitting(action_data, p1, p2);
 
-    auto p0 = actionData::CreateWalk(action_data, walk_data[0], walk_data[1], walk_data[2]);
-    auto p1 = actionData::CreateJump(action_data, jump_data[0], jump_data[1]);
-    auto p2 = actionData::CreateGaze(action_data, gaze_data[0], gaze_data[1], gaze_data[2]);
-    auto p3 = actionData::CreateGround(action_data, ground_data[0], ground_data[1], ground_data[2], ground_data[3], ground_data[4]);
+    actionData::ActionBuilder actionBuilder(action_data);
+    actionBuilder.add_fitting(fitting);
 
-    //mirror and camera fit inatance combined to fitting 
-    auto p4 = fitInstance.writeFlatBuffer(action_data);
-    auto p5 = mirrorFitInstance.writeFlatBuffer(action_data);
-    auto fitting = actionData::CreateFitting(action_data, p4, p5);
+    if (actionDetectionEnable) {
+      actionBuilder.add_walk(walk);
+      actionBuilder.add_jump(jump);
+    }
+    if (gazeTrackingEnable) {
+      actionBuilder.add_gaze(gazeOffset);
+    }
+    if (groundLocationEnable) {
+      actionBuilder.add_ground(groundLocation);
+    }
 
-    auto build = actionData::CreateAction(action_data, p0, p1, p2, p3, fitting);
+    auto build = actionBuilder.Finish();
     action_data.Finish(build);
     uint8_t *byteBuffer = action_data.GetBufferPointer();
     size_t bufferLength = action_data.GetSize();

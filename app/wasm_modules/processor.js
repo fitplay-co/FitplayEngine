@@ -46,7 +46,7 @@ var ENVIRONMENT_IS_NODE = typeof process == 'object' && typeof process.versions 
 var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIRONMENT_IS_WORKER;
 
 if (Module['ENVIRONMENT']) {
-  throw new Error('Module.ENVIRONMENT has been deprecated. To force the environment, use the ENVIRONMENT compile-time option (for example, -s ENVIRONMENT=web or -s ENVIRONMENT=node)');
+  throw new Error('Module.ENVIRONMENT has been deprecated. To force the environment, use the ENVIRONMENT compile-time option (for example, -sENVIRONMENT=web or -sENVIRONMENT=node)');
 }
 
 // `/` should be present at the end if `scriptDirectory` is not empty
@@ -324,7 +324,7 @@ var WORKERFS = 'WORKERFS is no longer included by default; build with -lworkerfs
 var NODEFS = 'NODEFS is no longer included by default; build with -lnodefs.js';
 function alignMemory() { abort('`alignMemory` is now a library function and not included by default; add it to your library.js __deps or to DEFAULT_LIBRARY_FUNCS_TO_INCLUDE on the command line'); }
 
-assert(!ENVIRONMENT_IS_SHELL, "shell environment detected but not enabled at build time.  Add 'shell' to `-s ENVIRONMENT` to enable.");
+assert(!ENVIRONMENT_IS_SHELL, "shell environment detected but not enabled at build time.  Add 'shell' to `-sENVIRONMENT` to enable.");
 
 
 
@@ -334,10 +334,10 @@ var POINTER_SIZE = 4;
 
 function getNativeTypeSize(type) {
   switch (type) {
-    case 'i1': case 'i8': return 1;
-    case 'i16': return 2;
-    case 'i32': return 4;
-    case 'i64': return 8;
+    case 'i1': case 'i8': case 'u8': return 1;
+    case 'i16': case 'u16': return 2;
+    case 'i32': case 'u32': return 4;
+    case 'i64': case 'u64': return 8;
     case 'float': return 4;
     case 'double': return 8;
     default: {
@@ -365,6 +365,37 @@ function warnOnce(text) {
 // include: runtime_functions.js
 
 
+// This gives correct answers for everything less than 2^{14} = 16384
+// I hope nobody is contemplating functions with 16384 arguments...
+function uleb128Encode(n) {
+  assert(n < 16384);
+  if (n < 128) {
+    return [n];
+  }
+  return [(n % 128) | 128, n >> 7];
+}
+
+// Converts a signature like 'vii' into a description of the wasm types, like
+// { parameters: ['i32', 'i32'], results: [] }.
+function sigToWasmTypes(sig) {
+  var typeNames = {
+    'i': 'i32',
+    'j': 'i64',
+    'f': 'f32',
+    'd': 'f64',
+    'p': 'i32',
+  };
+  var type = {
+    parameters: [],
+    results: sig[0] == 'v' ? [] : [typeNames[sig[0]]]
+  };
+  for (var i = 1; i < sig.length; ++i) {
+    assert(sig[i] in typeNames, 'invalid signature char: ' + sig[i]);
+    type.parameters.push(typeNames[sig[i]]);
+  }
+  return type;
+}
+
 // Wraps a JS function as a wasm function with a given signature.
 function convertJsFunctionToWasm(func, sig) {
 
@@ -373,27 +404,12 @@ function convertJsFunctionToWasm(func, sig) {
   // Otherwise, construct a minimal wasm module importing the JS function and
   // re-exporting it.
   if (typeof WebAssembly.Function == "function") {
-    var typeNames = {
-      'i': 'i32',
-      'j': 'i64',
-      'f': 'f32',
-      'd': 'f64'
-    };
-    var type = {
-      parameters: [],
-      results: sig[0] == 'v' ? [] : [typeNames[sig[0]]]
-    };
-    for (var i = 1; i < sig.length; ++i) {
-      type.parameters.push(typeNames[sig[i]]);
-    }
-    return new WebAssembly.Function(type, func);
+    return new WebAssembly.Function(sigToWasmTypes(sig), func);
   }
 
   // The module is static, with the exception of the type section, which is
   // generated based on the signature passed in.
   var typeSection = [
-    0x01, // id: section,
-    0x00, // length: 0 (placeholder)
     0x01, // count: 1
     0x60, // form: func
   ];
@@ -401,14 +417,16 @@ function convertJsFunctionToWasm(func, sig) {
   var sigParam = sig.slice(1);
   var typeCodes = {
     'i': 0x7f, // i32
+    'p': 0x7f, // i32
     'j': 0x7e, // i64
     'f': 0x7d, // f32
     'd': 0x7c, // f64
   };
 
   // Parameters, length + signatures
-  typeSection.push(sigParam.length);
+  typeSection = typeSection.concat(uleb128Encode(sigParam.length));
   for (var i = 0; i < sigParam.length; ++i) {
+    assert(sigParam[i] in typeCodes, 'invalid signature char: ' + sigParam[i]);
     typeSection.push(typeCodes[sigParam[i]]);
   }
 
@@ -420,9 +438,12 @@ function convertJsFunctionToWasm(func, sig) {
     typeSection = typeSection.concat([0x01, typeCodes[sigRet]]);
   }
 
-  // Write the overall length of the type section back into the section header
-  // (excepting the 2 bytes for the section id and length)
-  typeSection[1] = typeSection.length - 2;
+  // Write the section code and overall length of the type section into the
+  // section header
+  typeSection = [0x01 /* Type section code */].concat(
+    uleb128Encode(typeSection.length),
+    typeSection
+  );
 
   // Rest of the module is static
   var bytes = new Uint8Array([
@@ -550,7 +571,7 @@ function ignoredModuleProp(prop) {
 function unexportedMessage(sym, isFSSybol) {
   var msg = "'" + sym + "' was not exported. add it to EXPORTED_RUNTIME_METHODS (see the FAQ)";
   if (isFSSybol) {
-    msg += '. Alternatively, forcing filesystem support (-s FORCE_FILESYSTEM=1) can export this for you';
+    msg += '. Alternatively, forcing filesystem support (-sFORCE_FILESYSTEM) can export this for you';
   }
   return msg;
 }
@@ -597,49 +618,6 @@ if (typeof WebAssembly != 'object') {
   abort('no native wasm support detected');
 }
 
-// include: runtime_safe_heap.js
-
-
-// In MINIMAL_RUNTIME, setValue() and getValue() are only available when building with safe heap enabled, for heap safety checking.
-// In traditional runtime, setValue() and getValue() are always available (although their use is highly discouraged due to perf penalties)
-
-/** @param {number} ptr
-    @param {number} value
-    @param {string} type
-    @param {number|boolean=} noSafe */
-function setValue(ptr, value, type = 'i8', noSafe) {
-  if (type.charAt(type.length-1) === '*') type = 'i32';
-    switch (type) {
-      case 'i1': HEAP8[((ptr)>>0)] = value; break;
-      case 'i8': HEAP8[((ptr)>>0)] = value; break;
-      case 'i16': HEAP16[((ptr)>>1)] = value; break;
-      case 'i32': HEAP32[((ptr)>>2)] = value; break;
-      case 'i64': (tempI64 = [value>>>0,(tempDouble=value,(+(Math.abs(tempDouble))) >= 1.0 ? (tempDouble > 0.0 ? ((Math.min((+(Math.floor((tempDouble)/4294967296.0))), 4294967295.0))|0)>>>0 : (~~((+(Math.ceil((tempDouble - +(((~~(tempDouble)))>>>0))/4294967296.0)))))>>>0) : 0)],HEAP32[((ptr)>>2)] = tempI64[0],HEAP32[(((ptr)+(4))>>2)] = tempI64[1]); break;
-      case 'float': HEAPF32[((ptr)>>2)] = value; break;
-      case 'double': HEAPF64[((ptr)>>3)] = value; break;
-      default: abort('invalid type for setValue: ' + type);
-    }
-}
-
-/** @param {number} ptr
-    @param {string} type
-    @param {number|boolean=} noSafe */
-function getValue(ptr, type = 'i8', noSafe) {
-  if (type.charAt(type.length-1) === '*') type = 'i32';
-    switch (type) {
-      case 'i1': return HEAP8[((ptr)>>0)];
-      case 'i8': return HEAP8[((ptr)>>0)];
-      case 'i16': return HEAP16[((ptr)>>1)];
-      case 'i32': return HEAP32[((ptr)>>2)];
-      case 'i64': return HEAP32[((ptr)>>2)];
-      case 'float': return HEAPF32[((ptr)>>2)];
-      case 'double': return Number(HEAPF64[((ptr)>>3)]);
-      default: abort('invalid type for getValue: ' + type);
-    }
-  return null;
-}
-
-// end include: runtime_safe_heap.js
 // Wasm globals
 
 var wasmMemory;
@@ -697,7 +675,10 @@ function ccall(ident, returnType, argTypes, args, opts) {
   };
 
   function convertReturnValue(ret) {
-    if (returnType === 'string') return UTF8ToString(ret);
+    if (returnType === 'string') {
+      
+      return UTF8ToString(ret);
+    }
     if (returnType === 'boolean') return Boolean(ret);
     return ret;
   }
@@ -845,7 +826,6 @@ function UTF8ArrayToString(heapOrArray, idx, maxBytesToRead) {
  * @return {string}
  */
 function UTF8ToString(ptr, maxBytesToRead) {
-  ;
   return ptr ? UTF8ArrayToString(HEAPU8, ptr, maxBytesToRead) : '';
 }
 
@@ -1204,8 +1184,8 @@ assert(typeof Int32Array != 'undefined' && typeof Float64Array !== 'undefined' &
        'JS engine does not provide full typed array support');
 
 // If memory is defined in wasm, the user can't provide it.
-assert(!Module['wasmMemory'], 'Use of `wasmMemory` detected.  Use -s IMPORTED_MEMORY to define wasmMemory externally');
-assert(INITIAL_MEMORY == 16777216, 'Detected runtime INITIAL_MEMORY setting.  Use -s IMPORTED_MEMORY to define wasmMemory dynamically');
+assert(!Module['wasmMemory'], 'Use of `wasmMemory` detected.  Use -sIMPORTED_MEMORY to define wasmMemory externally');
+assert(INITIAL_MEMORY == 16777216, 'Detected runtime INITIAL_MEMORY setting.  Use -sIMPORTED_MEMORY to define wasmMemory dynamically');
 
 // include: runtime_init_table.js
 // In regular non-RELOCATABLE mode the table is exported
@@ -1227,7 +1207,7 @@ function writeStackCookie() {
   HEAP32[((max)>>2)] = 0x2135467;
   HEAP32[(((max)+(4))>>2)] = 0x89BACDFE;
   // Also test the global address 0 for integrity.
-  HEAP32[0] = 0x63736d65; /* 'emsc' */
+  HEAPU32[0] = 0x63736d65; /* 'emsc' */
 }
 
 function checkStackCookie() {
@@ -1239,7 +1219,7 @@ function checkStackCookie() {
     abort('Stack overflow! Stack cookie has been overwritten, expected hex dwords 0x89BACDFE and 0x2135467, but received 0x' + cookie2.toString(16) + ' 0x' + cookie1.toString(16));
   }
   // Also test the global address 0 for integrity.
-  if (HEAP32[0] !== 0x63736d65 /* 'emsc' */) abort('Runtime error: The application has corrupted its heap memory area (address zero)!');
+  if (HEAPU32[0] !== 0x63736d65 /* 'emsc' */) abort('Runtime error: The application has corrupted its heap memory area (address zero)!');
 }
 
 // end include: runtime_stack_check.js
@@ -1251,7 +1231,7 @@ function checkStackCookie() {
   var h16 = new Int16Array(1);
   var h8 = new Int8Array(h16.buffer);
   h16[0] = 0x6373;
-  if (h8[0] !== 0x73 || h8[1] !== 0x63) throw 'Runtime error: expected the system to be little-endian! (Run with -s SUPPORT_BIG_ENDIAN=1 to bypass)';
+  if (h8[0] !== 0x73 || h8[1] !== 0x63) throw 'Runtime error: expected the system to be little-endian! (Run with -sSUPPORT_BIG_ENDIAN to bypass)';
 })();
 
 // end include: runtime_assertions.js
@@ -1279,9 +1259,10 @@ function preRun() {
 }
 
 function initRuntime() {
-  checkStackCookie();
   assert(!runtimeInitialized);
   runtimeInitialized = true;
+
+  checkStackCookie();
 
   
   callRuntimeCallbacks(__ATINIT__);
@@ -1414,9 +1395,6 @@ function removeRunDependency(id) {
   }
 }
 
-Module["preloadedImages"] = {}; // maps url to image data
-Module["preloadedAudios"] = {}; // maps url to audio data
-
 /** @param {string|number=} what */
 function abort(what) {
   {
@@ -1436,12 +1414,16 @@ function abort(what) {
   // Use a wasm runtime error, because a JS error might be seen as a foreign
   // exception, which means we'd run destructors on it. We need the error to
   // simply make the program stop.
+  // FIXME This approach does not work in Wasm EH because it currently does not assume
+  // all RuntimeErrors are from traps; it decides whether a RuntimeError is from
+  // a trap or not based on a hidden field within the object. So at the moment
+  // we don't have a way of throwing a wasm trap from JS. TODO Make a JS API that
+  // allows this in the wasm spec.
 
   // Suppress closure compiler warning here. Closure compiler's builtin extern
   // defintion for WebAssembly.RuntimeError claims it takes no arguments even
   // though it can.
   // TODO(https://github.com/google/closure-compiler/pull/3913): Remove if/when upstream closure gets fixed.
-
   /** @suppress {checkTypes} */
   var e = new WebAssembly.RuntimeError(what);
 
@@ -1460,7 +1442,7 @@ function abort(what) {
 // show errors on likely calls to FS when it was not included
 var FS = {
   error: function() {
-    abort('Filesystem support (FS) was not included. The problem is that you are using files from JS, but files were not used from C/C++, so filesystem support was not auto-included. You can force-include filesystem support with  -s FORCE_FILESYSTEM=1');
+    abort('Filesystem support (FS) was not included. The problem is that you are using files from JS, but files were not used from C/C++, so filesystem support was not auto-included. You can force-include filesystem support with -sFORCE_FILESYSTEM');
   },
   init: function() { FS.error() },
   createDataFile: function() { FS.error() },
@@ -1639,6 +1621,13 @@ function createWasm() {
         !isDataURI(wasmBinaryFile) &&
         // Don't use streaming for file:// delivered objects in a webview, fetch them synchronously.
         !isFileURI(wasmBinaryFile) &&
+        // Avoid instantiateStreaming() on Node.js environment for now, as while
+        // Node.js v18.1.0 implements it, it does not have a full fetch()
+        // implementation yet.
+        //
+        // Reference:
+        //   https://github.com/emscripten-core/emscripten/pull/16917
+        !ENVIRONMENT_IS_NODE &&
         typeof fetch == 'function') {
       return fetch(wasmBinaryFile, { credentials: 'same-origin' }).then(function(response) {
         // Suppress closure warning here since the upstream definition for
@@ -1728,7 +1717,7 @@ var ASM_CONSTS = {
       return ret;
     }
   function demangle(func) {
-      warnOnce('warning: build with  -s DEMANGLE_SUPPORT=1  to link in libcxxabi demangling');
+      warnOnce('warning: build with -sDEMANGLE_SUPPORT to link in libcxxabi demangling');
       return func;
     }
 
@@ -1740,6 +1729,26 @@ var ASM_CONSTS = {
           var y = demangle(x);
           return x === y ? x : (y + ' [' + x + ']');
         });
+    }
+
+  
+    /**
+     * @param {number} ptr
+     * @param {string} type
+     */
+  function getValue(ptr, type = 'i8') {
+      if (type.endsWith('*')) type = 'i32';
+      switch (type) {
+        case 'i1': return HEAP8[((ptr)>>0)];
+        case 'i8': return HEAP8[((ptr)>>0)];
+        case 'i16': return HEAP16[((ptr)>>1)];
+        case 'i32': return HEAP32[((ptr)>>2)];
+        case 'i64': return HEAP32[((ptr)>>2)];
+        case 'float': return HEAPF32[((ptr)>>2)];
+        case 'double': return Number(HEAPF64[((ptr)>>3)]);
+        default: abort('invalid type for getValue: ' + type);
+      }
+      return null;
     }
 
   var wasmTableMirror = [];
@@ -1768,8 +1777,8 @@ var ASM_CONSTS = {
   function jsStackTrace() {
       var error = new Error();
       if (!error.stack) {
-        // IE10+ special cases: It does have callstack info, but it is only populated if an Error object is thrown,
-        // so try that as a special-case.
+        // IE10+ special cases: It does have callstack info, but it is only
+        // populated if an Error object is thrown, so try that as a special-case.
         try {
           throw new Error();
         } catch(e) {
@@ -1782,9 +1791,32 @@ var ASM_CONSTS = {
       return error.stack.toString();
     }
 
+  
+    /**
+     * @param {number} ptr
+     * @param {number} value
+     * @param {string} type
+     */
+  function setValue(ptr, value, type = 'i8') {
+      if (type.endsWith('*')) type = 'i32';
+      switch (type) {
+        case 'i1': HEAP8[((ptr)>>0)] = value; break;
+        case 'i8': HEAP8[((ptr)>>0)] = value; break;
+        case 'i16': HEAP16[((ptr)>>1)] = value; break;
+        case 'i32': HEAP32[((ptr)>>2)] = value; break;
+        case 'i64': (tempI64 = [value>>>0,(tempDouble=value,(+(Math.abs(tempDouble))) >= 1.0 ? (tempDouble > 0.0 ? ((Math.min((+(Math.floor((tempDouble)/4294967296.0))), 4294967295.0))|0)>>>0 : (~~((+(Math.ceil((tempDouble - +(((~~(tempDouble)))>>>0))/4294967296.0)))))>>>0) : 0)],HEAP32[((ptr)>>2)] = tempI64[0],HEAP32[(((ptr)+(4))>>2)] = tempI64[1]); break;
+        case 'float': HEAPF32[((ptr)>>2)] = value; break;
+        case 'double': HEAPF64[((ptr)>>3)] = value; break;
+        default: abort('invalid type for setValue: ' + type);
+      }
+    }
+
   function setWasmTableEntry(idx, func) {
       wasmTable.set(idx, func);
-      wasmTableMirror[idx] = func;
+      // With ABORT_ON_WASM_EXCEPTIONS wasmTable.get is overriden to return wrapped
+      // functions so we need to call it here to retrieve the potential wrapper correctly
+      // instead of just storing 'func' directly into wasmTableMirror
+      wasmTableMirror[idx] = wasmTable.get(idx);
     }
 
   function stackTrace() {
@@ -1799,28 +1831,28 @@ var ASM_CONSTS = {
 
   function ___cxa_allocate_exception(size) {
       // Thrown object is prepended by exception metadata block
-      return _malloc(size + 16) + 16;
+      return _malloc(size + 24) + 24;
     }
 
   /** @constructor */
   function ExceptionInfo(excPtr) {
       this.excPtr = excPtr;
-      this.ptr = excPtr - 16;
+      this.ptr = excPtr - 24;
   
       this.set_type = function(type) {
-        HEAP32[(((this.ptr)+(4))>>2)] = type;
+        HEAPU32[(((this.ptr)+(4))>>2)] = type;
       };
   
       this.get_type = function() {
-        return HEAP32[(((this.ptr)+(4))>>2)];
+        return HEAPU32[(((this.ptr)+(4))>>2)];
       };
   
       this.set_destructor = function(destructor) {
-        HEAP32[(((this.ptr)+(8))>>2)] = destructor;
+        HEAPU32[(((this.ptr)+(8))>>2)] = destructor;
       };
   
       this.get_destructor = function() {
-        return HEAP32[(((this.ptr)+(8))>>2)];
+        return HEAPU32[(((this.ptr)+(8))>>2)];
       };
   
       this.set_refcount = function(refcount) {
@@ -1847,6 +1879,7 @@ var ASM_CONSTS = {
   
       // Initialize native structure fields. Should be called once after allocated.
       this.init = function(type, destructor) {
+        this.set_adjusted_ptr(0);
         this.set_type(type);
         this.set_destructor(destructor);
         this.set_refcount(0);
@@ -1866,6 +1899,30 @@ var ASM_CONSTS = {
         assert(prev > 0);
         return prev === 1;
       };
+  
+      this.set_adjusted_ptr = function(adjustedPtr) {
+        HEAPU32[(((this.ptr)+(16))>>2)] = adjustedPtr;
+      };
+  
+      this.get_adjusted_ptr = function() {
+        return HEAPU32[(((this.ptr)+(16))>>2)];
+      };
+  
+      // Get pointer which is expected to be received by catch clause in C++ code. It may be adjusted
+      // when the pointer is casted to some of the exception object base classes (e.g. when virtual
+      // inheritance is used). When a pointer is thrown this method should return the thrown pointer
+      // itself.
+      this.get_exception_ptr = function() {
+        // Work around a fastcomp bug, this code is still included for some reason in a build without
+        // exceptions support.
+        var isPointer = ___cxa_is_pointer_type(this.get_type());
+        if (isPointer) {
+          return HEAPU32[((this.excPtr)>>2)];
+        }
+        var adjusted = this.get_adjusted_ptr();
+        if (adjusted !== 0) return adjusted;
+        return this.excPtr;
+      };
     }
   
   var exceptionLast = 0;
@@ -1877,13 +1934,12 @@ var ASM_CONSTS = {
       info.init(type, destructor);
       exceptionLast = ptr;
       uncaughtExceptionCount++;
-      throw ptr + " - Exception catching is disabled, this exception cannot be caught. Compile with -s NO_DISABLE_EXCEPTION_CATCHING or -s EXCEPTION_CATCHING_ALLOWED=[..] to catch.";
+      throw ptr + " - Exception catching is disabled, this exception cannot be caught. Compile with -sNO_DISABLE_EXCEPTION_CATCHING or -sEXCEPTION_CATCHING_ALLOWED=[..] to catch.";
     }
 
   function __embind_register_bigint(primitiveType, name, size, minRange, maxRange) {}
 
   function getShiftFromSize(size) {
-      
       switch (size) {
           case 1: return 0;
           case 2: return 1;
@@ -3000,7 +3056,6 @@ var ASM_CONSTS = {
     }
   
   function heap32VectorToArray(count, firstElement) {
-      
       var array = [];
       for (var i = 0; i < count; i++) {
           array.push(HEAP32[(firstElement >> 2) + i]);
@@ -3680,12 +3735,12 @@ var ASM_CONSTS = {
       HEAPU8.copyWithin(dest, src, src + num);
     }
 
-  function _emscripten_get_heap_max() {
+  function getHeapMax() {
       return HEAPU8.length;
     }
   
   function abortOnCannotGrowMemory(requestedSize) {
-      abort('Cannot enlarge memory arrays to size ' + requestedSize + ' bytes (OOM). Either (1) compile with  -s INITIAL_MEMORY=X  with X higher than the current value ' + HEAP8.length + ', (2) compile with  -s ALLOW_MEMORY_GROWTH=1  which allows increasing the size at runtime, or (3) if you want malloc to return NULL (0) instead of this abort, compile with  -s ABORTING_MALLOC=0 ');
+      abort('Cannot enlarge memory arrays to size ' + requestedSize + ' bytes (OOM). Either (1) compile with -sINITIAL_MEMORY=X with X higher than the current value ' + HEAP8.length + ', (2) compile with -sALLOW_MEMORY_GROWTH which allows increasing the size at runtime, or (3) if you want malloc to return NULL (0) instead of this abort, compile with -sABORTING_MALLOC=0');
     }
   function _emscripten_resize_heap(requestedSize) {
       var oldSize = HEAPU8.length;
@@ -3693,16 +3748,7 @@ var ASM_CONSTS = {
       abortOnCannotGrowMemory(requestedSize);
     }
 
-  var SYSCALLS = {buffers:[null,[],[]],printChar:function(stream, curr) {
-        var buffer = SYSCALLS.buffers[stream];
-        assert(buffer);
-        if (curr === 0 || curr === 10) {
-          (stream === 1 ? out : err)(UTF8ArrayToString(buffer, 0));
-          buffer.length = 0;
-        } else {
-          buffer.push(curr);
-        }
-      },varargs:undefined,get:function() {
+  var SYSCALLS = {varargs:undefined,get:function() {
         assert(SYSCALLS.varargs != undefined);
         SYSCALLS.varargs += 4;
         var ret = HEAP32[(((SYSCALLS.varargs)-(4))>>2)];
@@ -3710,41 +3756,50 @@ var ASM_CONSTS = {
       },getStr:function(ptr) {
         var ret = UTF8ToString(ptr);
         return ret;
-      },get64:function(low, high) {
-        if (low >= 0) assert(high === 0);
-        else assert(high === -1);
-        return low;
       }};
   function _fd_close(fd) {
-      abort('it should not be possible to operate on streams when !SYSCALLS_REQUIRE_FILESYSTEM');
-      return 0;
+      abort('fd_close called without SYSCALLS_REQUIRE_FILESYSTEM');
     }
 
+  function convertI32PairToI53Checked(lo, hi) {
+      assert(lo == (lo >>> 0) || lo == (lo|0)); // lo should either be a i32 or a u32
+      assert(hi === (hi|0));                    // hi should be a i32
+      return ((hi + 0x200000) >>> 0 < 0x400001 - !!lo) ? (lo >>> 0) + hi * 4294967296 : NaN;
+    }
   function _fd_seek(fd, offset_low, offset_high, whence, newOffset) {
-  abort('it should not be possible to operate on streams when !SYSCALLS_REQUIRE_FILESYSTEM');
-  }
+      return 70;
+    }
 
+  var printCharBuffers = [null,[],[]];
+  function printChar(stream, curr) {
+      var buffer = printCharBuffers[stream];
+      assert(buffer);
+      if (curr === 0 || curr === 10) {
+        (stream === 1 ? out : err)(UTF8ArrayToString(buffer, 0));
+        buffer.length = 0;
+      } else {
+        buffer.push(curr);
+      }
+    }
   function flush_NO_FILESYSTEM() {
       // flush anything remaining in the buffers during shutdown
-      ___stdio_exit();
-      var buffers = SYSCALLS.buffers;
-      if (buffers[1].length) SYSCALLS.printChar(1, 10);
-      if (buffers[2].length) SYSCALLS.printChar(2, 10);
+      _fflush(0);
+      if (printCharBuffers[1].length) printChar(1, 10);
+      if (printCharBuffers[2].length) printChar(2, 10);
     }
   function _fd_write(fd, iov, iovcnt, pnum) {
-      ;
       // hack to support printf in SYSCALLS_REQUIRE_FILESYSTEM=0
       var num = 0;
       for (var i = 0; i < iovcnt; i++) {
-        var ptr = HEAP32[((iov)>>2)];
-        var len = HEAP32[(((iov)+(4))>>2)];
+        var ptr = HEAPU32[((iov)>>2)];
+        var len = HEAPU32[(((iov)+(4))>>2)];
         iov += 8;
         for (var j = 0; j < len; j++) {
-          SYSCALLS.printChar(fd, HEAPU8[ptr+j]);
+          printChar(fd, HEAPU8[ptr+j]);
         }
         num += len;
       }
-      HEAP32[((pnum)>>2)] = num;
+      HEAPU32[((pnum)>>2)] = num;
       return 0;
     }
 
@@ -3840,7 +3895,7 @@ var ___embind_register_native_and_builtin_types = Module["___embind_register_nat
 var ___errno_location = Module["___errno_location"] = createExportWrapper("__errno_location");
 
 /** @type {function(...*):?} */
-var ___stdio_exit = Module["___stdio_exit"] = createExportWrapper("__stdio_exit");
+var _fflush = Module["_fflush"] = createExportWrapper("fflush");
 
 /** @type {function(...*):?} */
 var _free = Module["_free"] = createExportWrapper("free");
@@ -3875,6 +3930,9 @@ var stackRestore = Module["stackRestore"] = createExportWrapper("stackRestore");
 var stackAlloc = Module["stackAlloc"] = createExportWrapper("stackAlloc");
 
 /** @type {function(...*):?} */
+var ___cxa_is_pointer_type = Module["___cxa_is_pointer_type"] = createExportWrapper("__cxa_is_pointer_type");
+
+/** @type {function(...*):?} */
 var dynCall_jiji = Module["dynCall_jiji"] = createExportWrapper("dynCall_jiji");
 
 
@@ -3883,27 +3941,19 @@ var dynCall_jiji = Module["dynCall_jiji"] = createExportWrapper("dynCall_jiji");
 
 // === Auto-generated postamble setup entry stuff ===
 
-unexportedRuntimeFunction('intArrayFromString', false);
-unexportedRuntimeFunction('intArrayToString', false);
 unexportedRuntimeFunction('ccall', false);
 unexportedRuntimeFunction('cwrap', false);
-unexportedRuntimeFunction('setValue', false);
-unexportedRuntimeFunction('getValue', false);
 unexportedRuntimeFunction('allocate', false);
 unexportedRuntimeFunction('UTF8ArrayToString', false);
 unexportedRuntimeFunction('UTF8ToString', false);
 unexportedRuntimeFunction('stringToUTF8Array', false);
 unexportedRuntimeFunction('stringToUTF8', false);
 unexportedRuntimeFunction('lengthBytesUTF8', false);
-unexportedRuntimeFunction('stackTrace', false);
 unexportedRuntimeFunction('addOnPreRun', false);
 unexportedRuntimeFunction('addOnInit', false);
 unexportedRuntimeFunction('addOnPreMain', false);
 unexportedRuntimeFunction('addOnExit', false);
 Module["addOnPostRun"] = addOnPostRun;
-unexportedRuntimeFunction('writeStringToMemory', false);
-unexportedRuntimeFunction('writeArrayToMemory', false);
-unexportedRuntimeFunction('writeAsciiToMemory', false);
 unexportedRuntimeFunction('addRunDependency', true);
 unexportedRuntimeFunction('removeRunDependency', true);
 unexportedRuntimeFunction('FS_createFolder', false);
@@ -3920,9 +3970,7 @@ unexportedRuntimeFunction('alignFunctionTables', false);
 unexportedRuntimeFunction('registerFunctions', false);
 unexportedRuntimeFunction('addFunction', false);
 unexportedRuntimeFunction('removeFunction', false);
-unexportedRuntimeFunction('getFuncWrapper', false);
 unexportedRuntimeFunction('prettyPrint', false);
-unexportedRuntimeFunction('dynCall', false);
 unexportedRuntimeFunction('getCompilerSetting', false);
 unexportedRuntimeFunction('print', false);
 unexportedRuntimeFunction('printErr', false);
@@ -3931,8 +3979,33 @@ unexportedRuntimeFunction('setTempRet0', false);
 unexportedRuntimeFunction('callMain', false);
 unexportedRuntimeFunction('abort', false);
 unexportedRuntimeFunction('keepRuntimeAlive', false);
+unexportedRuntimeFunction('wasmMemory', false);
+unexportedRuntimeFunction('warnOnce', false);
+unexportedRuntimeFunction('stackSave', false);
+unexportedRuntimeFunction('stackRestore', false);
+unexportedRuntimeFunction('stackAlloc', false);
+unexportedRuntimeFunction('AsciiToString', false);
+unexportedRuntimeFunction('stringToAscii', false);
+unexportedRuntimeFunction('UTF16ToString', false);
+unexportedRuntimeFunction('stringToUTF16', false);
+unexportedRuntimeFunction('lengthBytesUTF16', false);
+unexportedRuntimeFunction('UTF32ToString', false);
+unexportedRuntimeFunction('stringToUTF32', false);
+unexportedRuntimeFunction('lengthBytesUTF32', false);
+unexportedRuntimeFunction('allocateUTF8', false);
+unexportedRuntimeFunction('allocateUTF8OnStack', false);
+unexportedRuntimeFunction('ExitStatus', false);
+unexportedRuntimeFunction('intArrayFromString', false);
+unexportedRuntimeFunction('intArrayToString', false);
+unexportedRuntimeFunction('writeStringToMemory', false);
+unexportedRuntimeFunction('writeArrayToMemory', false);
+unexportedRuntimeFunction('writeAsciiToMemory', false);
+Module["writeStackCookie"] = writeStackCookie;
+Module["checkStackCookie"] = checkStackCookie;
+unexportedRuntimeFunction('ptrToString', false);
 unexportedRuntimeFunction('zeroMemory', false);
 unexportedRuntimeFunction('stringToNewUTF8', false);
+unexportedRuntimeFunction('getHeapMax', false);
 unexportedRuntimeFunction('abortOnCannotGrowMemory', false);
 unexportedRuntimeFunction('emscripten_realloc_buffer', false);
 unexportedRuntimeFunction('ENV', false);
@@ -3974,10 +4047,23 @@ unexportedRuntimeFunction('asmjsMangle', false);
 unexportedRuntimeFunction('asyncLoad', false);
 unexportedRuntimeFunction('alignMemory', false);
 unexportedRuntimeFunction('mmapAlloc', false);
+unexportedRuntimeFunction('writeI53ToI64', false);
+unexportedRuntimeFunction('writeI53ToI64Clamped', false);
+unexportedRuntimeFunction('writeI53ToI64Signaling', false);
+unexportedRuntimeFunction('writeI53ToU64Clamped', false);
+unexportedRuntimeFunction('writeI53ToU64Signaling', false);
+unexportedRuntimeFunction('readI53FromI64', false);
+unexportedRuntimeFunction('readI53FromU64', false);
+unexportedRuntimeFunction('convertI32PairToI53', false);
+unexportedRuntimeFunction('convertI32PairToI53Checked', false);
+unexportedRuntimeFunction('convertU32PairToI53', false);
 unexportedRuntimeFunction('reallyNegative', false);
 unexportedRuntimeFunction('unSign', false);
+unexportedRuntimeFunction('strLen', false);
 unexportedRuntimeFunction('reSign', false);
 unexportedRuntimeFunction('formatString', false);
+unexportedRuntimeFunction('setValue', false);
+unexportedRuntimeFunction('getValue', false);
 unexportedRuntimeFunction('PATH', false);
 unexportedRuntimeFunction('PATH_FS', false);
 unexportedRuntimeFunction('SYSCALLS', false);
@@ -4004,6 +4090,8 @@ unexportedRuntimeFunction('fillOrientationChangeEventData', false);
 unexportedRuntimeFunction('registerOrientationChangeEventCallback', false);
 unexportedRuntimeFunction('fillFullscreenChangeEventData', false);
 unexportedRuntimeFunction('registerFullscreenChangeEventCallback', false);
+unexportedRuntimeFunction('JSEvents_requestFullscreen', false);
+unexportedRuntimeFunction('JSEvents_resizeCanvasForFullscreen', false);
 unexportedRuntimeFunction('registerRestoreOldStyle', false);
 unexportedRuntimeFunction('hideEverythingExceptGivenElement', false);
 unexportedRuntimeFunction('restoreHiddenElements', false);
@@ -4034,15 +4122,7 @@ unexportedRuntimeFunction('stackTrace', false);
 unexportedRuntimeFunction('getEnvStrings', false);
 unexportedRuntimeFunction('checkWasiClock', false);
 unexportedRuntimeFunction('flush_NO_FILESYSTEM', false);
-unexportedRuntimeFunction('writeI53ToI64', false);
-unexportedRuntimeFunction('writeI53ToI64Clamped', false);
-unexportedRuntimeFunction('writeI53ToI64Signaling', false);
-unexportedRuntimeFunction('writeI53ToU64Clamped', false);
-unexportedRuntimeFunction('writeI53ToU64Signaling', false);
-unexportedRuntimeFunction('readI53FromI64', false);
-unexportedRuntimeFunction('readI53FromU64', false);
-unexportedRuntimeFunction('convertI32PairToI53', false);
-unexportedRuntimeFunction('convertU32PairToI53', false);
+unexportedRuntimeFunction('dlopenMissingError', false);
 unexportedRuntimeFunction('setImmediateWrapped', false);
 unexportedRuntimeFunction('clearImmediateWrapped', false);
 unexportedRuntimeFunction('polyfillSetImmediate', false);
@@ -4050,12 +4130,9 @@ unexportedRuntimeFunction('uncaughtExceptionCount', false);
 unexportedRuntimeFunction('exceptionLast', false);
 unexportedRuntimeFunction('exceptionCaught', false);
 unexportedRuntimeFunction('ExceptionInfo', false);
-unexportedRuntimeFunction('CatchInfo', false);
 unexportedRuntimeFunction('exception_addRef', false);
 unexportedRuntimeFunction('exception_decRef', false);
 unexportedRuntimeFunction('Browser', false);
-unexportedRuntimeFunction('funcWrappers', false);
-unexportedRuntimeFunction('getFuncWrapper', false);
 unexportedRuntimeFunction('setMainLoop', false);
 unexportedRuntimeFunction('wget', false);
 unexportedRuntimeFunction('FS', false);
@@ -4183,22 +4260,6 @@ unexportedRuntimeFunction('craftEmvalAllocator', false);
 unexportedRuntimeFunction('emval_get_global', false);
 unexportedRuntimeFunction('emval_methodCallers', false);
 unexportedRuntimeFunction('emval_registeredMethods', false);
-unexportedRuntimeFunction('warnOnce', false);
-unexportedRuntimeFunction('stackSave', false);
-unexportedRuntimeFunction('stackRestore', false);
-unexportedRuntimeFunction('stackAlloc', false);
-unexportedRuntimeFunction('AsciiToString', false);
-unexportedRuntimeFunction('stringToAscii', false);
-unexportedRuntimeFunction('UTF16ToString', false);
-unexportedRuntimeFunction('stringToUTF16', false);
-unexportedRuntimeFunction('lengthBytesUTF16', false);
-unexportedRuntimeFunction('UTF32ToString', false);
-unexportedRuntimeFunction('stringToUTF32', false);
-unexportedRuntimeFunction('lengthBytesUTF32', false);
-unexportedRuntimeFunction('allocateUTF8', false);
-unexportedRuntimeFunction('allocateUTF8OnStack', false);
-Module["writeStackCookie"] = writeStackCookie;
-Module["checkStackCookie"] = checkStackCookie;
 unexportedRuntimeSymbol('ALLOC_NORMAL', false);
 unexportedRuntimeSymbol('ALLOC_STACK', false);
 
@@ -4226,8 +4287,8 @@ function stackCheckInit() {
   // This is normally called automatically during __wasm_call_ctors but need to
   // get these values before even running any of the ctors so we call it redundantly
   // here.
-  // TODO(sbc): Move writeStackCookie to native to to avoid this.
   _emscripten_stack_init();
+  // TODO(sbc): Move writeStackCookie to native to to avoid this.
   writeStackCookie();
 }
 
@@ -4239,7 +4300,7 @@ function run(args) {
     return;
   }
 
-  stackCheckInit();
+    stackCheckInit();
 
   preRun();
 
@@ -4301,14 +4362,13 @@ function checkUnflushedContent() {
     has = true;
   }
   try { // it doesn't matter if it fails
-    var flush = flush_NO_FILESYSTEM;
-    if (flush) flush();
+    flush_NO_FILESYSTEM();
   } catch(e) {}
   out = oldOut;
   err = oldErr;
   if (has) {
     warnOnce('stdio streams had content in them that was not flushed. you should set EXIT_RUNTIME to 1 (see the FAQ), or make sure to emit a newline when you printf etc.');
-    warnOnce('(this may also be due to not including full filesystem support - try building with -s FORCE_FILESYSTEM=1)');
+    warnOnce('(this may also be due to not including full filesystem support - try building with -sFORCE_FILESYSTEM)');
   }
 }
 

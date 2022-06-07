@@ -6,9 +6,12 @@ var fs = require('fs');
 const { z } = require('../midware_gaze_tracking.js');
 const { type } = require('os');
 var action = require('../../../modules/include/flatbuffer/action-data/action').Action
+var FeatureConfig = require('../../../modules/include/flatbuffer/feature-configs/feature-config').FeatureConfig
+var FeatureConfigList = require('../../../modules/include/flatbuffer/feature-configs/feature-config-list').FeatureConfigList
+
 var wasm_processor = {
     initialized : false ,
-    process : function(pose, monitor = false){
+    process : function(pose, featureConfigs, monitor = false){
         if(!this.initialized) {
             //console.log("do initializing")
             this.instance = new Module.BridgeClass(10,"hello")
@@ -57,32 +60,61 @@ var wasm_processor = {
         var res = Pose.endPose(builder)
         builder.finish(res)
 
-        var actionResult =  this.instance.entry(builder.asUint8Array())
+        // build feature configs
+        var configBuilder = new flatbuffers.Builder(1024)
+        var featureConfigArray = new Array(featureConfigs.length)
+        for (var i = 0; i < featureConfigArray.length; i++) {
+            var featureId = configBuilder.createString(featureConfigs[i].featureId)
+            var actionString = configBuilder.createString(featureConfigs[i].action)
+            var data = configBuilder.createString(featureConfigs[i].data)
+            FeatureConfig.startFeatureConfig(configBuilder)
+            FeatureConfig.addFeatureId(configBuilder, featureId)
+            FeatureConfig.addEnable(configBuilder, featureConfigs[i].enable)
+            FeatureConfig.addAction(configBuilder, actionString)
+            FeatureConfig.addData(configBuilder, data)
+            var config = FeatureConfig.endFeatureConfig(configBuilder)
+            //console.log(point)
+            featureConfigArray[i] = config
+        }
+        var featureConfigsFlatbuffer = FeatureConfigList.createConfigsVector(configBuilder, featureConfigArray)
+        FeatureConfigList.startFeatureConfigList(configBuilder)
+        FeatureConfigList.addConfigs(configBuilder, featureConfigsFlatbuffer)
+        var configListBuffer = FeatureConfigList.endFeatureConfigList(configBuilder)
+        configBuilder.finish(configListBuffer)
+
+        var actionResult =  this.instance.entry(builder.asUint8Array(), configBuilder.asUint8Array())
         var actionData = new Uint8Array(actionResult)
         var actionBuf = new flatbuffers.ByteBuffer(actionData)
         var actionTemp = action.getRootAsAction(actionBuf)
-        pose.action_detection = {}
-        pose.action_detection.walk = {
-             "legUp" : actionTemp.walk().legUp(),
-             "frequency" : actionTemp.walk().frequency(),
-             "strength" : actionTemp.walk().strength()
+        if (actionTemp.walk() || actionTemp.jump()) {
+            pose.action_detection = {}
+            pose.action_detection.walk = {
+                 "legUp" : actionTemp.walk().legUp(),
+                 "frequency" : actionTemp.walk().frequency(),
+                 "strength" : actionTemp.walk().strength()
+            }
+            pose.action_detection.jump = {
+                "up" : actionTemp.jump().up(),
+                "strength" : actionTemp.jump().strength()
+            }
         }
-        pose.action_detection.jump = {
-            "up" : actionTemp.jump().up(),
-            "strength" : actionTemp.jump().strength()
+        if (actionTemp.ground()) {
+            pose.ground_location = {
+                "x" : actionTemp.ground().x(),
+                "y" : actionTemp.ground().y(),
+                "z" : actionTemp.ground().z(),
+                "legLength" : actionTemp.ground().legLength(),
+                "tracing" : actionTemp.ground().tracing()
+            }
         }
-        pose.ground_location = {
-            "x" : actionTemp.ground().x(),
-            "y" : actionTemp.ground().y(),
-            "z" : actionTemp.ground().z(),
-            "legLength" : actionTemp.ground().legLength(),
-            "tracing" : actionTemp.ground().tracing()
+        if (actionTemp.gaze()) {
+            pose.gaze_tracking = {
+                "x" : actionTemp.gaze().x(),
+                "y" : actionTemp.gaze().y(),
+                "z" : actionTemp.gaze().z()
+            }
         }
-        pose.gaze_tracking = {
-            "x" : actionTemp.gaze().x(),
-            "y" : actionTemp.gaze().y(),
-            "z" : actionTemp.gaze().z()
-        }
+        
         pose.fitting = {}
         pose.fitting.rotation = []
         pose.fitting.mirrorRotation = []
