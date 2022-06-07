@@ -106,7 +106,6 @@ var wasm_processor = {
                 "z" : actionTemp.fitting().mirrorRotation(i).z(),
             })
         }
-        console.log(pose.fitting);
         this.instance.release()
         
         // var bbb = builder.asUint8Array()
