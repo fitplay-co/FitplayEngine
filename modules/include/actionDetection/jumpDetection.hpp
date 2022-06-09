@@ -44,7 +44,7 @@ namespace actionjump {
         jump_data[1] = height;
     }
     void jump::calculate_current_frame_distance(const PoseData::Pose* data) {
-        current_distance_mean = 0;
+        current_frame_distance = 0;
         float num1 = data->keypoints()->Get(23)->y();
         float num2 = data->keypoints()->Get(24)->y();
         float num3 = data->keypoints()->Get(25)->y();
@@ -52,7 +52,7 @@ namespace actionjump {
         float num5 = data->keypoints()->Get(27)->y();
         float num6 = data->keypoints()->Get(28)->y();
         float weighted_sum = num1 + num2 + num3 + num4 + num5 + num6;
-        current_distance_mean = weighted_sum;
+        current_frame_distance = weighted_sum;
     }
     void jump::calculate_current_distance_mean() {
         last_distance_mean = current_distance_mean;
@@ -97,7 +97,7 @@ namespace actionjump {
         }
         current_height = current_distance_mean - last_distance_mean;
         current_height_mean = current_height_mean * 0.5 + current_height * 0.5;
-        height = fabs(current_height_mean)>0.03? current_height_mean:0;
+        height = -(fabs(current_height_mean)>0.03? current_height_mean:0);
     }
     void jump::shiftDirectionStepPerMinutes() {
         long long now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
