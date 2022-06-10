@@ -20,33 +20,31 @@ let imuObj={
   "device_id": 255,
   "timestamp": 0,
   "seq": 0,
-  "imu": {
-    "accelerometer": 
-    {
-        "x": 0.00000000,
-        "y": 0.00000000,
-        "z": 0.00000000
-    },
-    "gyroscope": 
-    {
-        "x": 0.00000000,
-        "y": 0.00000000,
-        "z": 0.00000000
-    },
-    "magnetometer": 
-    {
-        "x": 0.00000000,
-        "y": 0.00000000,
-        "z": 0.00000000
-    },
-    "quaternions": 
-    {
-        "x": 0.00000000,
-        "y": 0.00000000,
-        "z": 0.00000000,
-        "w": 0.00000000
-    }
- }
+  "accelerometer": 
+  {
+      "x": 0.00000000,
+      "y": 0.00000000,
+      "z": 0.00000000
+  },
+  "gyroscope": 
+  {
+      "x": 0.00000000,
+      "y": 0.00000000,
+      "z": 0.00000000
+  },
+  "magnetometer": 
+  {
+      "x": 0.00000000,
+      "y": 0.00000000,
+      "z": 0.00000000
+  },
+  "quaternions": 
+  {
+      "x": 0.00000000,
+      "y": 0.00000000,
+      "z": 0.00000000,
+      "w": 0.00000000
+  }
 };
 
 let inputObj={
@@ -55,24 +53,22 @@ let inputObj={
   "version": "0.0.0",
   "device_id": 255,
   "timestamp": 0,
-  "input": {
-    "keys": {
-        "key_A": 0,
-        "key_B": 0,
-        "key_menu": 0
-    },
-    "linear_key": {
-        "L1": 0,
-        "L2": 0
-    },
-    "joystick": {
-        "x": 0,
-        "y": 0,
-        "key": 0
-    },
-    "heart_rate": 0,
-    "blood_oxygen": 0
-  }
+  "keys": {
+      "key_A": 0,
+      "key_B": 0,
+      "key_menu": 0
+  },
+  "linear_key": {
+      "L1": 0,
+      "L2": 0
+  },
+  "joystick": {
+      "x": 0,
+      "y": 0,
+      "key": 0
+  },
+  "heart_rate": 0,
+  "blood_oxygen": 0
 };
 
 let deviceObj={
@@ -197,23 +193,23 @@ module.exports=function(){
 
           jsOjbImu.timestamp=dataview.getUint32(5,true);
           jsOjbImu.seq=dataview.getUint32(9,true);
-          jsOjbImu.imu.accelerometer.x=(dataview.getInt16(13,true)/32768*16).toFixed(7);
-          jsOjbImu.imu.accelerometer.y=(dataview.getInt16(15,true)/32768*16).toFixed(7);
-          jsOjbImu.imu.accelerometer.z=(dataview.getInt16(17,true)/32768*16).toFixed(7);
+          jsOjbImu.accelerometer.x=(dataview.getInt16(13,true)/32768*16).toFixed(7);
+          jsOjbImu.accelerometer.y=(dataview.getInt16(15,true)/32768*16).toFixed(7);
+          jsOjbImu.accelerometer.z=(dataview.getInt16(17,true)/32768*16).toFixed(7);
 
-          jsOjbImu.imu.gyroscope.x=(dataview.getInt16(19,true)/32768*2000).toFixed(7);
-          jsOjbImu.imu.gyroscope.y=(dataview.getInt16(21,true)/32768*2000).toFixed(7);
-          jsOjbImu.imu.gyroscope.z=(dataview.getInt16(23,true)/32768*2000).toFixed(7);  
+          jsOjbImu.gyroscope.x=(dataview.getInt16(19,true)/32768*2000).toFixed(7);
+          jsOjbImu.gyroscope.y=(dataview.getInt16(21,true)/32768*2000).toFixed(7);
+          jsOjbImu.gyroscope.z=(dataview.getInt16(23,true)/32768*2000).toFixed(7);  
           
-          jsOjbImu.imu.magnetometer.x=dataview.getUint16(25,true)<<4;
-          jsOjbImu.imu.magnetometer.y=dataview.getUint16(27,true)<<4;
-          jsOjbImu.imu.magnetometer.z=dataview.getUint16(29,true)<<4;    
+          jsOjbImu.magnetometer.x=(dataview.getUint16(25,true)-32768)/1024;
+          jsOjbImu.magnetometer.y=(dataview.getUint16(27,true)-32768)/1024;
+          jsOjbImu.magnetometer.z=(dataview.getUint16(29,true)-32768)/1024;
 
     
-          jsOjbImu.imu.quaternions.x=(dataview.getInt16(31,true)/32768).toFixed(7);
-          jsOjbImu.imu.quaternions.y=(dataview.getInt16(33,true)/32768).toFixed(7);
-          jsOjbImu.imu.quaternions.z=(dataview.getInt16(35,true)/32768).toFixed(7);  
-          jsOjbImu.imu.quaternions.w=(dataview.getInt16(37,true)/32768).toFixed(7);  
+          jsOjbImu.quaternions.x=(dataview.getInt16(31,true)/32768).toFixed(7);
+          jsOjbImu.quaternions.y=(dataview.getInt16(33,true)/32768).toFixed(7);
+          jsOjbImu.quaternions.z=(dataview.getInt16(35,true)/32768).toFixed(7);  
+          jsOjbImu.quaternions.w=(dataview.getInt16(37,true)/32768).toFixed(7);  
 
 
           callback(err,JSON.stringify(jsOjbImu));
@@ -227,16 +223,16 @@ module.exports=function(){
           jsOjbInput.device_id=dataview.getUint8(DEVICEID_OFFSET);
           jsOjbInput.timestamp=dataview.getUint32(5,true);
 
-          jsOjbInput.input.keys.key_A=dataview.getUint8(39);
-          jsOjbInput.input.keys.key_B=dataview.getUint8(40);
-          jsOjbInput.input.keys.key_menu=dataview.getUint8(41);
-          jsOjbInput.input.linear_key.L1=dataview.getUint16(42,true);
-          jsOjbInput.input.linear_key.L2=dataview.getUint16(44,true);
-          jsOjbInput.input.joystick.x=dataview.getUint16(46,true);
-          jsOjbInput.input.joystick.y=dataview.getUint16(48,true);   
-          jsOjbInput.input.joystick.key=dataview.getUint8(50);   
-          jsOjbInput.input.heart_rate=dataview.getUint8(51);   
-          jsOjbInput.input.blood_oxygen=dataview.getUint8(52);   
+          jsOjbInput.keys.key_A=dataview.getUint8(39);
+          jsOjbInput.keys.key_B=dataview.getUint8(40);
+          jsOjbInput.keys.key_menu=dataview.getUint8(41);
+          jsOjbInput.linear_key.L1=dataview.getUint16(42,true);
+          jsOjbInput.linear_key.L2=dataview.getUint16(44,true);
+          jsOjbInput.joystick.x=dataview.getUint16(46,true);
+          jsOjbInput.joystick.y=dataview.getUint16(48,true);   
+          jsOjbInput.joystick.key=dataview.getUint8(50);   
+          jsOjbInput.heart_rate=dataview.getUint8(51);   
+          jsOjbInput.blood_oxygen=dataview.getUint8(52);   
 
           callback(err,JSON.stringify(jsOjbInput));
           

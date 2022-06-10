@@ -204,8 +204,8 @@ function addData(inputData){
       }
       
       //目前只平均计算了accelerometer.x的值
-      if(val=="imu" && (index==0 || index==1)){
-        imuJsonData[val].accelerometer.x = Number(imuJsonData[val].accelerometer.x)+Number(jsonObj[val].accelerometer.x);
+      if(val=="accelerometer" && (index==0 || index==1)){
+        imuJsonData[val].x = Number(imuJsonData[val].x)+Number(jsonObj[val].x);
        // imuJsonData[val].accelerometer.y+=jsonObj[val].accelerometer.y;
        // imuJsonData[val].accelerometer.z+=jsonObj[val].accelerometer.z;
       } 
@@ -224,7 +224,7 @@ function addData(inputData){
   
     if(index==0 || index==1)
     {
-      tempJsonData.imu.accelerometer.x=(tempJsonData.imu.accelerometer.x/MaxCout).toFixed(7);
+      tempJsonData.accelerometer.x=(tempJsonData.accelerometer.x/MaxCout).toFixed(7);
     }
 
     imuData[index].jsonData=JSON.stringify(tempJsonData);
@@ -313,16 +313,16 @@ function DisplayData(data) {
       elapsedtime.value=elapsedTime/MaxCout;
     
 
-      acc_x.value=jsonObj.imu.accelerometer.x;
-      acc_y.value=jsonObj.imu.accelerometer.y;
-      acc_z.value=jsonObj.imu.accelerometer.z;
-      gyr_x.value=jsonObj.imu.gyroscope.x;
-      gyr_y.value=jsonObj.imu.gyroscope.y;
-      gyr_z.value=jsonObj.imu.gyroscope.z;
-      mag_x.value=jsonObj.imu.magnetometer.x;
-      mag_y.value=jsonObj.imu.magnetometer.y;
-      mag_z.value=jsonObj.imu.magnetometer.z;
-      quaternions.value=jsonObj.imu.quaternions.x +","+jsonObj.imu.quaternions.y +","+jsonObj.imu.quaternions.z +","+jsonObj.imu.quaternions.w; 
+      acc_x.value=jsonObj.accelerometer.x;
+      acc_y.value=jsonObj.accelerometer.y;
+      acc_z.value=jsonObj.accelerometer.z;
+      gyr_x.value=jsonObj.gyroscope.x;
+      gyr_y.value=jsonObj.gyroscope.y;
+      gyr_z.value=jsonObj.gyroscope.z;
+      mag_x.value=jsonObj.magnetometer.x.toFixed(6);
+      mag_y.value=jsonObj.magnetometer.y.toFixed(6);
+      mag_z.value=jsonObj.magnetometer.z.toFixed(6);
+      quaternions.value=jsonObj.quaternions.x +","+jsonObj.quaternions.y +","+jsonObj.quaternions.z +","+jsonObj.quaternions.w; 
     }
     else if(deviceId2==jsonObj.device_id)
     {
@@ -333,16 +333,16 @@ function DisplayData(data) {
       oldTime2=jsonObj.timestamp;
       elapsedtime2.value=elapsedTime2/MaxCout;
 
-      acc_x2.value=jsonObj.imu.accelerometer.x;
-      acc_y2.value=jsonObj.imu.accelerometer.y;
-      acc_z2.value=jsonObj.imu.accelerometer.z;
-      gyr_x2.value=jsonObj.imu.gyroscope.x;
-      gyr_y2.value=jsonObj.imu.gyroscope.y;
-      gyr_z2.value=jsonObj.imu.gyroscope.z;
-      mag_x2.value=jsonObj.imu.magnetometer.x;
-      mag_y2.value=jsonObj.imu.magnetometer.y;
-      mag_z2.value=jsonObj.imu.magnetometer.z;
-      quaternions2.value=jsonObj.imu.quaternions.x +","+jsonObj.imu.quaternions.y +","+jsonObj.imu.quaternions.z +","+jsonObj.imu.quaternions.w; 
+      acc_x2.value=jsonObj.accelerometer.x;
+      acc_y2.value=jsonObj.accelerometer.y;
+      acc_z2.value=jsonObj.accelerometer.z;
+      gyr_x2.value=jsonObj.gyroscope.x;
+      gyr_y2.value=jsonObj.gyroscope.y;
+      gyr_z2.value=jsonObj.gyroscope.z;
+      mag_x2.value=jsonObj.magnetometer.x;
+      mag_y2.value=jsonObj.magnetometer.y;
+      mag_z2.value=jsonObj.magnetometer.z;
+      quaternions2.value=jsonObj.quaternions.x +","+jsonObj.quaternions.y +","+jsonObj.quaternions.z +","+jsonObj.quaternions.w; 
     }
   }
 
@@ -352,36 +352,36 @@ function DisplayData(data) {
     {
       timestamp2.value=jsonObj.timestamp;
     
-      key1.value=jsonObj.input.keys.key_A?"弹起":"按下";
-      key2.value=jsonObj.input.keys.key_B?"弹起":"按下";
-      key_menu.value=jsonObj.input.keys.key_menu?"弹起":"按下";
+      key1.value=jsonObj.keys.key_A?"弹起":"按下";
+      key2.value=jsonObj.keys.key_B?"弹起":"按下";
+      key_menu.value=jsonObj.keys.key_menu?"弹起":"按下";
 
-      linear_key1.value=jsonObj.input.linear_key.L1;
-      linear_key2.value=jsonObj.input.linear_key.L2;
+      linear_key1.value=jsonObj.linear_key.L1;
+      linear_key2.value=jsonObj.linear_key.L2;
 
-      joystick_x.value=jsonObj.input.joystick.x;
-      joystick_y.value=jsonObj.input.joystick.y;
-      joystick_key.value=jsonObj.input.joystick.key?"弹起":"按下";
-      heart_rate.value=jsonObj.input.heart_rate;
-      blood_oxygen.value=jsonObj.input.blood_oxygen;
+      joystick_x.value=jsonObj.joystick.x;
+      joystick_y.value=jsonObj.joystick.y;
+      joystick_key.value=jsonObj.joystick.key?"弹起":"按下";
+      heart_rate.value=jsonObj.heart_rate;
+      blood_oxygen.value=jsonObj.blood_oxygen;
 
     }
     else if(deviceId2==jsonObj.device_id)
     {
       timestamp22.value=jsonObj.timestamp;
     
-      key12.value=jsonObj.input.keys.key_A?"弹起":"按下";
-      key22.value=jsonObj.input.keys.key_B?"弹起":"按下";
-      key_menu2.value=jsonObj.input.keys.key_menu?"弹起":"按下";
+      key12.value=jsonObj.keys.key_A?"弹起":"按下";
+      key22.value=jsonObj.keys.key_B?"弹起":"按下";
+      key_menu2.value=jsonObj.keys.key_menu?"弹起":"按下";
 
-      linear_key12.value=jsonObj.input.linear_key.L1;
-      linear_key22.value=jsonObj.input.linear_key.L2;
+      linear_key12.value=jsonObj.linear_key.L1;
+      linear_key22.value=jsonObj.linear_key.L2;
 
-      joystick_x2.value=jsonObj.input.joystick.x;
-      joystick_y2.value=jsonObj.input.joystick.y;
-      joystick_key2.value=jsonObj.input.joystick.key?"弹起":"按下";
-      heart_rate2.value=jsonObj.input.heart_rate;
-      blood_oxygen2.value=jsonObj.input.blood_oxygen;
+      joystick_x2.value=jsonObj.joystick.x;
+      joystick_y2.value=jsonObj.joystick.y;
+      joystick_key2.value=jsonObj.joystick.key?"弹起":"按下";
+      heart_rate2.value=jsonObj.heart_rate;
+      blood_oxygen2.value=jsonObj.blood_oxygen;
     }
   }
 }
