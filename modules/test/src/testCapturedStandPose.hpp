@@ -11,7 +11,7 @@ using namespace std;
 using namespace glm;
 
 void testCapturedStandPose(fitplay::fitting fitInstance, bool detailPrint = false) {
-        //mock landmarks
+    //mock landmarks
     fitplay::landmarks landmarkData;
         
     //emulating landmarks reflecting y from right hand camera axis to left hand unity axis

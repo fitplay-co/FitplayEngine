@@ -9,6 +9,7 @@
 
 using namespace std;
 using namespace glm;
+using namespace fitplay;
 
 void testDefaultTPose(fitplay::fitting fitInstance, bool detailPrint = false) {
     cout << "===  starting fitting rotation init testing.  ===" << endl ;

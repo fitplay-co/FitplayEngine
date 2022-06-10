@@ -14,16 +14,36 @@ using namespace nlohmann;
 using namespace glm;
 using namespace std;
 
-static constexpr int jointPointSize = 18;
-static constexpr quat rotateFromLookatZtoX = quat(0.5, -0.5, -0.5, -0.5);
-
 namespace fitplay {
+    static constexpr int jointPointSize = 18;
+    static constexpr quat rotateFromLookatZtoX = quat(0.5, -0.5, -0.5, -0.5);
+
     static constexpr vec3 up = vec3 (0.0f, 1.0f, 0.0f);
     static constexpr vec3 down = vec3 (0.0f, -1.0f, 0.0f);
     static constexpr vec3 left = vec3 (-1.0f, 0.0f, 0.0f);
     static constexpr vec3 right = vec3 (1.0f, 0.0f, 0.0f);  
     static constexpr vec3 forward = vec3(0.0f, 0.0f, 1.0f);
     static constexpr vec3 backward = vec3(0.0f, 0.0f, -1.0f);
+
+    static constexpr int HIP_CENTER = 0; 
+    static constexpr int NECK = 1;      
+    static constexpr int HEAD = 2;  
+    static constexpr int L_SHOULDER = 3; 
+    static constexpr int R_SHOULDER = 4;
+    static constexpr int L_ARM = 5;
+    static constexpr int R_ARM = 6;
+    static constexpr int L_WRIST = 7;
+    static constexpr int R_WRIST = 8;  
+    static constexpr int L_HAND = 9;
+    static constexpr int R_HAND = 10;
+    static constexpr int L_HIP = 11;
+    static constexpr int R_HIP = 12;
+    static constexpr int L_KNEE = 13;
+    static constexpr int R_KNEE = 14;
+    static constexpr int L_ANKLE = 15;
+    static constexpr int R_ANKLE = 16;
+    static constexpr int L_FOOT = 17;
+    static constexpr int R_FOOT = 18;
 
     struct jointPoint {
         std::string jointName;
@@ -366,6 +386,31 @@ namespace fitplay {
         }
         return resultBuilder.CreateVector(nodeVector);
     }
+
+    inline std::vector<vec3> readLandmarkData(const landmarks & src) {
+        return std::vector<vec3> {
+            src.hipcenter, //0
+            src.neck,      //1
+            src.head,      //2
+            src.lshoulder, //3
+            src.rshoulder, //4
+            src.larm,      //5
+            src.rarm,      //6
+            src.lwrist,    //7
+            src.rwrist,    //8
+            src.lhand,     //9
+            src.rhand,     //10
+            src.lhip,      //11
+            src.rhip,      //12
+            src.lknee,     //13
+            src.rknee,     //14
+            src.lankle,    //15
+            src.rankle,    //16
+            src.lfoot,     //17
+            src.rfoot      //18
+        };
+    }
+
 }
 
 #endif

@@ -151,15 +151,15 @@ var messageLoop = coroutine(function*() {
             activeApplicationClient.forEach(function(ws){
                 if(!ws.notActived) {
                     const poseDataForClient = Object.assign({}, pose)
-                    if ('ground_location' in poseDataForClient) {
-                        delete poseDataForClient.ground_location
-                    }
-                    if ('action_detection' in poseDataForClient) {
-                        delete poseDataForClient.action_detection
-                    }
-                    if ('gaze_tracking' in poseDataForClient) {
-                        delete poseDataForClient.gaze_tracking
-                    }
+                    // if ('ground_location' in poseDataForClient) {
+                    //     delete poseDataForClient.ground_location
+                    // }
+                    // if ('action_detection' in poseDataForClient) {
+                    //     delete poseDataForClient.action_detection
+                    // }
+                    // if ('gaze_tracking' in poseDataForClient) {
+                    //     delete poseDataForClient.gaze_tracking
+                    // }
                     if (clientSubscriptionMap.has(ws)) {
                         const featureSubscriptions = clientSubscriptionMap.get(ws)
                         if (featureSubscriptions.indexOf('ground_loccation') >= 0) {

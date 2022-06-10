@@ -4,6 +4,8 @@
 #include "glm/glm.hpp"
 #include "glm/gtx/quaternion.hpp"
 #include "fitting/fitting.hpp"
+#include "fitting/fitting_landmark.hpp"
+
 using namespace std;
 using namespace glm;
 
