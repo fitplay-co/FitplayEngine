@@ -9,6 +9,7 @@
 #include "flatbuffer/featureConfig_generated.h"
 #include "actionDetection/walkDetection.hpp"
 #include "actionDetection/jumpDetection.hpp"
+#include "actionDetection/squatDetection.hpp"
 #include "gazeTracking/gazeTracking.hpp"
 #include "groundLocation/groundLocation.hpp"
 
@@ -61,15 +62,19 @@ public:
     float jump_data[2] = {0,0};
     float gaze_data[3] = {0,0,0};
     float ground_data[5] = {0,0,0,0,0};
+    float squat_data[1] = {0};
     flatbuffers::Offset<actionData::Walk> walk;
     flatbuffers::Offset<actionData::Jump> jump;
+    flatbuffers::Offset<actionData::Squat> squat; 
     flatbuffers::Offset<actionData::Gaze> gazeOffset; 
     flatbuffers::Offset<actionData::Ground> groundLocation;
     if (actionDetectionEnable) {
       walkInstance.process(walk_data, data);
       jumpInstance.process(jump_data, data);
+      squatInstance.process(squat_data, data);
       walk = actionData::CreateWalk(action_data, walk_data[0], walk_data[1], walk_data[2]);
       jump = actionData::CreateJump(action_data, jump_data[0], jump_data[1]);
+      squat = actionData::CreateSquat(action_data, squat_data[0]);
     }
     if (gazeTrackingEnable) {
       gazeInstance.process(gaze_data, data);
@@ -92,6 +97,7 @@ public:
     if (actionDetectionEnable) {
       actionBuilder.add_walk(walk);
       actionBuilder.add_jump(jump);
+      actionBuilder.add_squat(squat);
     }
     if (gazeTrackingEnable) {
       actionBuilder.add_gaze(gazeOffset);
@@ -124,6 +130,7 @@ private:
   fitplay::fitting mirrorFitInstance;
   actionwalk::walk walkInstance;
   actionjump::jump jumpInstance;
+  actionsquat::squat squatInstance;
   gaze::gazeTracking gazeInstance;
   ground::groundLocation groundInstance;
   flatbuffers::FlatBufferBuilder action_data;
