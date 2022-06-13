@@ -36,20 +36,20 @@ fitplay::fitting fitInstance;
 
 int main() {
     cout << "starting module testing." << endl;
-    // testGlmLookat();
-    // testDefaultTPose(fitInstance);
+    testGlmLookat();
+    testDefaultTPose(fitInstance);
 
     // //default stand pose testing
-    // testDefaultStandPose1(fitInstance);
-    // testDefaultStandPose2(fitInstance);
-    // testDefaultStandPose3(fitInstance);
-    // testDefaultStandPose4(fitInstance);
+    testDefaultStandPose1(fitInstance);
+    testDefaultStandPose2(fitInstance);
+    testDefaultStandPose3(fitInstance);
+    testDefaultStandPose4(fitInstance);
 
     // //test on a captured pose
-    // testCapturedStandPose(fitInstance);
+    testCapturedStandPose(fitInstance);
 
     // //round one 
-    // testFittingStandPose(fitInstance);
+    testFittingStandPose(fitInstance);
 
     // //scale up and down full data error 
     readCsvFileAsLandmarkList("data/test_data_full.csv", 1000000);
@@ -60,11 +60,11 @@ int main() {
     // }
 
     //
-    // testFittingBoneLengthBiasCalculation(fitInstance);
-    testFittingBoneLengthBiasCalculationErrorCheck(fitInstance, true);
-
-  
+  testFittingBoneLengthBiasCalculation(fitInstance);
+  testFittingBoneLengthBiasCalculationErrorCheck(fitInstance);
+  testFittingBoneLengthBiasCalculationErrorFullSequence(fitInstance);
+  testFittingUpdateErrorCheck(fitInstance);
     //print full bone length statistics
-
+  testFittingUpdateErrorCheck2(fitInstance);
 }
 

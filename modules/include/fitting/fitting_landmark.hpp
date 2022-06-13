@@ -187,23 +187,22 @@ void FittingLandmark::jointBoneLengthCalculate(int index, int fromPoint, int toP
     float dy = errorData.landmarkErrorData[index].toPointPosition.y - errorData.landmarkErrorData[index].fromPointPosition.y;
     float dz = errorData.landmarkErrorData[index].toPointPosition.z - errorData.landmarkErrorData[index].fromPointPosition.z;
 
-    cout << "" << currentJointPoints.jointPoints[index].jointName << endl;
-    cout << "          from: " << fromPoint << " x " << currentFitLandmarkData[fromPoint].x << " y "<< currentFitLandmarkData[fromPoint].y << " z " << currentFitLandmarkData[fromPoint].z << endl;
-    cout << "          to: " << toPoint << " x " << currentFitLandmarkData[toPoint].x << " y " << currentFitLandmarkData[toPoint].y << " z " << currentFitLandmarkData[toPoint].z  << endl;
-    cout << "          currentBoneLength: "<< currentBoneLength << endl;
-    cout << "          targetBoneLength: " << targetBoneLength << " = " <<  currentJointPoints.jointPoints[index].boneLength  << " + " <<  errorData.landmarkErrorData[index].statisticBias << endl;
-    cout << "          residual: "<< boneLengthTotalResudual << endl;
-    cout << "          error score: " << errorData.landmarkErrorData[index].errorScore << endl;
-    cout << "          sqare error:" << targetBoneLength * targetBoneLength - dx*dx - dy*dy << endl;
-    cout << "          dx: " << dx << endl;
-    cout << "          dy: " << dy << endl;
-    cout << "          dz: " << dz << endl;
-
     //longer than expected lim down z residual 
     //targetBoneLength^2 = x^2 + y^2 + ( solz + dz )^2 
-    float solz = sqrt(targetBoneLength * targetBoneLength - dx*dx - dy*dy) - dz;
+    //solz as min for each z 
+    float solz;
+    float SuqareError = targetBoneLength * targetBoneLength -  dx*dx - dy*dy;
 
-    cout << "          solz: " << solz << endl;
+    if(SuqareError > 0) {
+        float unsinedTargetZ = sqrt(SuqareError);
+        if( dz> 0 ) {
+            solz = unsinedTargetZ - dz;
+        } else {
+            solz = - unsinedTargetZ - dz;
+        }
+    } else {
+        solz = 0.0f;
+    }
     errorData.landmarkErrorData[index].toPointHandcraftSolution = vec3(0.0f, 0.0f, solz);
 }
 
