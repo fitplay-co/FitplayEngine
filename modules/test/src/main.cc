@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include "glm/glm.hpp"
 #include "glm/gtx/quaternion.hpp"
@@ -11,6 +12,7 @@
 #include "testDefaultStandPose.hpp"
 #include "testCapturedStandPose.hpp"
 #include "testFittingStandPose.hpp"
+#include "testUtilsMocLandmark.hpp"
 
 using namespace std;
 using namespace glm;
@@ -34,21 +36,35 @@ fitplay::fitting fitInstance;
 
 int main() {
     cout << "starting module testing." << endl;
-    testGlmLookat();
-    testDefaultTPose(fitInstance);
+    // testGlmLookat();
+    // testDefaultTPose(fitInstance);
 
-    //default stand pose testing
-    testDefaultStandPose1(fitInstance);
-    testDefaultStandPose2(fitInstance);
-    testDefaultStandPose3(fitInstance);
-    testDefaultStandPose4(fitInstance);
+    // //default stand pose testing
+    // testDefaultStandPose1(fitInstance);
+    // testDefaultStandPose2(fitInstance);
+    // testDefaultStandPose3(fitInstance);
+    // testDefaultStandPose4(fitInstance);
 
-    //test on a captured pose
-    testCapturedStandPose(fitInstance);
+    // //test on a captured pose
+    // testCapturedStandPose(fitInstance);
 
-    //round one 
-    testFittingStandPose(fitInstance, true);
+    // //round one 
+    // testFittingStandPose(fitInstance);
 
-    
+    // //scale up and down full data error 
+    readCsvFileAsLandmarkList("data/test_data_full.csv", 1000000);
+
+    // //test basic fitting 
+    // for(int i = 0; i < 20; i++ ) {
+    //   testFittingStandPoseFullData(fitInstance, i);
+    // }
+
+    //
+    // testFittingBoneLengthBiasCalculation(fitInstance);
+    testFittingBoneLengthBiasCalculationErrorCheck(fitInstance, true);
+
+  
+    //print full bone length statistics
+
 }
 

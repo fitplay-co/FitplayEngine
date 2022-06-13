@@ -21,19 +21,21 @@ constexpr int errorDataDims = 4;
 constexpr int fittingRoundMaxium = 1;
 constexpr float fittingErrorThreshold = 10.0f;
 
-
 struct LandmarkErrorData {
     float errorScore = 0.0f;
+    //bias for random error value correction. e.g take mean value in runtime fit human
+    //body bone length recurrent 
+    float statisticBias = 0.0f;
     int fromPointIndex = 0;
     vec3 fromPointPosition = vec3(0,0,0);
-    vec3 fromPointHandcraftGredients; //gredients by handcraft
     vec3 toPointPosition = vec3(0,0,0);
     int toPointIndex = 0;
-    vec3 toPointHandcraftGredients = vec3(0,0,0);
+    vec3 toPointHandcraftSolution = vec3(0,0,0);
 };
 
 struct BodyErrorData {
     LandmarkErrorData landmarkErrorData[jointPointSize + 1];
+    float errorWeight = 0.0f;
     float errorScore = 0.0f;
 };
 
@@ -77,41 +79,54 @@ public:
     void humanBodyGravityError (BodyErrorData & errorData);
     //physical punish unusual human body gravity activities and make foot on ground 
 
+    //update through each joint
     void jointGredientsUpdate ();
+    //update through kinamacic chain
+    void updateToKenamaticChain(int index, vec3 updateVec);
+
     //update joints with summarized gredients
     float summarizeError();
     //summarize Error 
 
     void handcraftFitting (const landmarks & fittingLandmark, const fitting & jointFitting);
+    void handcraftFittingLandmarkRead (const landmarks & fittingLandmark,const fitting & jointFitting);
     void handcraftFittingRound ();
     //hand craft fitting to joints to make use of joint directions 
 };
 
 void FittingLandmark::handcraftFitting(const landmarks & fittingLandmark,const fitting & jointFitting) {
-    currentJointPoints = jointFitting;
-    cachedLandmarkData = currentFitLandmarkData;
-    currentRawLandmarkData = readLandmarkData(fittingLandmark);
-    //inititalize 
-    currentFitLandmarkData = currentRawLandmarkData;
+    //read from landmark
+    handcraftFittingLandmarkRead(fittingLandmark, jointFitting);
     //calculate initial score 
     handcraftFittingRound();
-    // summarizeError();
-
-    // for(int i =0 ; i < fittingRoundMaxium; i ++) {
-    //     jointGredientsUpdate();
-    //     summarizeError();
-    //     if(currentFittingError < fittingErrorThreshold) {
-    //         break;
-    //     } else {
-    //         handcraftFittingRound();
-    //     }
-    // }
+    beforeFittingError = summarizeError();
+    // jointGredientsUpdate();
+    
+    //summarize new error , will skip when real time fitting
+    // handcraftFittingRound();
+    currentFittingError = summarizeError();
 
     //cached fram after one round 
     frameCached = true;
 }
 
+void FittingLandmark::handcraftFittingLandmarkRead(const landmarks & fittingLandmark,const fitting & jointFitting) {
+    currentJointPoints = jointFitting;
+    cachedLandmarkData = currentFitLandmarkData;
+    currentRawLandmarkData = readLandmarkData(fittingLandmark);
+    //inititalize 
+    currentFitLandmarkData = currentRawLandmarkData;
+}
+
 void FittingLandmark::handcraftFittingRound() {
+    //fitting weight set at first round
+    if(!frameCached) {
+        errorDataList[0].errorWeight = 0.0f;
+        errorDataList[1].errorWeight = 0.0f;
+        errorDataList[2].errorWeight = 1.0f;
+        errorDataList[3].errorWeight = 0.0f;
+    }
+
     // smoothError(errorDataList[0]);
     boneDirectionError(errorDataList[1]);
     boneLengthError(errorDataList[2]);
@@ -127,7 +142,7 @@ void FittingLandmark::smoothError(BodyErrorData & errorData) {
         vec3 residual = currentFitLandmarkData[i] - cachedLandmarkData[i];
         errorData.landmarkErrorData[i].errorScore = glm::length(residual);
         errorData.landmarkErrorData[i].fromPointIndex = i;
-        errorData.landmarkErrorData[i].fromPointHandcraftGredients = - residual;
+        errorData.landmarkErrorData[i].toPointHandcraftSolution = - residual;
         errorData.landmarkErrorData[i].fromPointIndex = -1;
     }
 }
@@ -154,19 +169,42 @@ void FittingLandmark::boneLengthError(BodyErrorData & errorData) {
 }
 
 void FittingLandmark::jointBoneLengthCalculate(int index, int fromPoint, int toPoint, BodyErrorData & errorData) {
-    float targetBoneLength = currentJointPoints.jointPoints[0].boneLength;
-    errorData.landmarkErrorData[index].fromPointPosition  = currentFitLandmarkData[fromPoint];
-    errorData.landmarkErrorData[index].toPointPosition  = currentFitLandmarkData[toPoint];
-    float currentBoneLength = glm::length(errorData.landmarkErrorData[index].fromPointPosition - errorData.landmarkErrorData[index].toPointPosition );
-    errorData.landmarkErrorData[index].errorScore = abs(currentBoneLength - targetBoneLength);
-    if(currentBoneLength > targetBoneLength) {
-        //longer than expected lim down z residual
-    } else {
-        //short than expected enlarge up z residual
-    }
     errorData.landmarkErrorData[index].fromPointIndex = fromPoint;
     errorData.landmarkErrorData[index].toPointIndex = toPoint;
+    errorData.landmarkErrorData[index].fromPointPosition  = currentFitLandmarkData[fromPoint];
+    errorData.landmarkErrorData[index].toPointPosition  = currentFitLandmarkData[toPoint];
 
+    float currentBoneLength = glm::length(errorData.landmarkErrorData[index].toPointPosition - errorData.landmarkErrorData[index].fromPointPosition);
+    //update statistic bias 
+    float boneLengthTotalResudual = currentBoneLength - currentJointPoints.jointPoints[index].boneLength;
+    //by frames correct statistic bias
+    errorData.landmarkErrorData[index].statisticBias = errorData.landmarkErrorData[index].statisticBias * 0.99 + boneLengthTotalResudual * 0.01;
+    //update bone length with bias and predefined bone length; later may set bone length correction range or other facilities
+    float targetBoneLength = currentJointPoints.jointPoints[index].boneLength + errorData.landmarkErrorData[index].statisticBias;
+    
+    errorData.landmarkErrorData[index].errorScore = abs(currentBoneLength - targetBoneLength);
+    float dx = errorData.landmarkErrorData[index].toPointPosition.x - errorData.landmarkErrorData[index].fromPointPosition.x;   
+    float dy = errorData.landmarkErrorData[index].toPointPosition.y - errorData.landmarkErrorData[index].fromPointPosition.y;
+    float dz = errorData.landmarkErrorData[index].toPointPosition.z - errorData.landmarkErrorData[index].fromPointPosition.z;
+
+    cout << "" << currentJointPoints.jointPoints[index].jointName << endl;
+    cout << "          from: " << fromPoint << " x " << currentFitLandmarkData[fromPoint].x << " y "<< currentFitLandmarkData[fromPoint].y << " z " << currentFitLandmarkData[fromPoint].z << endl;
+    cout << "          to: " << toPoint << " x " << currentFitLandmarkData[toPoint].x << " y " << currentFitLandmarkData[toPoint].y << " z " << currentFitLandmarkData[toPoint].z  << endl;
+    cout << "          currentBoneLength: "<< currentBoneLength << endl;
+    cout << "          targetBoneLength: " << targetBoneLength << " = " <<  currentJointPoints.jointPoints[index].boneLength  << " + " <<  errorData.landmarkErrorData[index].statisticBias << endl;
+    cout << "          residual: "<< boneLengthTotalResudual << endl;
+    cout << "          error score: " << errorData.landmarkErrorData[index].errorScore << endl;
+    cout << "          sqare error:" << targetBoneLength * targetBoneLength - dx*dx - dy*dy << endl;
+    cout << "          dx: " << dx << endl;
+    cout << "          dy: " << dy << endl;
+    cout << "          dz: " << dz << endl;
+
+    //longer than expected lim down z residual 
+    //targetBoneLength^2 = x^2 + y^2 + ( solz + dz )^2 
+    float solz = sqrt(targetBoneLength * targetBoneLength - dx*dx - dy*dy) - dz;
+
+    cout << "          solz: " << solz << endl;
+    errorData.landmarkErrorData[index].toPointHandcraftSolution = vec3(0.0f, 0.0f, solz);
 }
 
 void FittingLandmark::humanBodyGravityError(BodyErrorData & errorData) {
@@ -174,16 +212,42 @@ void FittingLandmark::humanBodyGravityError(BodyErrorData & errorData) {
     //2.total body rotation with gradient as rotation 
 }
 
+void FittingLandmark::updateToKenamaticChain(int index, vec3 updateVec) {
+    currentFitLandmarkData[index] += updateVec;
+    for(int i = 0; i < 3; i++) {
+        int nextIndex = kinamaticChainNext[index][i];
+        if(nextIndex == NO_NEXT) {
+            break;
+        } else {
+            updateToKenamaticChain(nextIndex, updateVec);
+        }
+    }
+}
+
 void FittingLandmark::jointGredientsUpdate() {
     //current do noting
+    for(int i = 0; i < errorDataDims ; i ++) {
+        for(int j =0 ; j< jointPointSize + 1; j++) {
+            int updateIndex = errorDataList[i].landmarkErrorData[j].toPointIndex;
+            vec3 updateVec = errorDataList[i].landmarkErrorData[j].toPointHandcraftSolution;
+            float weight = errorDataList[i].errorWeight;
+            updateToKenamaticChain(updateIndex, updateVec * weight);
+        }
+    }
 } 
 
 float FittingLandmark::summarizeError(){
-    //current do noting
-    return 0.0f;
+    float sumError = 0.0f;
+    for(int i = 0; i < errorDataDims ; i ++) {
+        for(int j = 0; j < jointPointSize + 1 ; j++) {
+            sumError += errorDataList[i].landmarkErrorData[j].errorScore;
+        }
+    }
+    return sumError;
 }
 
 FittingLandmark::FittingLandmark(){}
+
 FittingLandmark::~FittingLandmark(){}
 }
 #endif

@@ -14,6 +14,26 @@ using namespace nlohmann;
 using namespace glm;
 using namespace std;
 
+        //check each joint direction 
+        //defination of landmarks
+        //left hand axis and default up defined as z axis up = (0f, 0f, 1f)
+        //              y
+        //    <---- -x    x  ----->  
+        //             -y                      head
+        //                                      |
+        // lhand - lwrist - larm - lshoulder - neck -  rshoulder - rarm - rwrist - rhand
+        //                                      |
+        //                           lhip - hipcenter - rhip
+        //                             |                  |
+        //                           lknee              rknee
+        //                             |                  |
+        //                           lankle             rankle
+        //                             |                  |
+        //                           lfoot              rfoot
+        //
+        // here spine is ignored for faster fitting
+        // transfer to vec3 for each landmarks
+
 namespace fitplay {
     static constexpr int jointPointSize = 18;
     static constexpr quat rotateFromLookatZtoX = quat(0.5, -0.5, -0.5, -0.5);
@@ -44,6 +64,30 @@ namespace fitplay {
     static constexpr int R_ANKLE = 16;
     static constexpr int L_FOOT = 17;
     static constexpr int R_FOOT = 18;
+    static constexpr int NO_NEXT = -1;
+
+    static constexpr int kinamaticChainNext[jointPointSize + 1][3] {
+        { NECK, L_HIP, R_HIP }, //0
+        { HEAD, L_SHOULDER, R_SHOULDER }, //1
+        { NO_NEXT }, //2 
+        { L_ARM, NO_NEXT},  //3
+        { R_ARM, NO_NEXT},  //4
+        { L_WRIST, NO_NEXT},//5
+        { R_WRIST, NO_NEXT},//6
+        { L_HAND,  NO_NEXT},//7
+        { R_HAND,  NO_NEXT}, //8
+        { NO_NEXT }, //9
+        { NO_NEXT }, //10 
+        { L_KNEE, NO_NEXT}, //11
+        { R_KNEE, NO_NEXT}, //12
+        { L_ANKLE, NO_NEXT}, //13
+        { R_ANKLE, NO_NEXT}, //14
+        { L_FOOT, NO_NEXT}, //15
+        { R_FOOT, NO_NEXT}, //16
+        { NO_NEXT }, //17
+        { NO_NEXT }  //18 
+    };
+
 
     struct jointPoint {
         std::string jointName;
@@ -128,44 +172,24 @@ namespace fitplay {
     };
 
     fitting::fitting() {
-        //check each joint direction 
-        //defination of landmarks
-        //left hand axis and default up defined as z axis up = (0f, 0f, 1f)
-        //              y
-        //    <---- -x    x  ----->  
-        //             -y                      head
-        //                                      |
-        // lhand - lwrist - larm - lshoulder - neck -  rshoulder - rarm - rwrist - rhand
-        //                                      |
-        //                           lhip - hipcenter - rhip
-        //                             |                  |
-        //                           lknee              rknee
-        //                             |                  |
-        //                           lankle             rankle
-        //                             |                  |
-        //                           lfoot              rfoot
-        //
-        // here spine is ignored for faster fitting
-        // transfer to vec3 for each landmarks
-
         //last point for root reference from neck, hip points
         addJointPoint(jointPoints[18], "root", -1, 0.4f, down);
         addJointPoint(jointPoints[0], "spine", 18, 0.4f, down);
         addJointPoint(jointPoints[1], "neck", 0, 0.1f, down);
-        addJointPoint(jointPoints[2], "lshoulder", 0, 0.1f, right);
-        addJointPoint(jointPoints[3], "rshoulder", 0, 0.1f, left);
-        addJointPoint(jointPoints[4], "luparm", 2, 0.2f, right);
-        addJointPoint(jointPoints[5], "ruparm", 3, 0.2f, left);
+        addJointPoint(jointPoints[2], "lshoulder", 0, 0.16f, right);
+        addJointPoint(jointPoints[3], "rshoulder", 0, 0.16f, left);
+        addJointPoint(jointPoints[4], "luparm", 2, 0.24f, right);
+        addJointPoint(jointPoints[5], "ruparm", 3, 0.24f, left);
         addJointPoint(jointPoints[6], "llowarm", 4, 0.2f, right);
         addJointPoint(jointPoints[7], "rlowarm", 5, 0.2f, left);
         addJointPoint(jointPoints[8], "lhand", 6, 0.1f, right);
         addJointPoint(jointPoints[9], "rhand", 7, 0.1f, left);
         addJointPoint(jointPoints[10], "lhip", 18, 0.1f, down);
         addJointPoint(jointPoints[11], "rhip", 18, 0.1f, down);
-        addJointPoint(jointPoints[12], "lupleg", 10, 0.3, up);
-        addJointPoint(jointPoints[13], "rupleg", 11, 0.3f, up);
-        addJointPoint(jointPoints[14], "llowleg", 12, 0.3f, up);
-        addJointPoint(jointPoints[15], "rlowleg", 13, 0.3f, up);
+        addJointPoint(jointPoints[12], "lupleg", 10, 0.4f, up);
+        addJointPoint(jointPoints[13], "rupleg", 11, 0.4f, up);
+        addJointPoint(jointPoints[14], "llowleg", 12, 0.37f, up);
+        addJointPoint(jointPoints[15], "rlowleg", 13, 0.37f, up);
         addJointPoint(jointPoints[16], "lfoot", 14, 0.1f, up);
         addJointPoint(jointPoints[17], "rfoot", 15, 0.1f, up);
     }
@@ -414,31 +438,3 @@ namespace fitplay {
 }
 
 #endif
-        // data["fitting"][p.jointName]["fromx"] =  p.fromPoint[0];
-        // data["fitting"][p.jointName]["fromy"] =  p.fromPoint[1];
-        // data["fitting"][p.jointName]["fromz"] =  p.fromPoint[2];
-        // data["fitting"][p.jointName]["tox"] =  p.toPoint[0];
-        // data["fitting"][p.jointName]["toy"] =  p.toPoint[1];
-        // data["fitting"][p.jointName]["toz"] =  p.toPoint[2];
-        
-        // data["fitting"][p.jointName]["fx"] =  p.posDirection3d[0];
-        // data["fitting"][p.jointName]["fy"] =  p.posDirection3d[1];
-        // data["fitting"][p.jointName]["fz"] =  p.posDirection3d[2];
-
-        // data["fitting"][p.jointName]["upx"] =  p.alternativeUp[0];
-        // data["fitting"][p.jointName]["upy"] =  p.alternativeUp[1];
-        // data["fitting"][p.jointName]["upz"] =  p.alternativeUp[2];
-        
-        // data["fitting"][p.jointName]["px"] =  parentPosDirection3d[0];
-        // data["fitting"][p.jointName]["py"] =  parentPosDirection3d[1];
-        // data["fitting"][p.jointName]["pz"] =  parentPosDirection3d[2];
-        
-        // debugPrintQuat(p.jointName, "tposeInitRotation", p.initRotation, data);
-        // debugPrintQuat(p.jointName, "tposeDefaultJointRotation", p.tposeDefaultJointRotation, data);
-        // debugPrintQuat(p.jointName, "fkRotation", p.fkRotation, data);
-        // debugPrintQuat(p.jointName, "parentfkRotation", parentFkRotation, data);
-        // debugPrintQuat(p.jointName, "jointLocalRotation", p.jointLocalRotation, data);
-        
-        //test default joint rotation to fk rotation
-
-        //}
