@@ -60,11 +60,11 @@ int main() {
     // }
 
     //
-  testFittingBoneLengthBiasCalculation(fitInstance);
-  testFittingBoneLengthBiasCalculationErrorCheck(fitInstance);
-  testFittingBoneLengthBiasCalculationErrorFullSequence(fitInstance);
   testFittingUpdateErrorCheck(fitInstance);
     //print full bone length statistics
   testFittingUpdateErrorCheck2(fitInstance);
+  testFittingBoneLengthBiasCalculation(fitInstance);
+  testFittingBoneLengthBiasCalculationErrorCheck(fitInstance);
+  testFittingBoneLengthBiasCalculationErrorFullSequence(fitInstance);
 }
 

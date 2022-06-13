@@ -148,6 +148,9 @@ void testFittingBoneLengthBiasCalculationErrorFullSequence(fitplay::fitting fitI
 
     cout << "===  starting testFittingBoneLengthBiasCalculationErrorFullSequence ===" << endl ;
     //calculate mean error score
+    float totalBeforeError = 0.0f;
+    float totalAfterError = 0.0f;
+
     bool testPassed = true;
     for(int i = 0; i < 2000; i ++) {
         landmarkData = readLandmarks(i);
@@ -159,14 +162,15 @@ void testFittingBoneLengthBiasCalculationErrorFullSequence(fitplay::fitting fitI
         landmarkFittingInstance.currentFittingError = landmarkFittingInstance.summarizeError();
 
         //check after fitting error less than before error
-        if(detailPrint == true){
-            if(landmarkFittingInstance.beforeFittingError < landmarkFittingInstance.currentFittingError){ 
-                cout << "\x1b[31m" <<  " - Error current error larger than before fitting error " << "\x1b[0m"<< endl;
-                testPassed = false;
-            }
+        if(landmarkFittingInstance.beforeFittingError < landmarkFittingInstance.currentFittingError){ 
+            cout << "\x1b[31m" <<  " - Error current error larger than before fitting error " << "\x1b[0m"<< endl;
+            testPassed = false;
         }
+        
+        totalBeforeError += landmarkFittingInstance.beforeFittingError;
+        totalAfterError += landmarkFittingInstance.currentFittingError;
     }
-    cout << "\x1b[32m" <<  " - Pass " << "\x1b[0m"<< endl;
+    cout << "\x1b[32m" <<  " - Pass  with error ratio  " << totalAfterError/ totalBeforeError << "\x1b[0m"<< endl;
 }
 
 void testFittingUpdateErrorCheck(fitplay::fitting fitInstance, bool fetailPrint = false){
