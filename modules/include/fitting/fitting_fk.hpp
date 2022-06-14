@@ -222,31 +222,6 @@ namespace fitplay {
     vec3 FittingFk::vectorFromToPoint(vec3 const & from, vec3 const & to) {
         return glm::normalize(vec3(to[0] - from[0], to[1] - from[1], to[2] - from[2]));
     }
-
-    inline std::vector<vec3> readLandmarkData(const landmarks & src) {
-        return std::vector<vec3> {
-            src.hipcenter, //0
-            src.neck,      //1
-            src.head,      //2
-            src.lshoulder, //3
-            src.rshoulder, //4
-            src.larm,      //5
-            src.rarm,      //6
-            src.lwrist,    //7
-            src.rwrist,    //8
-            src.lhand,     //9
-            src.rhand,     //10
-            src.lhip,      //11
-            src.rhip,      //12
-            src.lknee,     //13
-            src.rknee,     //14
-            src.lankle,    //15
-            src.rankle,    //16
-            src.lfoot,     //17
-            src.rfoot      //18
-        };
-    }
-
 }
 
 #endif

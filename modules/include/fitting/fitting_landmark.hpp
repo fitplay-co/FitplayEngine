@@ -2,8 +2,8 @@
  * @brief fitting error calculator and providing error in 
  * default bone layout  
  */
-#ifndef FITPLAY_fitting_error
-#define FITPLAY_fitting_error
+#ifndef FITPLAY_fitting_landmark
+#define FITPLAY_fitting_landmark
 
 #include <string>
 #include <vector>
@@ -11,7 +11,6 @@
 #include "glm/glm.hpp"
 #include "glm/gtx/quaternion.hpp"
 #include "fitting_data.hpp"
-#include "fitting.hpp"
 
 using namespace std;
 

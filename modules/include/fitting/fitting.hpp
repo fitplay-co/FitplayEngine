@@ -23,8 +23,9 @@ namespace fitplay {
         private:
         public: 
             bool mirror = true;
+            FittingLandmark landmarkFittingInstance;
             FittingFk fkInstance;
-            void readPoseDataToLandmark(const PoseData::Pose* data)
+            void readPoseDataToLandmark(const PoseData::Pose* data, landmarks & landmarkData);
             void process(const PoseData::Pose* data);
             vec3 readLandmarkPointVector(int point, const PoseData::Pose* data);
             vec3 readLandmarkPointVectorMirror(int point, const PoseData::Pose* data);
@@ -33,7 +34,13 @@ namespace fitplay {
 
     void fitting::process(const PoseData::Pose* data) {
         landmarks landmarkData;
+        readPoseDataToLandmark(data, landmarkData);
+        landmarkFittingInstance.handcraftFitting(landmarkData, fkInstance.jointPoints);
+        landmarkData = writeLandmarkData(landmarkFittingInstance.currentFitLandmarkData);
+        fkInstance.updateLandmarks(landmarkData);
+    }
 
+    void fitting::readPoseDataToLandmark(const PoseData::Pose* data, landmarks & landmarkData) {
         if(mirror) {
             landmarkData.head = readLandmarkPointVectorMirror(0, data);
             landmarkData.lshoulder = readLandmarkPointVectorMirror(12, data); 
@@ -78,8 +85,6 @@ namespace fitplay {
         landmarkData.neck = vec3((landmarkData.lshoulder[0] 
                 + landmarkData.rshoulder[0])/2.0f, (landmarkData.lshoulder[1] 
                 + landmarkData.rshoulder[1])/2.0f, (landmarkData.lshoulder[2] + landmarkData.rshoulder[2])/2.0f);
-
-        fkInstance.updateLandmarks(landmarkData);
     }
 
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>>> fitting::writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder) {
@@ -109,7 +114,6 @@ namespace fitplay {
         float zStart = data->keypoints3D()->Get(point)->z();
         return vec3(xStart, yStart, zStart);
     }
-
 }
 
 

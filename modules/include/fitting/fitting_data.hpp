@@ -144,6 +144,53 @@ namespace fitplay {
         float errorScore = 0.0f;
     };
 
+    inline std::vector<vec3> readLandmarkData(const landmarks & src) {
+        return std::vector<vec3> {
+            src.hipcenter, //0
+            src.neck,      //1
+            src.head,      //2
+            src.lshoulder, //3
+            src.rshoulder, //4
+            src.larm,      //5
+            src.rarm,      //6
+            src.lwrist,    //7
+            src.rwrist,    //8
+            src.lhand,     //9
+            src.rhand,     //10
+            src.lhip,      //11
+            src.rhip,      //12
+            src.lknee,     //13
+            src.rknee,     //14
+            src.lankle,    //15
+            src.rankle,    //16
+            src.lfoot,     //17
+            src.rfoot      //18
+        };
+    }
+
+    inline landmarks writeLandmarkData(const std::vector<vec3> & src) {
+        landmarks result;
+        result.hipcenter = src[0];
+        result.neck = src[1];     //1
+        result.head = src[2];     //2
+        result.lshoulder = src[3]; //3
+        result.rshoulder = src[4]; //4
+        result.larm = src[5];    //5
+        result.rarm = src[6];     //6
+        result.lwrist = src[7];   //7
+        result.rwrist = src[8];   //8
+        result.lhand = src[9];    //9
+        result.rhand = src[10];     //10
+        result.lhip = src[11] ;      //11
+        result.rhip = src[12];     //12
+        result.lknee = src[13];    //13
+        result.rknee = src[14];    //14
+        result.lankle = src[15];    //15
+        result.rankle = src[16];    //16
+        result.lfoot = src[17];     //17
+        result.rfoot = src[18];   //18
+        return result;
+    }
 }
 
 #endif
