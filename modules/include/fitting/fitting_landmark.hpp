@@ -10,34 +10,12 @@
 #include "json.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtx/quaternion.hpp"
-
+#include "fitting_data.hpp"
 #include "fitting.hpp"
 
 using namespace std;
 
 namespace fitplay {
-
-constexpr int errorDataDims = 4;
-constexpr int fittingRoundMaxium = 1;
-constexpr float fittingErrorThreshold = 10.0f;
-
-struct LandmarkErrorData {
-    float errorScore = 0.0f;
-    //bias for random error value correction. e.g take mean value in runtime fit human
-    //body bone length recurrent 
-    float statisticBias = 0.0f;
-    int fromPointIndex = 0;
-    vec3 fromPointPosition = vec3(0,0,0);
-    vec3 toPointPosition = vec3(0,0,0);
-    int toPointIndex = 0;
-    vec3 toPointHandcraftSolution = vec3(0,0,0);
-};
-
-struct BodyErrorData {
-    LandmarkErrorData landmarkErrorData[jointPointSize + 1];
-    float errorWeight = 0.0f;
-    float errorScore = 0.0f;
-};
 
 /**
  * @brief 
@@ -48,7 +26,7 @@ struct BodyErrorData {
 class FittingLandmark {
 private:
     /* cached past frame joint points */
-    fitting currentJointPoints;
+    std::vector<jointPoint> currentJointPoints;
 
 public:
     std::vector<vec3> cachedLandmarkData;
@@ -88,15 +66,15 @@ public:
     float summarizeError();
     //summarize Error 
 
-    void handcraftFitting (const landmarks & fittingLandmark, const fitting & jointFitting);
-    void handcraftFittingLandmarkRead (const landmarks & fittingLandmark,const fitting & jointFitting);
+    void handcraftFitting (const landmarks & fittingLandmark, const vector<jointPoint> & joints);
+    void handcraftFittingLandmarkRead (const landmarks & fittingLandmark,const vector<jointPoint> & joints);
     void handcraftFittingRound ();
     //hand craft fitting to joints to make use of joint directions 
 };
 
-void FittingLandmark::handcraftFitting(const landmarks & fittingLandmark,const fitting & jointFitting) {
+void FittingLandmark::handcraftFitting(const landmarks & fittingLandmark,const vector<jointPoint> & joints) {
     //read from landmark
-    handcraftFittingLandmarkRead(fittingLandmark, jointFitting);
+    handcraftFittingLandmarkRead(fittingLandmark, joints);
     //calculate initial score 
     handcraftFittingRound();
     beforeFittingError = summarizeError();
@@ -110,8 +88,12 @@ void FittingLandmark::handcraftFitting(const landmarks & fittingLandmark,const f
     frameCached = true;
 }
 
-void FittingLandmark::handcraftFittingLandmarkRead(const landmarks & fittingLandmark,const fitting & jointFitting) {
-    currentJointPoints = jointFitting;
+void FittingLandmark::handcraftFittingLandmarkRead(const landmarks & fittingLandmark,const vector<jointPoint> & joints) {
+    if(!frameCached) {
+        for(int i=0; i< jointPointSize + 1; i++){
+            currentJointPoints.push_back(joints[i]);
+        }
+    }
     cachedLandmarkData = currentFitLandmarkData;
     currentRawLandmarkData = readLandmarkData(fittingLandmark);
     //inititalize 
@@ -176,11 +158,11 @@ void FittingLandmark::jointBoneLengthCalculate(int index, int fromPoint, int toP
 
     float currentBoneLength = glm::length(errorData.landmarkErrorData[index].toPointPosition - errorData.landmarkErrorData[index].fromPointPosition);
     //update statistic bias 
-    float boneLengthTotalResudual = currentBoneLength - currentJointPoints.jointPoints[index].boneLength;
+    float boneLengthTotalResudual = currentBoneLength - currentJointPoints[index].boneLength;
     //by frames correct statistic bias
     errorData.landmarkErrorData[index].statisticBias = errorData.landmarkErrorData[index].statisticBias * 0.99 + boneLengthTotalResudual * 0.01;
     //update bone length with bias and predefined bone length; later may set bone length correction range or other facilities
-    float targetBoneLength = currentJointPoints.jointPoints[index].boneLength + errorData.landmarkErrorData[index].statisticBias;
+    float targetBoneLength = currentJointPoints[index].boneLength + errorData.landmarkErrorData[index].statisticBias;
     
     errorData.landmarkErrorData[index].errorScore = abs(currentBoneLength - targetBoneLength);
     float dx = errorData.landmarkErrorData[index].toPointPosition.x - errorData.landmarkErrorData[index].fromPointPosition.x;   

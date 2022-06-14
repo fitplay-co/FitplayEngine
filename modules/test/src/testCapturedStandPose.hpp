@@ -35,48 +35,48 @@ void testCapturedStandPose(fitplay::fitting fitInstance, bool detailPrint = fals
     landmarkData.lfoot = - vec3(0.11197564750909805, 0.8096407055854797,  0.1629805862903595);
     landmarkData.rfoot = - vec3(-0.07256607711315155, 0.7641468644142151, 0.09375570714473724);
 
-    fitInstance.updateLandmarks(landmarkData);
+    fitInstance.fkInstance.updateLandmarks(landmarkData);
     //check fk rotation 
 
     cout << "===  capture pose 1 rotation ===" << endl;
     //print default rotation and assert default rotations
     for(int i = 0; i < 18 ; i++) {
-        std::string name = fitInstance.jointPoints[i].jointName;
+        std::string name = fitInstance.fkInstance.jointPoints[i].jointName;
         if (detailPrint ) {
             cout << name << endl;
-            quat fkRotation = fitInstance.jointPoints[i].fkRotation;
+            quat fkRotation = fitInstance.fkInstance.jointPoints[i].fkRotation;
             cout << "    -  direction -     " << endl;
             cout << "    -  jointDirection -" 
-                << "       x " << fitInstance.jointPoints[i].posDirection3d.x 
-                << "       y " << fitInstance.jointPoints[i].posDirection3d.y
-                << "       z " << fitInstance.jointPoints[i].posDirection3d.z  << endl;
+                << "       x " << fitInstance.fkInstance.jointPoints[i].posDirection3d.x 
+                << "       y " << fitInstance.fkInstance.jointPoints[i].posDirection3d.y
+                << "       z " << fitInstance.fkInstance.jointPoints[i].posDirection3d.z  << endl;
             cout << "    -  jointForward -  " 
-                << "       x " << fitInstance.jointPoints[i].posForward3d.x
-                << "       y " << fitInstance.jointPoints[i].posForward3d.y
-                << "       z " << fitInstance.jointPoints[i].posForward3d.z  << endl;
+                << "       x " << fitInstance.fkInstance.jointPoints[i].posForward3d.x
+                << "       y " << fitInstance.fkInstance.jointPoints[i].posForward3d.y
+                << "       z " << fitInstance.fkInstance.jointPoints[i].posForward3d.z  << endl;
             cout << "    -  jointLeft -     " 
-                << "       x " << fitInstance.jointPoints[i].posLeft3d.x 
-                << "       y " << fitInstance.jointPoints[i].posLeft3d.y
-                << "       z " << fitInstance.jointPoints[i].posLeft3d.z  << endl;
+                << "       x " << fitInstance.fkInstance.jointPoints[i].posLeft3d.x 
+                << "       y " << fitInstance.fkInstance.jointPoints[i].posLeft3d.y
+                << "       z " << fitInstance.fkInstance.jointPoints[i].posLeft3d.z  << endl;
             cout << "    -  fromPoint -     " 
-                << "       x " << fitInstance.jointPoints[i].fromPoint.x 
-                << "       y " << fitInstance.jointPoints[i].fromPoint.y
-                << "       z " << fitInstance.jointPoints[i].fromPoint.z  << endl;
+                << "       x " << fitInstance.fkInstance.jointPoints[i].fromPoint.x 
+                << "       y " << fitInstance.fkInstance.jointPoints[i].fromPoint.y
+                << "       z " << fitInstance.fkInstance.jointPoints[i].fromPoint.z  << endl;
             cout << "    -  toPoint -       " 
-                << "       x " << fitInstance.jointPoints[i].toPoint.x 
-                << "       y " << fitInstance.jointPoints[i].toPoint.y
-                << "       z " << fitInstance.jointPoints[i].toPoint.z  << endl;
+                << "       x " << fitInstance.fkInstance.jointPoints[i].toPoint.x 
+                << "       y " << fitInstance.fkInstance.jointPoints[i].toPoint.y
+                << "       z " << fitInstance.fkInstance.jointPoints[i].toPoint.z  << endl;
             cout << "    -  fkrotation -    " << endl;
             testPrintQuat(fkRotation);
             cout << "    - unity - new Quaternion( " << fkRotation.x << ", " <<  fkRotation.y << ", " <<  fkRotation.z << ", " <<  fkRotation.w << ");" << endl;
             cout << "    -  globalRotation - " << endl;
-            quat globalRotation = fitInstance.jointPoints[i].jointGlobalRotation;
+            quat globalRotation = fitInstance.fkInstance.jointPoints[i].jointGlobalRotation;
             testPrintQuat(globalRotation);
             cout << "    -  defaultRotation - " << endl;
-            quat defaultRotation = fitInstance.jointPoints[i].tposeDefaultJointRotation;
+            quat defaultRotation = fitInstance.fkInstance.jointPoints[i].tposeDefaultJointRotation;
             testPrintQuat(defaultRotation);
             cout << "    -  localRotation - " << endl;
-            quat localRotation = fitInstance.jointPoints[i].jointLocalRotation;
+            quat localRotation = fitInstance.fkInstance.jointPoints[i].jointLocalRotation;
             testPrintQuat(localRotation);
         }
     }

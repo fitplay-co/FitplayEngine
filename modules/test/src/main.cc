@@ -37,13 +37,13 @@ fitplay::fitting fitInstance;
 int main() {
     cout << "starting module testing." << endl;
     testGlmLookat();
-    testDefaultTPose(fitInstance);
+    testDefaultTPose(fitInstance.fkInstance);
 
     // //default stand pose testing
-    testDefaultStandPose1(fitInstance);
-    testDefaultStandPose2(fitInstance);
-    testDefaultStandPose3(fitInstance);
-    testDefaultStandPose4(fitInstance);
+    testDefaultStandPose1(fitInstance.fkInstance);
+    testDefaultStandPose2(fitInstance.fkInstance);
+    testDefaultStandPose3(fitInstance.fkInstance);
+    testDefaultStandPose4(fitInstance.fkInstance);
 
     // //test on a captured pose
     testCapturedStandPose(fitInstance);

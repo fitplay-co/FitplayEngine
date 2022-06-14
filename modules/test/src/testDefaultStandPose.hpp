@@ -25,7 +25,7 @@ using namespace glm;
 //                           lfoot              rfoot
 // 
 
-void testDefaultStandPose1(fitplay::fitting fitInstance, bool detailPrint = false) {
+void testDefaultStandPose1(fitplay::FittingFk fitInstance, bool detailPrint = false) {
         //mock landmarks
     fitplay::landmarks landmarkData;
         
@@ -150,7 +150,7 @@ void testDefaultStandPose1(fitplay::fitting fitInstance, bool detailPrint = fals
 //                           lfoot              rfoot
 //
 
-void testDefaultStandPose2(fitplay::fitting fitInstance, bool detailPrint = false) {
+void testDefaultStandPose2(fitplay::FittingFk fitInstance, bool detailPrint = false) {
         //mock landmarks
     fitplay::landmarks landmarkData;
         
@@ -283,7 +283,7 @@ void testDefaultStandPose2(fitplay::fitting fitInstance, bool detailPrint = fals
 //                           lfoot              rfoot
 //
 
-void testDefaultStandPose3(fitplay::fitting fitInstance, bool detailPrint = false) {
+void testDefaultStandPose3(fitplay::FittingFk fitInstance, bool detailPrint = false) {
         //mock landmarks
     fitplay::landmarks landmarkData;
         
@@ -415,7 +415,7 @@ void testDefaultStandPose3(fitplay::fitting fitInstance, bool detailPrint = fals
 //                           lfoot              rfoot
 //
 
-void testDefaultStandPose4(fitplay::fitting fitInstance, bool detailPrint = false) {
+void testDefaultStandPose4(fitplay::FittingFk fitInstance, bool detailPrint = false) {
         //mock landmarks
     fitplay::landmarks landmarkData;
         
