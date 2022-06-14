@@ -98,7 +98,7 @@ void testFittingBoneLengthBiasCalculation(fitplay::fitting fitInstance, bool det
         errorList.push_back(vector<float>());
     }
 
-    for(int i = 0 ; i< 3000 ; i ++) {
+    for(int i = 0 ; i< 1000 ; i ++) {
         landmarkData = readLandmarks(i);
         landmarkFittingInstance.handcraftFitting(landmarkData, fittingInstance.jointPoints);
         for(int index = 0; index < jointPointSize; index++) {
@@ -152,7 +152,7 @@ void testFittingBoneLengthBiasCalculationErrorFullSequence(fitplay::fitting fitI
     float totalAfterError = 0.0f;
 
     bool testPassed = true;
-    for(int i = 0; i < 2000; i ++) {
+    for(int i = 0; i < 1000; i ++) {
         landmarkData = readLandmarks(i);
         landmarkFittingInstance.handcraftFittingLandmarkRead(landmarkData, fittingInstance.jointPoints);
         landmarkFittingInstance.handcraftFittingRound();
@@ -170,8 +170,43 @@ void testFittingBoneLengthBiasCalculationErrorFullSequence(fitplay::fitting fitI
         totalBeforeError += landmarkFittingInstance.beforeFittingError;
         totalAfterError += landmarkFittingInstance.currentFittingError;
     }
-    cout << "\x1b[32m" <<  " - Pass  with error ratio  " << totalAfterError/ totalBeforeError << "\x1b[0m"<< endl;
+    cout << "\x1b[32m" <<  " - Pass  with error " << totalBeforeError << " with ratio"<< totalAfterError/ totalBeforeError << "\x1b[0m"<< endl;
 }
+
+
+
+void testFittingBoneLengthBiasCalculationErrorHeavySequence(fitplay::fitting fitInstance, bool detailPrint = false) {
+    fitplay::landmarks landmarkData;
+    fitplay::FittingLandmark landmarkFittingInstance;
+    fitplay::FittingFk fittingInstance;
+
+    cout << "===  starting testFittingBoneLengthBiasCalculationErrorHeavySequence ===" << endl ;
+    //calculate mean error score
+    float totalBeforeError = 0.0f;
+    float totalAfterError = 0.0f;
+
+    bool testPassed = true;
+    for(int i = 0; i < 1000; i ++) {
+        landmarkData = readLandmarks(i);
+        landmarkFittingInstance.handcraftFittingLandmarkRead(landmarkData, fittingInstance.jointPoints);
+        landmarkFittingInstance.handcraftFittingRound();
+        landmarkFittingInstance.beforeFittingError = landmarkFittingInstance.summarizeError();
+        landmarkFittingInstance.jointGredientsUpdate();
+        landmarkFittingInstance.handcraftFittingRound();
+        landmarkFittingInstance.currentFittingError = landmarkFittingInstance.summarizeError();
+
+        //check after fitting error less than before error
+        if(landmarkFittingInstance.beforeFittingError < landmarkFittingInstance.currentFittingError){ 
+            cout << "\x1b[31m" <<  " - Error current error larger than before fitting error " << "\x1b[0m"<< endl;
+            testPassed = false;
+        }
+        
+        totalBeforeError += landmarkFittingInstance.beforeFittingError;
+        totalAfterError += landmarkFittingInstance.currentFittingError;
+    }
+    cout << "\x1b[32m" <<  " - Pass  with error " << totalBeforeError << " with ratio"<< totalAfterError/ totalBeforeError << "\x1b[0m"<< endl;
+}
+
 
 void testFittingUpdateErrorCheck(fitplay::fitting fitInstance, bool fetailPrint = false){
     cout << "===  starting testFittingUpdateErrorCheck ===" << endl;
@@ -198,7 +233,7 @@ void testFittingUpdateErrorCheck(fitplay::fitting fitInstance, bool fetailPrint 
 }
 
 void testFittingUpdateErrorCheck2(fitplay::fitting fitInstance, bool fetailPrint = false){
-    cout << "===  starting testFittingUpdateErrorCheck ===" << endl;
+    cout << "===  starting testFittingUpdateErrorCheck2 ===" << endl;
     fitplay::landmarks landmarkData;
     fitplay::FittingLandmark landmarkFittingInstance;
     fitplay::FittingFk fittingInstance;

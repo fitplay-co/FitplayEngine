@@ -39,6 +39,8 @@ void readCsvFileAsLandmarkList(std::string path, int limit = 1000) {
     int readingStatus;
     std::vector<vec3> currentRes;
     std::string tmp;
+    landmarkList.clear();
+    landmarkList3D.clear();
     if(fstream.fail()) {
         cout << "failed" << endl;
     } else {

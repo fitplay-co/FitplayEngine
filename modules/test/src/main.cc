@@ -52,7 +52,7 @@ int main() {
     testFittingStandPose(fitInstance);
 
     // //scale up and down full data error 
-    readCsvFileAsLandmarkList("data/test_data_full.csv", 1000000);
+    readCsvFileAsLandmarkList("data/test_data_heavy.csv", 1000000);
 
     // //test basic fitting 
     // for(int i = 0; i < 20; i++ ) {
@@ -65,6 +65,14 @@ int main() {
   testFittingUpdateErrorCheck2(fitInstance);
   testFittingBoneLengthBiasCalculation(fitInstance);
   testFittingBoneLengthBiasCalculationErrorCheck(fitInstance);
+  testFittingBoneLengthBiasCalculationErrorHeavySequence(fitInstance);
+
+  readCsvFileAsLandmarkList("data/test_data_full.csv", 1000000);
   testFittingBoneLengthBiasCalculationErrorFullSequence(fitInstance);
+  readCsvFileAsLandmarkList("data/test_data_heavy.csv", 1000000);
+  testFittingBoneLengthBiasCalculationErrorHeavySequence(fitInstance);
+  readCsvFileAsLandmarkList("data/test_data_full.csv", 1000000);
+  testFittingBoneLengthBiasCalculationErrorFullSequence(fitInstance);
+
 }
 
