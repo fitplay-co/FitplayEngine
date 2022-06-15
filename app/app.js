@@ -193,7 +193,7 @@ var messageLoop = coroutine(function*() {
                 }
             });
         } else if(type ==='application_control') {
-            if (message.action === 'subsribe') {
+            if (message.action === 'subscribe') {
                 if (!clientSubscriptionMap.has(ws)) {
                     clientSubscriptionMap.set(ws, [])
                 }

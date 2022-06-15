@@ -30,7 +30,7 @@ client.on('connect', function(connection) {
     var actionDetectionSubscribe = {
         "type" : "application_control",
         "feature_id" : "action_detection",
-        "action" : "subsribe" 
+        "action" : "subscribe" 
     }
     var actionDetectionRelease = {
         "type" : "application_control",
@@ -40,7 +40,7 @@ client.on('connect', function(connection) {
     var groundLocationSubscribe = {
         "type" : "application_control",
         "feature_id" : "ground_loccation",
-        "action" : "subsribe" 
+        "action" : "subscribe" 
     }
     var groundLocationRelease = {
         "type" : "application_control",
