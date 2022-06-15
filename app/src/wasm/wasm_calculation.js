@@ -139,8 +139,6 @@ var wasm_processor = {
                 })
             }
         }
-        
-        console.log(pose);
         this.instance.release()
         
         // var bbb = builder.asUint8Array()
