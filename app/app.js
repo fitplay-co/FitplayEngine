@@ -47,7 +47,7 @@ app.use(function(err, req, res, next) {
 
 module.exports = app;
 
-const ADVANCED_FEATURES = ['ground_loccation', 'action_detection', 'gaze_tracking', 'throw_direction']
+const ADVANCED_FEATURES = ['ground_loccation', 'action_detection', 'gaze_tracking', 'throw_direction', 'fitting']
 
 //start server app 
 var WebSocketServer = require('ws').Server
@@ -90,6 +90,7 @@ var messageLoop = coroutine(function*() {
             var groundLocationEnable = false
             var actionDetectionEnable = false
             var gazeTrackingEnable = false
+            var fittingEnable = false
             if (advancedFeaturesSubscriptionsMap.has('ground_loccation')) {
                 groundLocationEnable = true
             }
@@ -98,6 +99,9 @@ var messageLoop = coroutine(function*() {
             }
             if (advancedFeaturesSubscriptionsMap.has('gaze_tracking')) {
                 gazeTrackingEnable = true
+            }
+            if (advancedFeaturesSubscriptionsMap.has('fitting')) {
+                fittingEnable = true
             }
             var groundLocationAction = ''
             if (resetGroundLocation) {
@@ -119,6 +123,12 @@ var messageLoop = coroutine(function*() {
             featureConfigs.push({
                 featureId: 'gaze_tracking',
                 enable: gazeTrackingEnable,
+                action: '',
+                data: ''
+            })
+            featureConfigs.push({
+                featureId: 'fitting',
+                enable: fittingEnable,
                 action: '',
                 data: ''
             })
@@ -160,6 +170,9 @@ var messageLoop = coroutine(function*() {
                     if ('gaze_tracking' in poseDataForClient) {
                         delete poseDataForClient.gaze_tracking
                     }
+                    if ('fitting' in poseDataForClient) {
+                        delete poseDataForClient.fitting
+                    }
                     if (clientSubscriptionMap.has(ws)) {
                         const featureSubscriptions = clientSubscriptionMap.get(ws)
                         if (featureSubscriptions.indexOf('ground_loccation') >= 0) {
@@ -170,6 +183,9 @@ var messageLoop = coroutine(function*() {
                         }
                         if (featureSubscriptions.indexOf('gaze_tracking') >= 0) {
                             poseDataForClient.gaze_tracking = pose.gaze_tracking
+                        }
+                        if (featureSubscriptions.indexOf('fitting') >= 0) {
+                            poseDataForClient.fitting = pose.fitting
                         }
                     }
                     messageContent = JSON.stringify(poseDataForClient)
@@ -195,6 +211,12 @@ var messageLoop = coroutine(function*() {
                     if (subscriptionIndex >= 0) {
                         clientSubscription.splice(subscriptionIndex, 1)
                         console.log(`client with id "${clientIdMap.get(ws)}" release ${message.feature_id}`)
+                        var previousSubCount = advancedFeaturesSubscriptionsMap.get(message.feature_id)
+                        if (previousSubCount - 1 == 0) {
+                            advancedFeaturesSubscriptionsMap.delete(message.feature_id)
+                        } else {
+                            advancedFeaturesSubscriptionsMap.set(message.feature_id, previousSubCount - 1)
+                        }
                     }
                 }
             } else if (message.feature_id === 'ground_loccation' && message.action === 'reset') {
