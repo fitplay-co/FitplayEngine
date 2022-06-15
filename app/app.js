@@ -47,7 +47,7 @@ app.use(function(err, req, res, next) {
 
 module.exports = app;
 
-const ADVANCED_FEATURES = ['ground_loccation', 'action_detection', 'gaze_tracking', 'throw_direction', 'fitting']
+const ADVANCED_FEATURES = ['ground_location', 'action_detection', 'gaze_tracking', 'throw_direction', 'fitting']
 
 //start server app 
 var WebSocketServer = require('ws').Server
@@ -91,7 +91,7 @@ var messageLoop = coroutine(function*() {
             var actionDetectionEnable = false
             var gazeTrackingEnable = false
             var fittingEnable = false
-            if (advancedFeaturesSubscriptionsMap.has('ground_loccation')) {
+            if (advancedFeaturesSubscriptionsMap.has('ground_location')) {
                 groundLocationEnable = true
             }
             if (advancedFeaturesSubscriptionsMap.has('action_detection')) {
@@ -109,7 +109,7 @@ var messageLoop = coroutine(function*() {
                 resetGroundLocation = false
             }
             featureConfigs.push({
-                featureId: 'ground_loccation',
+                featureId: 'ground_location',
                 enable: groundLocationEnable,
                 action: groundLocationAction,
                 data: ''
@@ -133,17 +133,7 @@ var messageLoop = coroutine(function*() {
                 data: ''
             })
             wasm.process(pose, featureConfigs)
-            //console.log(performance.now()*1000)
-            // var groundLocationData, actionDetectionData, gazeTrackingData
-            // if (advancedFeaturesSubscriptionsMap.has('ground_loccation')) {
-            //     groundLocationData = groundLocation.process(pose)
-            // }
-            // if (advancedFeaturesSubscriptionsMap.has('action_detection')) {
-            //     actionDetectionData = actionDetection.process(pose)
-            // }
-            // if (advancedFeaturesSubscriptionsMap.has('gaze_tracking')) {
-            //     gazeTrackingData = gazeTracking.process(pose)
-            // }
+            
             //调整pose结构适配api格式
             pose.type = "application_frame"
             pose.pose_landmark = {
@@ -175,7 +165,7 @@ var messageLoop = coroutine(function*() {
                     }
                     if (clientSubscriptionMap.has(ws)) {
                         const featureSubscriptions = clientSubscriptionMap.get(ws)
-                        if (featureSubscriptions.indexOf('ground_loccation') >= 0) {
+                        if (featureSubscriptions.indexOf('ground_location') >= 0) {
                             poseDataForClient.ground_location = pose.ground_location
                         }
                         if (featureSubscriptions.indexOf('action_detection') >= 0) {
@@ -219,7 +209,7 @@ var messageLoop = coroutine(function*() {
                         }
                     }
                 }
-            } else if (message.feature_id === 'ground_loccation' && message.action === 'reset') {
+            } else if (message.feature_id === 'ground_location' && message.action === 'reset') {
                 resetGroundLocation = true
             }
         } else if (type === 'application_client') {

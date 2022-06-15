@@ -39,12 +39,12 @@ client.on('connect', function(connection) {
     }
     var groundLocationSubscribe = {
         "type" : "application_control",
-        "feature_id" : "ground_loccation",
+        "feature_id" : "ground_location",
         "action" : "subscribe" 
     }
     var groundLocationRelease = {
         "type" : "application_control",
-        "feature_id" : "ground_loccation",
+        "feature_id" : "ground_location",
         "action" : "release" 
     }
     var groundLocationReset = {

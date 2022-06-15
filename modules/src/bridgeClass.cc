@@ -50,7 +50,7 @@ public:
       auto config = featureConfigs->configs()->Get(i);
       if ("action_detection" == config->feature_id()->str()) {
         actionDetectionEnable = config->enable();
-      } else if ("ground_loccation" == config->feature_id()->str()) {
+      } else if ("ground_location" == config->feature_id()->str()) {
         groundLocationEnable = config->enable();
         groundLocationReset = config->action()->str() == "reset";
       } else if ("gaze_tracking" == config->feature_id()->str()) {
