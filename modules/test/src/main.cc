@@ -38,7 +38,6 @@ int main() {
     cout << "starting module testing." << endl;
     testGlmLookat();
     testDefaultTPose(fitInstance.fkInstance);
-
     // //default stand pose testing
     testDefaultStandPose1(fitInstance.fkInstance);
     testDefaultStandPose2(fitInstance.fkInstance);
@@ -51,7 +50,7 @@ int main() {
     // //round one 
     testFittingStandPose(fitInstance);
 
-    // //scale up and down full data error 
+  //   // //scale up and down full data error 
     readCsvFileAsLandmarkList("data/test_data_heavy.csv", 1000000);
 
     // //test basic fitting 
@@ -60,19 +59,18 @@ int main() {
     // }
 
     //
-  testFittingUpdateErrorCheck(fitInstance);
-    //print full bone length statistics
-  testFittingUpdateErrorCheck2(fitInstance);
-  testFittingBoneLengthBiasCalculation(fitInstance);
-  testFittingBoneLengthBiasCalculationErrorCheck(fitInstance);
-  testFittingBoneLengthBiasCalculationErrorHeavySequence(fitInstance);
+    testFittingUpdateErrorCheck(fitInstance);
+    // //print full bone length statistics
+    testFittingUpdateErrorCheck2(fitInstance);
+    testFittingBoneLengthBiasCalculation(fitInstance);
+    testFittingBoneLengthBiasCalculationErrorCheck(fitInstance);
+    testFittingBoneLengthBiasCalculationErrorHeavySequence(fitInstance);
 
-  readCsvFileAsLandmarkList("data/test_data_full.csv", 1000000);
-  testFittingBoneLengthBiasCalculationErrorFullSequence(fitInstance);
-  readCsvFileAsLandmarkList("data/test_data_heavy.csv", 1000000);
-  testFittingBoneLengthBiasCalculationErrorHeavySequence(fitInstance);
-  readCsvFileAsLandmarkList("data/test_data_full.csv", 1000000);
-  testFittingBoneLengthBiasCalculationErrorFullSequence(fitInstance);
-
+    readCsvFileAsLandmarkList("data/test_data_full.csv", 1000000);
+    testFittingBoneLengthBiasCalculationErrorFullSequence(fitInstance);
+    readCsvFileAsLandmarkList("data/test_data_heavy.csv", 1000000);
+    testFittingBoneLengthBiasCalculationErrorHeavySequence(fitInstance);
+    readCsvFileAsLandmarkList("data/test_data_full.csv", 1000000);
+    testFittingBoneLengthBiasCalculationErrorFullSequence(fitInstance);
 }
 
