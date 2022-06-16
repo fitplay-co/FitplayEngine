@@ -4,9 +4,9 @@
 #include <string>
 #include <vector>
 #include "fitting/fitting.hpp"
-#include "flatbuffer/poseData_generated.h"
-#include "flatbuffer/actionData_generated.h"
-#include "flatbuffer/featureConfig_generated.h"
+#include "poseData_generated.h"
+#include "actionData_generated.h"
+#include "featureConfig_generated.h"
 #include "actionDetection/walkDetection.hpp"
 #include "actionDetection/jumpDetection.hpp"
 #include "gazeTracking/gazeTracking.hpp"

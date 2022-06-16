@@ -1,8 +1,0 @@
-namespace jumpData;
-
-table Jump {
-  up:float;
-  strength:float;
-}
-
-root_type Jump;

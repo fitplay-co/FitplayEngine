@@ -7,8 +7,8 @@
 #include "glm/glm.hpp"
 #include "glm/gtx/quaternion.hpp"
 
-#include "flatbuffer/poseData_generated.h"
-#include "flatbuffer/actionData_generated.h"
+#include "poseData_generated.h"
+#include "actionData_generated.h"
 
 using namespace nlohmann;
 using namespace glm;
