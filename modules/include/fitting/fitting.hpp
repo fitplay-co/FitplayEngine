@@ -35,15 +35,15 @@ namespace fitplay {
     void fitting::process(const PoseData::Pose* data) {
         landmarks landmarkData = readPoseDataToLandmark(data);
         landmarkFittingInstance.handcraftFitting(landmarkData, fkInstance.jointPoints);
-        if(mirror) {
-            landmarkData = landmarkFittingInstance.currentFitLandmarkData;
-        }
+        // if(mirror) {
+        //     landmarkData = landmarkFittingInstance.currentFitLandmarkData;
+        // }
         fkInstance.updateLandmarks(landmarkData);
     }
 
     landmarks fitting::readPoseDataToLandmark(const PoseData::Pose* data) {
         landmarks landmarkData;
-        // if(mirror) {
+        if(mirror) {
             landmarkData[HEAD] = readLandmarkPointVectorMirror(0, data);
             landmarkData[L_SHOULDER] = readLandmarkPointVectorMirror(12, data); 
             landmarkData[R_SHOULDER] = readLandmarkPointVectorMirror(11, data);
@@ -61,26 +61,26 @@ namespace fitplay {
             landmarkData[R_ANKLE] = readLandmarkPointVectorMirror(27, data);
             landmarkData[L_FOOT] = readLandmarkPointVectorMirror(32, data);
             landmarkData[R_FOOT] = readLandmarkPointVectorMirror(31, data); 
-        // } else {
-        //     //read inverse by mirror 
-        //     landmarkData[HEAD] = readLandmarkPointVector(0, data);
-        //     landmarkData[L_SHOULDER] = readLandmarkPointVector(11, data); 
-        //     landmarkData[R_SHOULDER] = readLandmarkPointVector(12, data);
-        //     landmarkData[L_ARM] = readLandmarkPointVector(13, data);
-        //     landmarkData[R_ARM] = readLandmarkPointVector(14, data); 
-        //     landmarkData[L_WRIST] = readLandmarkPointVector(15, data); 
-        //     landmarkData[R_WRIST] = readLandmarkPointVector(16, data); 
-        //     landmarkData[L_HAND] = readLandmarkPointVector(19, data); 
-        //     landmarkData[R_HAND] = readLandmarkPointVector(20, data);
-        //     landmarkData[L_HIP] = readLandmarkPointVector(23, data);
-        //     landmarkData[R_HIP] = readLandmarkPointVector(24, data);
-        //     landmarkData[L_KNEE] = readLandmarkPointVector(25, data);
-        //     landmarkData[R_KNEE] = readLandmarkPointVector(26, data);
-        //     landmarkData[L_ANKLE] = readLandmarkPointVector(27, data);
-        //     landmarkData[R_ANKLE] = readLandmarkPointVector(28, data);
-        //     landmarkData[L_FOOT] = readLandmarkPointVector(31, data);
-        //     landmarkData[R_FOOT] = readLandmarkPointVector(32, data); 
-        // }
+        } else {
+            //read inverse by mirror 
+            landmarkData[HEAD] = readLandmarkPointVector(0, data);
+            landmarkData[L_SHOULDER] = readLandmarkPointVector(11, data); 
+            landmarkData[R_SHOULDER] = readLandmarkPointVector(12, data);
+            landmarkData[L_ARM] = readLandmarkPointVector(13, data);
+            landmarkData[R_ARM] = readLandmarkPointVector(14, data); 
+            landmarkData[L_WRIST] = readLandmarkPointVector(15, data); 
+            landmarkData[R_WRIST] = readLandmarkPointVector(16, data); 
+            landmarkData[L_HAND] = readLandmarkPointVector(19, data); 
+            landmarkData[R_HAND] = readLandmarkPointVector(20, data);
+            landmarkData[L_HIP] = readLandmarkPointVector(23, data);
+            landmarkData[R_HIP] = readLandmarkPointVector(24, data);
+            landmarkData[L_KNEE] = readLandmarkPointVector(25, data);
+            landmarkData[R_KNEE] = readLandmarkPointVector(26, data);
+            landmarkData[L_ANKLE] = readLandmarkPointVector(27, data);
+            landmarkData[R_ANKLE] = readLandmarkPointVector(28, data);
+            landmarkData[L_FOOT] = readLandmarkPointVector(31, data);
+            landmarkData[R_FOOT] = readLandmarkPointVector(32, data); 
+        }
 
         // infer nect and hip center
         landmarkData[HIP_CENTER] = vec3(0.0f ,0.0f ,0.0f);
