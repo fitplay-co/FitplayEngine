@@ -1,0 +1,3 @@
+[submodule "protocol"]
+	path = protocol
+	url = git@codeup.aliyun.com:621f2a440ffdc93b2badcd45/FlatBuffer.git
