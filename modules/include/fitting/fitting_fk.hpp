@@ -140,22 +140,22 @@ namespace fitplay {
          */
 
         // hip forwarding
-        vec3 hipRightForwarding = normalize(cross(landmarkData.rhip - landmarkData.lhip, fitplay::up));
+        vec3 hipRightForwarding = normalize(cross(landmarkData[R_HIP] - landmarkData[L_HIP], fitplay::up));
         // up body forwarding
-        vec3 spineTwistingForwarding = normalize(cross(landmarkData.rshoulder - landmarkData.lshoulder, fitplay::up));
+        vec3 spineTwistingForwarding = normalize(cross(landmarkData[R_SHOULDER] - landmarkData[L_SHOULDER], fitplay::up));
         // armpit forwarding 
         // add 0.1 forward to affiate default totate to font
-        vec3 rshoulderToArmKinamaticForwarding = normalize(landmarkData.rwrist - landmarkData.rarm);
-        vec3 lshoulderToArmKinamaticForwarding = normalize(landmarkData.lwrist - landmarkData.larm);
-        vec3 rarmToShoulderKinamaticForwarding = normalize(landmarkData.rshoulder - landmarkData.rarm);
-        vec3 larmToShoulderKinamaticForwarding = normalize(landmarkData.lshoulder - landmarkData.larm);
+        vec3 rshoulderToArmKinamaticForwarding = normalize(landmarkData[R_WRIST] - landmarkData[R_ARM]);
+        vec3 lshoulderToArmKinamaticForwarding = normalize(landmarkData[L_WRIST] - landmarkData[L_ARM]);
+        vec3 rarmToShoulderKinamaticForwarding = normalize(landmarkData[R_SHOULDER] - landmarkData[R_ARM]);
+        vec3 larmToShoulderKinamaticForwarding = normalize(landmarkData[L_SHOULDER] - landmarkData[L_ARM]);
 
         // knee forwarding  
         /** TODO need test */
-        vec3 rlegToAnkleKinamaticForwarding = - normalize(landmarkData.rankle - landmarkData.rknee);
-        vec3 llegToAnkleKinamaticForwarding = - normalize(landmarkData.lankle - landmarkData.lknee);
-        vec3 rankleToLegKinamaticForwarding = - normalize(landmarkData.rhip - landmarkData.rknee);
-        vec3 lAnkleToLegKinamaticForwarding = - normalize(landmarkData.lhip - landmarkData.lknee);
+        vec3 rlegToAnkleKinamaticForwarding = - normalize(landmarkData[R_ANKLE] - landmarkData[R_KNEE]);
+        vec3 llegToAnkleKinamaticForwarding = - normalize(landmarkData[L_ANKLE] - landmarkData[L_KNEE]);
+        vec3 rankleToLegKinamaticForwarding = - normalize(landmarkData[R_HIP] - landmarkData[R_KNEE]);
+        vec3 lAnkleToLegKinamaticForwarding = - normalize(landmarkData[L_HIP] - landmarkData[L_KNEE]);
 
         // wrist forwarding 
         vec3 rwristForwarding = fitplay::forward;
@@ -167,24 +167,24 @@ namespace fitplay {
         //calculate rotation in each joints, to generate bones
         //up half human
         // glm::quat neckRotation = glm::rotation(up, vectorFromToPoint(hipcenter, neck));
-        updateJointPoint(jointPoints[0], landmarkData.hipcenter, landmarkData.neck, hipRightForwarding);
-        updateJointPoint(jointPoints[1], landmarkData.neck, landmarkData.head, spineTwistingForwarding);
-        updateJointPoint(jointPoints[2], landmarkData.neck, landmarkData.lshoulder, spineTwistingForwarding);
-        updateJointPoint(jointPoints[3], landmarkData.neck, landmarkData.rshoulder, spineTwistingForwarding);
-        updateJointPoint(jointPoints[4], landmarkData.lshoulder, landmarkData.larm, lshoulderToArmKinamaticForwarding);
-        updateJointPoint(jointPoints[5], landmarkData.rshoulder, landmarkData.rarm, rshoulderToArmKinamaticForwarding);
-        updateJointPoint(jointPoints[6], landmarkData.larm, landmarkData.lwrist, larmToShoulderKinamaticForwarding);
-        updateJointPoint(jointPoints[7], landmarkData.rarm, landmarkData.rwrist, rarmToShoulderKinamaticForwarding);
-        updateJointPoint(jointPoints[8], landmarkData.lwrist, landmarkData.lhand, lwristForwarding);
-        updateJointPoint(jointPoints[9], landmarkData.rwrist, landmarkData.rhand, rwristForwarding);
-        updateJointPoint(jointPoints[10], fitplay::down, landmarkData.hipcenter, hipRightForwarding);
-        updateJointPoint(jointPoints[11], fitplay::down, landmarkData.hipcenter, hipRightForwarding); // rhip sprcial 
-        updateJointPoint(jointPoints[12], landmarkData.lhip, landmarkData.lknee, llegToAnkleKinamaticForwarding);
-        updateJointPoint(jointPoints[13], landmarkData.rhip, landmarkData.rknee, rlegToAnkleKinamaticForwarding);
-        updateJointPoint(jointPoints[14], landmarkData.lknee, landmarkData.lankle, lAnkleToLegKinamaticForwarding);
-        updateJointPoint(jointPoints[15], landmarkData.rknee, landmarkData.rankle, rankleToLegKinamaticForwarding);
-        updateJointPoint(jointPoints[16], landmarkData.lankle, landmarkData.lfoot, lankleForwarding);
-        updateJointPoint(jointPoints[17], landmarkData.rankle, landmarkData.rfoot, rankleForwarding);
+        updateJointPoint(jointPoints[0], landmarkData[HIP_CENTER], landmarkData[NECK], hipRightForwarding);
+        updateJointPoint(jointPoints[1], landmarkData[NECK], landmarkData[HEAD], spineTwistingForwarding);
+        updateJointPoint(jointPoints[2], landmarkData[NECK], landmarkData[L_SHOULDER], spineTwistingForwarding);
+        updateJointPoint(jointPoints[3], landmarkData[NECK], landmarkData[R_SHOULDER], spineTwistingForwarding);
+        updateJointPoint(jointPoints[4], landmarkData[L_SHOULDER], landmarkData[L_ARM], lshoulderToArmKinamaticForwarding);
+        updateJointPoint(jointPoints[5], landmarkData[R_SHOULDER], landmarkData[R_ARM], rshoulderToArmKinamaticForwarding);
+        updateJointPoint(jointPoints[6], landmarkData[L_ARM], landmarkData[L_WRIST], larmToShoulderKinamaticForwarding);
+        updateJointPoint(jointPoints[7], landmarkData[R_ARM], landmarkData[R_WRIST], rarmToShoulderKinamaticForwarding);
+        updateJointPoint(jointPoints[8], landmarkData[L_WRIST], landmarkData[L_HAND], lwristForwarding);
+        updateJointPoint(jointPoints[9], landmarkData[R_WRIST], landmarkData[R_HAND], rwristForwarding);
+        updateJointPoint(jointPoints[10], fitplay::down, landmarkData[HIP_CENTER], hipRightForwarding);
+        updateJointPoint(jointPoints[11], fitplay::down, landmarkData[HIP_CENTER], hipRightForwarding); // rhip sprcial 
+        updateJointPoint(jointPoints[12], landmarkData[L_HIP], landmarkData[L_KNEE], llegToAnkleKinamaticForwarding);
+        updateJointPoint(jointPoints[13], landmarkData[R_HIP], landmarkData[R_KNEE], rlegToAnkleKinamaticForwarding);
+        updateJointPoint(jointPoints[14], landmarkData[L_KNEE], landmarkData[L_ANKLE], lAnkleToLegKinamaticForwarding);
+        updateJointPoint(jointPoints[15], landmarkData[R_KNEE], landmarkData[R_ANKLE], rankleToLegKinamaticForwarding);
+        updateJointPoint(jointPoints[16], landmarkData[L_ANKLE], landmarkData[L_FOOT], lankleForwarding);
+        updateJointPoint(jointPoints[17], landmarkData[R_ANKLE], landmarkData[R_FOOT], rankleForwarding);
     }
 
     vec3 FittingFk::crossSafe(glm::vec3 const& direction, glm::vec3 const& fov) {

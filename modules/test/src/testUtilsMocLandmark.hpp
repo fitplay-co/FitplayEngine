@@ -12,8 +12,8 @@ using namespace std;
 using namespace glm;
 using namespace fitplay;
 
-std::vector<std::vector<vec3>> landmarkList;
-std::vector<std::vector<vec3>> landmarkList3D;
+std::vector<landmarks> landmarkList;
+std::vector<landmarks> landmarkList3D;
 
 std::vector<std::string> stringSplit(const std::string& str, char delim) {
     std::size_t previous = 0;
@@ -33,6 +33,7 @@ std::vector<std::string> stringSplit(const std::string& str, char delim) {
 }
 
 void readCsvFileAsLandmarkList(std::string path, int limit = 1000) {
+    cout << "read landmarks " << path << endl;
     std::ifstream fstream(path, ios::in);
     int n = 0;
     int jointIndex = 0;
@@ -77,36 +78,37 @@ void readCsvFileAsLandmarkList(std::string path, int limit = 1000) {
                 }
             }
         }
+        cout << "end read landmarks " << path << endl;
         fstream.close();
     }
     return;
 }
 
 landmarks readLandmarks(int index) {
-    landmarks landmarkData;
-    landmarkData.head = landmarkList3D[index][0];
-    landmarkData.lshoulder = landmarkList3D[index][11];
-    landmarkData.rshoulder = landmarkList3D[index][12];
-    landmarkData.larm = landmarkList3D[index][13];
-    landmarkData.rarm = landmarkList3D[index][14];
-    landmarkData.lwrist = landmarkList3D[index][15];
-    landmarkData.rwrist = landmarkList3D[index][16];
-    landmarkData.lhand = landmarkList3D[index][19];
-    landmarkData.rhand = landmarkList3D[index][20];
-    landmarkData.lhip = landmarkList3D[index][23];
-    landmarkData.rhip = landmarkList3D[index][24];
-    landmarkData.lknee = landmarkList3D[index][25];
-    landmarkData.rknee = landmarkList3D[index][26];
-    landmarkData.lankle = landmarkList3D[index][27];
-    landmarkData.rankle = landmarkList3D[index][28];
-    landmarkData.lfoot = landmarkList3D[index][31];
-    landmarkData.rfoot = landmarkList3D[index][32];
+    landmarks landmarkData(jointPointSize + 1);
 
-    landmarkData.hipcenter = vec3(0.0f ,0.0f ,0.0f);
-    landmarkData.neck = vec3((landmarkData.lshoulder[0] 
-                + landmarkData.rshoulder[0])/2.0f, (landmarkData.lshoulder[1] 
-                + landmarkData.rshoulder[1])/2.0f, (landmarkData.lshoulder[2] + landmarkData.rshoulder[2])/2.0f);
-    
+    landmarkData[HEAD] = landmarkList3D[index][0];
+    landmarkData[L_SHOULDER] = landmarkList3D[index][11];
+    landmarkData[R_SHOULDER] = landmarkList3D[index][12];
+    landmarkData[L_ARM] = landmarkList3D[index][13];
+    landmarkData[R_ARM] = landmarkList3D[index][14];
+    landmarkData[L_WRIST] = landmarkList3D[index][15];
+    landmarkData[R_WRIST] = landmarkList3D[index][16];
+    landmarkData[L_HAND] = landmarkList3D[index][19];
+    landmarkData[R_HAND] = landmarkList3D[index][20];
+    landmarkData[L_HIP] = landmarkList3D[index][23];
+    landmarkData[R_HIP] = landmarkList3D[index][24];
+    landmarkData[L_KNEE] = landmarkList3D[index][25];
+    landmarkData[R_KNEE] = landmarkList3D[index][26];
+    landmarkData[L_ANKLE] = landmarkList3D[index][27];
+    landmarkData[R_ANKLE] = landmarkList3D[index][28];
+    landmarkData[L_FOOT] = landmarkList3D[index][31];
+    landmarkData[R_FOOT] = landmarkList3D[index][32];
+
+    landmarkData[HIP_CENTER] = vec3(0.0f ,0.0f ,0.0f);
+    landmarkData[NECK] = vec3((landmarkData[L_SHOULDER][0] 
+                + landmarkData[R_SHOULDER][0])/2.0f, (landmarkData[L_SHOULDER][1] 
+                + landmarkData[R_SHOULDER][1])/2.0f, (landmarkData[L_SHOULDER][2] + landmarkData[R_SHOULDER][2])/2.0f);
     return landmarkData;
 }
 

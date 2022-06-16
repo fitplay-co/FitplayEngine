@@ -28,9 +28,9 @@ private:
     std::vector<jointPoint> currentJointPoints;
 
 public:
-    std::vector<vec3> cachedLandmarkData;
-    std::vector<vec3> currentRawLandmarkData;
-    std::vector<vec3> currentFitLandmarkData;
+    landmarks cachedLandmarkData;
+    landmarks currentRawLandmarkData;
+    landmarks currentFitLandmarkData;
     
     float beforeFittingError;
     float currentFittingError;
@@ -74,13 +74,13 @@ public:
 void FittingLandmark::handcraftFitting(const landmarks & fittingLandmark,const vector<jointPoint> & joints) {
     //read from landmark
     handcraftFittingLandmarkRead(fittingLandmark, joints);
-    //calculate initial score 
+    // //calculate initial score 
     handcraftFittingRound();
     beforeFittingError = summarizeError();
-    // jointGredientsUpdate();
+    jointGredientsUpdate();
     
     //summarize new error , will skip when real time fitting
-    // handcraftFittingRound();
+    handcraftFittingRound();
     currentFittingError = summarizeError();
 
     //cached fram after one round 
@@ -91,10 +91,13 @@ void FittingLandmark::handcraftFittingLandmarkRead(const landmarks & fittingLand
     if(!frameCached) {
         for(int i=0; i< jointPointSize + 1; i++){
             currentJointPoints.push_back(joints[i]);
+            cachedLandmarkData.push_back(vec3(1.0f,1.0f,1.0f));
+            currentRawLandmarkData.push_back(vec3(1.0f,1.0f,1.0f));
+            currentFitLandmarkData.push_back(vec3(1.0f,1.0f,1.0f));
         }
     }
     cachedLandmarkData = currentFitLandmarkData;
-    currentRawLandmarkData = readLandmarkData(fittingLandmark);
+    currentRawLandmarkData = fittingLandmark;
     //inititalize 
     currentFitLandmarkData = currentRawLandmarkData;
 }
@@ -226,8 +229,10 @@ float FittingLandmark::summarizeError(){
     return sumError;
 }
 
-FittingLandmark::FittingLandmark(){}
+FittingLandmark::FittingLandmark(){
+}
 
-FittingLandmark::~FittingLandmark(){}
+FittingLandmark::~FittingLandmark(){
+}
 }
 #endif
