@@ -1,12 +1,10 @@
 // client
 var WebSocketClient = require('websocket').client;
 var client = new WebSocketClient();
-// frame command
-const readline = require('readline');
-const r1 = readline.createInterface({
-    input:process.stdin,
-    output:process.stdout
-});
+
+const readline = require('readline'); 
+readline.emitKeypressEvents(process.stdin);
+process.stdin.setRawMode(true);
 // read csv
 var fs = require('fs')
 var path = require('path')
@@ -84,59 +82,45 @@ client.on('connect', function(connection) {
         }
     });
     connection.send(JSON.stringify(sensorClientMessage))
-    //set command reference
-    r1.setPrompt('cmd:');
-    //prompt waiting for input
-    r1.prompt();
-    r1.on('line',function (line){
-        switch(line.trim()){
-            case 'a':
-                index = index - 1
-                if(index < 0) break;
-                genFrameData()
-                console.log(JSON.stringify(sensorFrame))
-                connection.send(JSON.stringify(sensorFrame))
-                console.log('backward frame');
-                break;
-            case 'd':
+    process.stdin.on('keypress', (str, key) => {
+        console.log(str)
+        if(str == 'a') {
+            index = index - 1
+            genFrameData()
+            console.log(JSON.stringify(sensorFrame))
+            connection.send(JSON.stringify(sensorFrame))
+            console.log("backward")
+        }
+        if(str == 'd') {
+            index = index + 1
+            genFrameData()
+            console.log(JSON.stringify(sensorFrame))
+            connection.send(JSON.stringify(sensorFrame))
+            console.log("forward")
+        }
+        if(str == 'f') {
+            for(var j = 0; j < 100; j++) {
                 index = index + 1
                 if(index == len - 1) break;
                 genFrameData()
                 console.log(JSON.stringify(sensorFrame))
                 connection.send(JSON.stringify(sensorFrame))
-                console.log('forward frame');
-                break;
-            case 'f':
-                for(var j = 0; j < 100; j++) {
-                    index = index + 1
-                    if(index == len - 1) break;
-                    genFrameData()
-                    console.log(JSON.stringify(sensorFrame))
-                    connection.send(JSON.stringify(sensorFrame))
-                }
-                console.log('forward 100 frame');
-                break;
-            case 'r':
-                index = 0
-                genFrameData()
-                console.log(JSON.stringify(sensorFrame))
-                connection.send(JSON.stringify(sensorFrame))
-                console.log('reset video');
-                break;
-            case 'close':
-                r1.close();
-                break;
-            default:
-                console.log('undefined command');
-                break;
+            }
+            console.log("forward 100 frames")
         }
-        // listening for line event
-        r1.prompt();
-    });
-    r1.on('close',function (){
-        console.log('----end----');
-        process.exit(0);
-    });
+        if(str == 'r') {
+            index = 0
+            genFrameData()
+            console.log(JSON.stringify(sensorFrame))
+            connection.send(JSON.stringify(sensorFrame))
+            console.log("reset video")
+        }
+
+        if(key.ctrl === true && key.name === 'd'){
+            process.exit(0)
+        }
+     
+    })
     // setTimeout(() => {
     //     connection.send(JSON.stringify(actionDetectionRelease))
     // }, 10000);
