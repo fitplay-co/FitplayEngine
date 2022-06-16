@@ -114,6 +114,14 @@ client.on('connect', function(connection) {
                     console.log(JSON.stringify(sensorFrame))
                     connection.send(JSON.stringify(sensorFrame))
                 }
+                console.log('forward 100 frame');
+                break;
+            case 'r':
+                index = 0
+                genFrameData()
+                console.log(JSON.stringify(sensorFrame))
+                connection.send(JSON.stringify(sensorFrame))
+                console.log('reset video');
                 break;
             case 'close':
                 r1.close();
