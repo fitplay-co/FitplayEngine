@@ -1,0 +1,9 @@
+namespace walkData;
+
+table Walk {
+  legUp:float;
+  frequency:float;
+  strength:float;
+}
+
+root_type Walk;

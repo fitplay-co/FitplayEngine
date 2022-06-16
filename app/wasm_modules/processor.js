@@ -3635,9 +3635,46 @@ var ASM_CONSTS = {
       });
     }
 
+  function __emscripten_date_now() {
+      return Date.now();
+    }
+
+  var nowIsMonotonic = true;;
+  function __emscripten_get_now_is_monotonic() {
+      return nowIsMonotonic;
+    }
+
+
+  function __emval_incref(handle) {
+      if (handle > 4) {
+        emval_handle_array[handle].refcount += 1;
+      }
+    }
+
+  function requireRegisteredType(rawType, humanName) {
+      var impl = registeredTypes[rawType];
+      if (undefined === impl) {
+          throwBindingError(humanName + " has unknown type " + getTypeName(rawType));
+      }
+      return impl;
+    }
+  function __emval_take_value(type, argv) {
+      type = requireRegisteredType(type, '_emval_take_value');
+      var v = type['readValueFromPointer'](argv);
+      return Emval.toHandle(v);
+    }
+
   function _abort() {
       abort('native code called abort()');
     }
+
+  var _emscripten_get_now;if (ENVIRONMENT_IS_NODE) {
+    _emscripten_get_now = () => {
+      var t = process['hrtime']();
+      return t[0] * 1e3 + t[1] / 1e6;
+    };
+  } else _emscripten_get_now = () => performance.now();
+  ;
 
   function _emscripten_memcpy_big(dest, src, num) {
       HEAPU8.copyWithin(dest, src, src + num);
@@ -3772,7 +3809,13 @@ var asmLibraryArg = {
   "_embind_register_std_string": __embind_register_std_string,
   "_embind_register_std_wstring": __embind_register_std_wstring,
   "_embind_register_void": __embind_register_void,
+  "_emscripten_date_now": __emscripten_date_now,
+  "_emscripten_get_now_is_monotonic": __emscripten_get_now_is_monotonic,
+  "_emval_decref": __emval_decref,
+  "_emval_incref": __emval_incref,
+  "_emval_take_value": __emval_take_value,
   "abort": _abort,
+  "emscripten_get_now": _emscripten_get_now,
   "emscripten_memcpy_big": _emscripten_memcpy_big,
   "emscripten_resize_heap": _emscripten_resize_heap,
   "fd_close": _fd_close,
@@ -3785,9 +3828,6 @@ var asm = createWasm();
 var ___wasm_call_ctors = Module["___wasm_call_ctors"] = createExportWrapper("__wasm_call_ctors");
 
 /** @type {function(...*):?} */
-var ___errno_location = Module["___errno_location"] = createExportWrapper("__errno_location");
-
-/** @type {function(...*):?} */
 var _malloc = Module["_malloc"] = createExportWrapper("malloc");
 
 /** @type {function(...*):?} */
@@ -3795,6 +3835,9 @@ var ___getTypeName = Module["___getTypeName"] = createExportWrapper("__getTypeNa
 
 /** @type {function(...*):?} */
 var ___embind_register_native_and_builtin_types = Module["___embind_register_native_and_builtin_types"] = createExportWrapper("__embind_register_native_and_builtin_types");
+
+/** @type {function(...*):?} */
+var ___errno_location = Module["___errno_location"] = createExportWrapper("__errno_location");
 
 /** @type {function(...*):?} */
 var ___stdio_exit = Module["___stdio_exit"] = createExportWrapper("__stdio_exit");

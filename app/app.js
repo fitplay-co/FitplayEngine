@@ -57,6 +57,7 @@ var clientMap = new Map() // id -> client映射
 var clientIdMap = new Map() // client -> id映射
 var clientSubscriptionMap = new Map() // client订阅的高级能力
 var advancedFeaturesSubscriptionsMap = new Map() // 每个高级能力订阅的客户端数
+var resetGroundLocation = false
 var times = [];
 var counter = 0
 var processingJob = 0
@@ -68,29 +69,72 @@ var messageLoop = coroutine(function*() {
         const message = bufferData.message
         const ws = bufferData.webSocket
         type = message.type
-        messageTime = performance.now()*1000
+
+        messageTime = Math.round(performance.now()*1000)+'μs'
+
         if(type === 'pose_landmark') {
             //TODO for now only pose provided in message as pose landmark
             pose = message
             pose.timeProfiling.serverReceive = messageTime
-            pose.timeProfiling.processingTime = performance.now()*1000
+
+            pose.timeProfiling.processingTime = Math.round(performance.now()*1000)+'μs'
+            //jump if process jobs too much 
+
             //TODO process Input here for input 
             //此处开始写局部坐标的初始化（地面坐标系）
             //depth correction
             //readPose.process(pose)
 
             // 只有当至少1个客户端订阅了高级能力时再进行相关计算
-            wasm.process(pose)
-            var groundLocationData, actionDetectionData, gazeTrackingData
+            //console.log(Math.round(performance.now()*1000)+'μs')
+            const featureConfigs = []
+            var groundLocationEnable = false
+            var actionDetectionEnable = false
+            var gazeTrackingEnable = false
             if (advancedFeaturesSubscriptionsMap.has('ground_loccation')) {
-                groundLocationData = groundLocation.process(pose)
+                groundLocationEnable = true
             }
             if (advancedFeaturesSubscriptionsMap.has('action_detection')) {
-                actionDetectionData = actionDetection.process(pose)
+                actionDetectionEnable = true
             }
             if (advancedFeaturesSubscriptionsMap.has('gaze_tracking')) {
-                gazeTrackingData = gazeTracking.process(pose)
+                gazeTrackingEnable = true
             }
+            var groundLocationAction = ''
+            if (resetGroundLocation) {
+                groundLocationAction = 'reset'
+                resetGroundLocation = false
+            }
+            featureConfigs.push({
+                featureId: 'ground_loccation',
+                enable: groundLocationEnable,
+                action: groundLocationAction,
+                data: ''
+            })
+            featureConfigs.push({
+                featureId: 'action_detection',
+                enable: actionDetectionEnable,
+                action: '',
+                data: ''
+            })
+            featureConfigs.push({
+                featureId: 'gaze_tracking',
+                enable: gazeTrackingEnable,
+                action: '',
+                data: ''
+            })
+            wasm.process(pose, featureConfigs)
+            //console.log(performance.now()*1000)
+            // var groundLocationData, actionDetectionData, gazeTrackingData
+            // if (advancedFeaturesSubscriptionsMap.has('ground_loccation')) {
+            //     groundLocationData = groundLocation.process(pose)
+            // }
+            // if (advancedFeaturesSubscriptionsMap.has('action_detection')) {
+            //     actionDetectionData = actionDetection.process(pose)
+            // }
+            // if (advancedFeaturesSubscriptionsMap.has('gaze_tracking')) {
+            //     gazeTrackingData = gazeTracking.process(pose)
+            // }
             //调整pose结构适配api格式
             pose.type = "application_frame"
             pose.pose_landmark = {
@@ -99,26 +143,37 @@ var messageLoop = coroutine(function*() {
                 timestamp: Date.now(),
                 version:"0.1.0"
             }
-            console.log(pose["fitting"])
+            
             delete pose.keypoints
             delete pose.keypoints3D
-            pose.timeProfiling.beforeSendTime = performance.now()*1000
-            // console.log(pose.timeProfiling)
+
+            pose.timeProfiling.beforeSendTime = Math.round(performance.now()*1000)+'μs'
+
             activeApplicationClient.forEach(function(ws){
                 if(!ws.notActived) {
+                    const poseDataForClient = Object.assign({}, pose)
+                    // if ('ground_location' in poseDataForClient) {
+                    //     delete poseDataForClient.ground_location
+                    // }
+                    // if ('action_detection' in poseDataForClient) {
+                    //     delete poseDataForClient.action_detection
+                    // }
+                    // if ('gaze_tracking' in poseDataForClient) {
+                    //     delete poseDataForClient.gaze_tracking
+                    // }
                     if (clientSubscriptionMap.has(ws)) {
                         const featureSubscriptions = clientSubscriptionMap.get(ws)
                         if (featureSubscriptions.indexOf('ground_loccation') >= 0) {
-                            pose.ground_location = groundLocationData.ground_location
+                            poseDataForClient.ground_location = pose.ground_location
                         }
                         if (featureSubscriptions.indexOf('action_detection') >= 0) {
-                            pose.action_detection = actionDetectionData.action_detection
+                            poseDataForClient.action_detection = pose.action_detection
                         }
                         if (featureSubscriptions.indexOf('gaze_tracking') >= 0) {
-                            pose.gaze_tracking = gazeTrackingData.gaze_tracking
+                            poseDataForClient.gaze_tracking = pose.gaze_tracking
                         }
                     }
-                    messageContent = JSON.stringify(pose)
+                    messageContent = JSON.stringify(poseDataForClient)
                     ws.send(messageContent)
                 }
             });
@@ -143,6 +198,8 @@ var messageLoop = coroutine(function*() {
                         console.log(`client with id "${clientIdMap.get(ws)}" release ${message.feature_id}`)
                     }
                 }
+            } else if (message.feature_id === 'ground_loccation' && message.action === 'reset') {
+                resetGroundLocation = true
             }
         } else if (type === 'application_client') {
             activeApplicationClient.push(ws)

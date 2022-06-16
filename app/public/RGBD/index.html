@@ -1,0 +1,160 @@
+<!-- Copyright 2021 Google LLC. All Rights Reserved.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================-->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0, user-scalable=no">
+  <style>body {
+	  margin: 0;
+    }
+    #stats {
+      position: relative;
+      width: 100%;
+      height: 0px;
+	  z-index:1;
+	  opacity:0.8;
+    }
+    #main {
+      position: relative;
+      margin: 0;
+	  z-index:0;
+
+    }
+    #canvas-wrapper,
+    #scatter-gl-container {
+      position: relative;
+    }</style>
+</head>
+<body>
+  <div id="stats"></div>
+  <div id="main">
+    <div class="container">
+		<div class="myleftplot">
+		  <div id="leftplot" style="
+			  width:320px; 
+			  height:300px;
+			  position: absolute;
+			  top: 480px;
+			  left: 640px;
+			  visibility: visible;"></div>
+		  
+		  <label for="keypoints-select-left" style="
+			  position: absolute;
+			  top: 760px;
+			  left: 680px;
+			  visibility: visible;">
+			  Choose a keypoint:</label>
+			  
+		  <select name="keypoints-select-left" id="keypoints-select-left" style="
+			  position: absolute;
+			  top: 760px;
+			  left: 820px;
+			  visibility: visible;">
+				<option value="0" selected="">nose:0</option>
+				<option value="11">left shoulder:11</option>
+				<option value="12">right shoulder:12</option>
+				<option value="13">left elbow:13</option>
+				<option value="14">right elbow:14</option>
+				<option value="15">left wrist:15</option>
+				<option value="16">right wrist:16</option>
+				<option value="23">left hip:23</option>
+				<option value="24">right hip:24</option>
+				<option value="25">left knee:25</option>
+				<option value="26">right knee:26</option>
+				<option value="27">left ankle:27</option>
+				<option value="28">right ankle:28</option>
+		  </select>
+		</div>		
+		<div class="myrightplot">
+		   <div id="rightplot" style="
+			  width:320px; 
+			  height:300px;
+			  position: absolute;
+			  top: 480px;
+			  left: 960px;
+			  visibility: visible;"></div>		
+		   <label for="keypoints-select-right" style="
+			  position: absolute;
+			  top: 760px;
+			  left: 1000px;
+			  visibility: visible;">
+			  Choose a keypoint:</label>
+		   <select name="keypoints-select-right" id="keypoints-select-right" style="
+			  position: absolute;
+			  top: 760px;
+			  left: 1140px;
+			  visibility: visible;">
+				<option value="0" selected="">nose:0</option>
+				<option value="11">left shoulder:11</option>
+				<option value="12">right shoulder:12</option>
+				<option value="13">left elbow:13</option>
+				<option value="14">right elbow:14</option>
+				<option value="15">left wrist:15</option>
+				<option value="16">right wrist:16</option>
+				<option value="23">left hip:23</option>
+				<option value="24">right hip:24</option>
+				<option value="25">left knee:25</option>
+				<option value="26">right knee:26</option>
+				<option value="27">left ankle:27</option>
+				<option value="28">right ankle:28</option>
+			</select>
+		</div>
+        <div class="canvas-wrapper">
+			<canvas id="output"></canvas>
+			<canvas id="depth_output" style="
+			  width:640px; 
+			  height:480px;
+			  position: absolute;
+			  top: 480px;
+			  left: 700px;
+			  visibility: hidden;
+			"></canvas>
+			<canvas id="align" style="
+			  width:auto; 
+			  height:auto;
+			  position: absolute;
+			  top: 0px;
+			  left: 640px;
+			  visibility: visibility;		
+			"></canvas>    
+			<video id="video" playsinline="" style="
+			  -webkit-transform: scaleX(-1);
+			  transform: scaleX(-1);
+			  position: absolute;
+			  top: 0px;
+			  left: 640px;
+			  visibility: hidden;
+			  width: auto;
+			  height: auto;
+			"></video>
+			<video id="depth-video" playsinline="" style="
+			  -webkit-transform: scaleX(-1);
+			  transform: scaleX(-1);
+			  position: absolute;
+			  top: 0px;
+			  left: 640px;
+			  visibility:hidden;
+			  width: auto;
+			  height: auto;
+			"></video>
+        </div>
+		<div id="scatter-gl-container"></div>
+    </div>
+  </div>
+</body>
+
+<script src="dat.gui.min.js"></script>
+<script src="stats.min.js"></script>
+<script src="echarts.min.js"></script>
+<script src="src.a2b27638.js"></script>
+</html>

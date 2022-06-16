@@ -1,195 +1,120 @@
+#ifndef FITPLAY_fitting
+#define FITPLAY_fitting
+
 #include <string>
 #include <vector>
 #include "json.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtx/quaternion.hpp"
 
+#include "flatbuffer/poseData_generated.h"
+#include "flatbuffer/actionData_generated.h"
+#include "fitting_data.hpp"
+#include "fitting_fk.hpp"
+#include "fitting_landmark.hpp"
+
 using namespace nlohmann;
 using namespace glm;
-
-const int jointPointSize = 18;
+using namespace std;
 
 namespace fitplay {
-    struct jointPoint {
-        std::string jointName;
-        int parentIndex = 0;
-        float boneLength = 0.0f;
-
-        vec3 fromPoint;
-        vec3 toPoint;
-
-        vec3 posDirection3d = vec3 (0.0f, 1.0f, 0.0f); //by default to up 
-        quat fkRotation;
-        vec3 fromPointFk =  vec3 (0.0f, 0.0f, 0.0f);
-        vec3 toPointFk =  vec3 (0.0f, 0.0f, 0.0f);
-    };
 
     class fitting {
         private:
-            /* data */
-        public:
-            jointPoint jointPoints[jointPointSize + 1];
-            fitting();
-            ~ fitting();
-            void addJointPoint(jointPoint& p, std::string name, int parentIndex, float boneLength);
-            //update joint point in each process, to calculate fk landmark and rotation and do fitting
-            void updateJointPoint(jointPoint& p, vec3 startPoint, vec3 endPoint);
-            void process(json& data);
-            vec3 vectorFromToPoint(vec3 const & from, vec3 const & to);
-            vec3 readLandmarkPointVector(int point,const json& data);
-            vec3 fkToNextPoint(vec3 const& startPoint, vec3 const& boneDirection, quat const& boneRotation, float const& bontLength);
-            void writeRotation(glm::quat const & r, json & data, int index, std::string name);
-            void writeFK(vec3 const& point, json & data, int index, std::string name);
+        public: 
+            bool mirror = true;
+            FittingLandmark landmarkFittingInstance;
+            FittingFk fkInstance;
+            void readPoseDataToLandmark(const PoseData::Pose* data, landmarks & landmarkData);
+            void process(const PoseData::Pose* data);
+            vec3 readLandmarkPointVector(int point, const PoseData::Pose* data);
+            vec3 readLandmarkPointVectorMirror(int point, const PoseData::Pose* data);
+            flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>>> writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder);
     };
 
-    fitting::fitting() {
-        addJointPoint(jointPoints[0], "neck", 18, 0.4f);
-        addJointPoint(jointPoints[1], "head", 0, 0.1f);
-        addJointPoint(jointPoints[2], "lshoulder", 0, 0.1f);
-        addJointPoint(jointPoints[3], "rshoulder", 0, 0.1f);
-        addJointPoint(jointPoints[4], "luparm", 2, 0.2f);
-        addJointPoint(jointPoints[5], "ruparm", 3, 0.2f);
-        addJointPoint(jointPoints[6], "llowarm", 4, 0.2f);
-        addJointPoint(jointPoints[7], "rlowarm", 5, 0.2f);
-        addJointPoint(jointPoints[8], "lhand", 6, 0.1f);
-        addJointPoint(jointPoints[9], "rhand", 7, 0.1f);
-        addJointPoint(jointPoints[10], "lhip", 18, 0.1f);
-        addJointPoint(jointPoints[11], "rhip", 18, 0.1f);
-        addJointPoint(jointPoints[12], "lupleg", 10, 0.3);
-        addJointPoint(jointPoints[13], "rupleg", 11, 0.3f);
-        addJointPoint(jointPoints[14], "llowleg", 12, 0.3f);
-        addJointPoint(jointPoints[15], "rlowleg", 13, 0.3f);
-        addJointPoint(jointPoints[16], "lfoot", 14, 0.1f);
-        addJointPoint(jointPoints[17], "rfoot", 15, 0.1f);
-
-        //last point for root reference from neck, hip points
-        addJointPoint(jointPoints[18], "root", -1, 0.4f);
+    void fitting::process(const PoseData::Pose* data) {
+        landmarks landmarkData;
+        readPoseDataToLandmark(data, landmarkData);
+        landmarkFittingInstance.handcraftFitting(landmarkData, fkInstance.jointPoints);
+        landmarkData = writeLandmarkData(landmarkFittingInstance.currentFitLandmarkData);
+        fkInstance.updateLandmarks(landmarkData);
     }
 
-    fitting::~fitting() {}
-
-    void fitting::addJointPoint(jointPoint& p, std::string name, int parentIndex, float boneLength) {
-        p.jointName = name;
-        p.parentIndex = parentIndex;
-        p.boneLength = boneLength;
-    }
-
-    void fitting::updateJointPoint(jointPoint& p, vec3 startPoint, vec3 endPoint) {
-        //first step update start end points 
-        p.fromPoint = startPoint;
-        p.toPoint = endPoint;
-
-        //calculate pose Direction 3d
-        p.posDirection3d = vectorFromToPoint(startPoint, endPoint);
-        p.fkRotation = glm::rotation(jointPoints[p.parentIndex].posDirection3d, p.posDirection3d);
-
-        //calculate fk
-        p.fromPointFk = jointPoints[p.parentIndex].toPointFk;
-        p.toPointFk = fkToNextPoint(p.fromPointFk, jointPoints[p.parentIndex].posDirection3d, p.fkRotation, p.boneLength);
-    }
-
-    void fitting::process(json& data) {
-        data["fitting"]["wasm_fitting_version"] = "0.0.1";
-        //check each joint direction 
-        //                                     head
-        //                                      |
-        // lhand - lwrist - larm - lshoulder - neck -  rshoulder - rarm - rwrist - rhand
-        //                                      |
-        //                           lhip - hipcenter - rhip
-        //                             |                  |
-        //                           lknee              rknee
-        //                             |                  |
-        //                           lankle             rankle
-        //                             |                  |
-        //                           lfoot              rfoot
-        //
-        // here spine is ignored for faster fitting
-        vec3 up = vec3 (0.0f, 1.0f, 0.0f);
-        vec3 down =  vec3 (0.0f, -1.0f, 0.0f);
-        vec3 left =  vec3 (-1.0f, 0.0f, 0.0f);
-        vec3 right =  vec3 (1.0f, 0.0f, 0.0f);
-
-        // transfer to vec3 for each landmarks
-        vec3 head = readLandmarkPointVector(0, data);
-        vec3 lshoulder = readLandmarkPointVector(11, data); 
-        vec3 rshoulder = readLandmarkPointVector(12, data);
-        vec3 larm = readLandmarkPointVector(13, data);
-        vec3 rarm = readLandmarkPointVector(14, data); 
-        vec3 lwrist = readLandmarkPointVector(15, data); 
-        vec3 rwrist = readLandmarkPointVector(16, data); 
-        vec3 lhand = readLandmarkPointVector(19, data); 
-        vec3 rhand = readLandmarkPointVector(20, data);
-        vec3 lhip = readLandmarkPointVector(23, data);
-        vec3 rhip = readLandmarkPointVector(24, data);
-        vec3 lknee = readLandmarkPointVector(25, data);
-        vec3 rknee = readLandmarkPointVector(26, data);
-        vec3 lankle = readLandmarkPointVector(27, data);
-        vec3 rankle = readLandmarkPointVector(28, data);
-        vec3 lfoot = readLandmarkPointVector(31, data);
-        vec3 rfoot = readLandmarkPointVector(32, data); 
-        // infer nect and hip center
-        vec3 hipcenter = vec3(0.0f ,0.0f ,0.0f);
-        vec3 neck = vec3((lshoulder[0] + rshoulder[0])/2.0f, (lshoulder[1] + rshoulder[1])/2.0f, (lshoulder[2] + rshoulder[2])/2.0f);
-        //calculate rotation in each joints, to generate bones
-        //up half human
-        // glm::quat neckRotation = glm::rotation(up, vectorFromToPoint(hipcenter, neck));
-        updateJointPoint(jointPoints[0], hipcenter, neck);
-        updateJointPoint(jointPoints[1], neck, head);
-        updateJointPoint(jointPoints[2], neck, lshoulder);
-        updateJointPoint(jointPoints[3], neck, rshoulder);
-        updateJointPoint(jointPoints[4], lshoulder, larm);
-        updateJointPoint(jointPoints[5], rshoulder, rarm);
-        updateJointPoint(jointPoints[6], larm, lwrist);
-        updateJointPoint(jointPoints[7], rarm, rwrist);
-        updateJointPoint(jointPoints[8], lwrist, lhand);
-        updateJointPoint(jointPoints[9], rwrist, rhand);
-        updateJointPoint(jointPoints[10], hipcenter, lhip);
-        updateJointPoint(jointPoints[11], hipcenter, rhip);
-        updateJointPoint(jointPoints[12], lhip, lknee);
-        updateJointPoint(jointPoints[13], rhip, rknee);
-        updateJointPoint(jointPoints[14], lknee, lankle);
-        updateJointPoint(jointPoints[15], rknee, rankle);
-        updateJointPoint(jointPoints[16], lankle, lfoot);
-        updateJointPoint(jointPoints[17], rankle, rfoot);
-
-        for(int i = 0; i < jointPointSize; i ++) {
-            writeRotation(jointPoints[i].fkRotation, data, i, jointPoints[i].jointName);
-            writeFK(jointPoints[i].toPointFk, data, i, jointPoints[i].jointName);
+    void fitting::readPoseDataToLandmark(const PoseData::Pose* data, landmarks & landmarkData) {
+        if(mirror) {
+            landmarkData.head = readLandmarkPointVectorMirror(0, data);
+            landmarkData.lshoulder = readLandmarkPointVectorMirror(12, data); 
+            landmarkData.rshoulder = readLandmarkPointVectorMirror(11, data);
+            landmarkData.larm = readLandmarkPointVectorMirror(14, data);
+            landmarkData.rarm = readLandmarkPointVectorMirror(13, data); 
+            landmarkData.lwrist = readLandmarkPointVectorMirror(16, data); 
+            landmarkData.rwrist = readLandmarkPointVectorMirror(15, data); 
+            landmarkData.lhand = readLandmarkPointVectorMirror(20, data); 
+            landmarkData.rhand = readLandmarkPointVectorMirror(19, data);
+            landmarkData.lhip = readLandmarkPointVectorMirror(24, data);
+            landmarkData.rhip = readLandmarkPointVectorMirror(23, data);
+            landmarkData.lknee = readLandmarkPointVectorMirror(26, data);
+            landmarkData.rknee = readLandmarkPointVectorMirror(25, data);
+            landmarkData.lankle = readLandmarkPointVectorMirror(28, data);
+            landmarkData.rankle = readLandmarkPointVectorMirror(27, data);
+            landmarkData.lfoot = readLandmarkPointVectorMirror(32, data);
+            landmarkData.rfoot = readLandmarkPointVectorMirror(31, data); 
+        } else {
+            //read inverse by mirror 
+            landmarkData.head = readLandmarkPointVector(0, data);
+            landmarkData.lshoulder = readLandmarkPointVector(11, data); 
+            landmarkData.rshoulder = readLandmarkPointVector(12, data);
+            landmarkData.larm = readLandmarkPointVector(13, data);
+            landmarkData.rarm = readLandmarkPointVector(14, data); 
+            landmarkData.lwrist = readLandmarkPointVector(15, data); 
+            landmarkData.rwrist = readLandmarkPointVector(16, data); 
+            landmarkData.lhand = readLandmarkPointVector(19, data); 
+            landmarkData.rhand = readLandmarkPointVector(20, data);
+            landmarkData.lhip = readLandmarkPointVector(23, data);
+            landmarkData.rhip = readLandmarkPointVector(24, data);
+            landmarkData.lknee = readLandmarkPointVector(25, data);
+            landmarkData.rknee = readLandmarkPointVector(26, data);
+            landmarkData.lankle = readLandmarkPointVector(27, data);
+            landmarkData.rankle = readLandmarkPointVector(28, data);
+            landmarkData.lfoot = readLandmarkPointVector(31, data);
+            landmarkData.rfoot = readLandmarkPointVector(32, data); 
         }
+
+        // infer nect and hip center
+        landmarkData.hipcenter = vec3(0.0f ,0.0f ,0.0f);
+        landmarkData.neck = vec3((landmarkData.lshoulder[0] 
+                + landmarkData.rshoulder[0])/2.0f, (landmarkData.lshoulder[1] 
+                + landmarkData.rshoulder[1])/2.0f, (landmarkData.lshoulder[2] + landmarkData.rshoulder[2])/2.0f);
     }
 
-    void fitting::writeFK(vec3 const& point, json & data, int index, std::string name) {
-        data["fitting"]["keypoints3D"][index]["x"] = point[0];
-        data["fitting"]["keypoints3D"][index]["y"] = point[1];
-        data["fitting"]["keypoints3D"][index]["z"] = point[2];
-        data["fitting"]["keypoints3D"][index]["name"] = name;
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>>> fitting::writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder) {
+        std::vector<flatbuffers::Offset<actionData::Joint>> nodeVector;
+        for(int i = 0; i < jointPointSize; i ++) {
+            auto nodeOffset = actionData::CreateJointDirect(resultBuilder,
+                fkInstance.jointPoints[i].fkRotation.w, 
+                fkInstance.jointPoints[i].fkRotation.x, 
+                fkInstance.jointPoints[i].fkRotation.y, 
+                fkInstance.jointPoints[i].fkRotation.z, 
+                fkInstance.jointPoints[i].jointName.c_str());
+            nodeVector.push_back(nodeOffset);
+        }
+        return resultBuilder.CreateVector(nodeVector);
     }
 
-    void fitting::writeRotation(glm::quat const & r, json & data, int index, std::string name) {
-        data["fitting"]["rotation"][index]["w"] = r.w;
-        data["fitting"]["rotation"][index]["x"] = r.x;
-        data["fitting"]["rotation"][index]["y"] = r.y;
-        data["fitting"]["rotation"][index]["z"] = r.z;
-        data["fitting"]["rotation"][index]["name"] = name;
-    }
-
-    vec3 fitting::fkToNextPoint(vec3 const & startPoint, vec3 const & boneDirection, quat const & boneRotation, float const & bontLength) {
-        auto direction = glm::rotate(boneRotation, boneDirection);
-        return vec3(startPoint[0] + direction[0] * bontLength, startPoint[1] + direction[1] * bontLength, startPoint[2] + direction[2] * bontLength);
-    }
-
-    vec3 fitting::vectorFromToPoint(vec3 const & from, vec3 const & to) {
-        return glm::normalize(vec3(to[0] - from[0], to[1] - from[1], to[2] - from[2]));
-    }
-
-    vec3 fitting::readLandmarkPointVector(int point,const json& data) {
-        float xStart = data["keypoints3D"][point]["x"];
-        float yStart = data["keypoints3D"][point]["y"];
-        float zStart = data["keypoints3D"][point]["z"];
+    vec3 fitting::readLandmarkPointVector(int point, const PoseData::Pose* data) {
+        float xStart = data->keypoints3D()->Get(point)->x();
+        float yStart = 0.0f - data->keypoints3D()->Get(point)->y();
+        float zStart = data->keypoints3D()->Get(point)->z();
         return vec3(xStart, yStart, zStart);
     }
 
-    // vec3 fitting::calculatejointQuat(int startPoint, int endPoint) {
-
-    // }
+     vec3 fitting::readLandmarkPointVectorMirror(int point, const PoseData::Pose* data) {
+        float xStart = 0.0f - data->keypoints3D()->Get(point)->x();
+        float yStart = 0.0f - data->keypoints3D()->Get(point)->y();
+        float zStart = data->keypoints3D()->Get(point)->z();
+        return vec3(xStart, yStart, zStart);
+    }
 }
+
+
+#endif

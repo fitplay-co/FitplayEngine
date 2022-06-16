@@ -1,0 +1,14 @@
+namespace FeatureConfigs;
+
+table FeatureConfigList {
+  configs:[FeatureConfig];
+}
+
+table FeatureConfig {
+  feature_id:string;
+  enable:bool = false;
+  action:string;
+  data:string;
+}
+
+root_type FeatureConfigList;

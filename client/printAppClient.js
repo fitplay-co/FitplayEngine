@@ -17,11 +17,18 @@ client.on('connect', function(connection) {
     });
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
-            var profilingTime = JSON.parse(message.utf8Data).timeProfiling 
-            profilingTime.clientReceiveTime = performance.now()*1000
-            console.log(profilingTime);
+            // var rr = JSON.parse(message.utf8Data).timeProfiling;
+            // console.log(rr)
+            console.log("Frame")
+            console.log("keyPoints")
+            JSON.parse(message.utf8Data).pose_landmark.keypoints.forEach(element => {
+                console.log(element.name + "," +element.x + "," + element.y + "," + element.z )
+            });
+            console.log("keyPoints3D")
+            JSON.parse(message.utf8Data).pose_landmark.keypoints3D.forEach(element => {
+                console.log(element.name + "," +element.x + "," + element.y + "," + element.z )
+            });
         }
-
     });
     var appClientMessage =  {
         "type" : "application_client",
