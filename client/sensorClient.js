@@ -30,22 +30,31 @@ var sensorClientMessage = {
         "video_height":""
     }
 }
+// var sensorFrame = {
+//     "type":"sensor_frame",
+//     "sensor_id":"rgbd_replay",
+//     "sensor_type":"pose_landmark",
+//     "pose_landmark":{
+//         "keypoints":[],
+//         "keypoints3D":[],
+//         "timestamp":1,
+//         "version":"0.1.0"
+//     }
+// }
 var sensorFrame = {
-    "type":"sensor_frame",
-    "sensor_id":"rgbd_replay",
+    "type" : "sensor_frame",
+    "sensor_id" : "rgbd_replay",
     "sensor_type":"pose_landmark",
-    "pose_landmark":{
-        "keypoints":[],
-        "keypoints3D":[],
-        "timestamp":1,
-        "version":"0.1.0"
-    }
+    "keypoints" : [],
+    "keypoints3D" : [],
+    "timestamp" : 1,
+    "version" : "0.1.0"
 }
 function genFrameData()
 {
-    sensorFrame.pose_landmark.timestamp = index
+    sensorFrame.timestamp = index
     for(var i = 0; i<33; i++) {
-        sensorFrame.pose_landmark.keypoints.push({
+        sensorFrame.keypoints.push({
             "name" : res[arr[index] + 2 + i][0],
             "x" : res[arr[index] + 2 + i][1],
             "y" : res[arr[index] + 2 + i][2],
@@ -54,7 +63,7 @@ function genFrameData()
     }
     
     for(var i = 0; i<33; i++) {
-        sensorFrame.pose_landmark.keypoints3D.push({
+        sensorFrame.keypoints3D.push({
             "name" : res[arr[index] + 36 + i][0],
             "x" : res[arr[index] + 36 + i][1],
             "y" : res[arr[index] + 36 + i][2],

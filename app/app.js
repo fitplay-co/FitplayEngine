@@ -71,10 +71,12 @@ var messageLoop = coroutine(function*() {
         type = message.type
 
         messageTime = Math.round(performance.now()*1000)+'μs'
-
-        if(type === 'pose_landmark') {
+        // console.log(message)
+        if(type === 'pose_landmark' || type === 'sensor_frame') {
             //TODO for now only pose provided in message as pose landmark
             pose = message
+            // console.log(pose)
+            pose.timeProfiling = {}
             pose.timeProfiling.serverReceive = messageTime
 
             pose.timeProfiling.processingTime = Math.round(performance.now()*1000)+'μs'
