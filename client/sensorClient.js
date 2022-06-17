@@ -30,28 +30,19 @@ var sensorClientMessage = {
         "video_height":""
     }
 }
-// var sensorFrame = {
-//     "type":"sensor_frame",
-//     "sensor_id":"rgbd_replay",
-//     "sensor_type":"pose_landmark",
-//     "pose_landmark":{
-//         "keypoints":[],
-//         "keypoints3D":[],
-//         "timestamp":1,
-//         "version":"0.1.0"
-//     }
-// }
-var sensorFrame = {
-    "type" : "pose_landmark",
-    "sensor_id" : "rgbd_replay",
-    "sensor_type":"pose_landmark",
-    "keypoints" : [],
-    "keypoints3D" : [],
-    "timestamp" : 1,
-    "version" : "0.1.0"
-}
+var sensorFrame
+
 function genFrameData()
 {
+    sensorFrame = {
+        "type" : "pose_landmark",
+        "sensor_id" : "rgbd_replay",
+        "sensor_type":"pose_landmark",
+        "keypoints" : [],
+        "keypoints3D" : [],
+        "timestamp" : 1,
+        "version" : "0.1.0"
+    }
     sensorFrame.timestamp = index
     for(var i = 0; i<33; i++) {
         sensorFrame.keypoints.push({
