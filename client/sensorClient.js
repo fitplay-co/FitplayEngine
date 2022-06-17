@@ -42,7 +42,7 @@ var sensorClientMessage = {
 //     }
 // }
 var sensorFrame = {
-    "type" : "sensor_frame",
+    "type" : "pose_landmark",
     "sensor_id" : "rgbd_replay",
     "sensor_type":"pose_landmark",
     "keypoints" : [],

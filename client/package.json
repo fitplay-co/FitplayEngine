@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node ./printAppClient.js",
-    "imu": "node ./mock_imu.js"
+    "imu": "node ./mock_imu.js",
+    "record": "node ./sensorClient.js"
   },
   "dependencies": {
     "serialport": "^10.4.0",

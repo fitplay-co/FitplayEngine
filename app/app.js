@@ -48,7 +48,7 @@ app.use(function(err, req, res, next) {
 
 module.exports = app;
 
-const ADVANCED_FEATURES = ['ground_loccation', 'action_detection', 'gaze_tracking', 'throw_direction']
+const ADVANCED_FEATURES = ['ground_location', 'action_detection', 'gaze_tracking', 'throw_direction', 'fitting']
 
 //start server app 
 var WebSocketServer = require('ws').Server
@@ -72,8 +72,9 @@ var messageLoop = coroutine(function*() {
 
         messageTime = Math.round(performance.now()*1000)+'μs'
         // console.log(message)
-        if(type === 'pose_landmark' || type === 'sensor_frame') {
+        if(type === 'pose_landmark') {
             //TODO for now only pose provided in message as pose landmark
+            console.log(message)
             pose = message
             // console.log(pose)
             pose.timeProfiling = {}
@@ -93,7 +94,8 @@ var messageLoop = coroutine(function*() {
             var groundLocationEnable = false
             var actionDetectionEnable = false
             var gazeTrackingEnable = false
-            if (advancedFeaturesSubscriptionsMap.has('ground_loccation')) {
+            var fittingEnable = false
+            if (advancedFeaturesSubscriptionsMap.has('ground_location')) {
                 groundLocationEnable = true
             }
             if (advancedFeaturesSubscriptionsMap.has('action_detection')) {
@@ -102,13 +104,16 @@ var messageLoop = coroutine(function*() {
             if (advancedFeaturesSubscriptionsMap.has('gaze_tracking')) {
                 gazeTrackingEnable = true
             }
+            if (advancedFeaturesSubscriptionsMap.has('fitting')) {
+                fittingEnable = true
+            }
             var groundLocationAction = ''
             if (resetGroundLocation) {
                 groundLocationAction = 'reset'
                 resetGroundLocation = false
             }
             featureConfigs.push({
-                featureId: 'ground_loccation',
+                featureId: 'ground_location',
                 enable: groundLocationEnable,
                 action: groundLocationAction,
                 data: ''
@@ -125,18 +130,14 @@ var messageLoop = coroutine(function*() {
                 action: '',
                 data: ''
             })
+            featureConfigs.push({
+                featureId: 'fitting',
+                enable: fittingEnable,
+                action: '',
+                data: ''
+            })
             wasm.process(pose, featureConfigs)
-            //console.log(performance.now()*1000)
-            // var groundLocationData, actionDetectionData, gazeTrackingData
-            // if (advancedFeaturesSubscriptionsMap.has('ground_loccation')) {
-            //     groundLocationData = groundLocation.process(pose)
-            // }
-            // if (advancedFeaturesSubscriptionsMap.has('action_detection')) {
-            //     actionDetectionData = actionDetection.process(pose)
-            // }
-            // if (advancedFeaturesSubscriptionsMap.has('gaze_tracking')) {
-            //     gazeTrackingData = gazeTracking.process(pose)
-            // }
+            
             //调整pose结构适配api格式
             pose.type = "application_frame"
             pose.pose_landmark = {
@@ -154,18 +155,21 @@ var messageLoop = coroutine(function*() {
             activeApplicationClient.forEach(function(ws){
                 if(!ws.notActived) {
                     const poseDataForClient = Object.assign({}, pose)
-                    // if ('ground_location' in poseDataForClient) {
-                    //     delete poseDataForClient.ground_location
-                    // }
-                    // if ('action_detection' in poseDataForClient) {
-                    //     delete poseDataForClient.action_detection
-                    // }
-                    // if ('gaze_tracking' in poseDataForClient) {
-                    //     delete poseDataForClient.gaze_tracking
-                    // }
+                    if ('ground_location' in poseDataForClient) {
+                        delete poseDataForClient.ground_location
+                    }
+                    if ('action_detection' in poseDataForClient) {
+                        delete poseDataForClient.action_detection
+                    }
+                    if ('gaze_tracking' in poseDataForClient) {
+                        delete poseDataForClient.gaze_tracking
+                    }
+                    if ('fitting' in poseDataForClient) {
+                        delete poseDataForClient.fitting
+                    }
                     if (clientSubscriptionMap.has(ws)) {
                         const featureSubscriptions = clientSubscriptionMap.get(ws)
-                        if (featureSubscriptions.indexOf('ground_loccation') >= 0) {
+                        if (featureSubscriptions.indexOf('ground_location') >= 0) {
                             poseDataForClient.ground_location = pose.ground_location
                         }
                         if (featureSubscriptions.indexOf('action_detection') >= 0) {
@@ -174,13 +178,16 @@ var messageLoop = coroutine(function*() {
                         if (featureSubscriptions.indexOf('gaze_tracking') >= 0) {
                             poseDataForClient.gaze_tracking = pose.gaze_tracking
                         }
+                        if (featureSubscriptions.indexOf('fitting') >= 0) {
+                            poseDataForClient.fitting = pose.fitting
+                        }
                     }
                     messageContent = JSON.stringify(poseDataForClient)
                     ws.send(messageContent)
                 }
             });
         } else if(type ==='application_control') {
-            if (message.action === 'subsribe') {
+            if (message.action === 'subscribe') {
                 if (!clientSubscriptionMap.has(ws)) {
                     clientSubscriptionMap.set(ws, [])
                 }
@@ -198,9 +205,15 @@ var messageLoop = coroutine(function*() {
                     if (subscriptionIndex >= 0) {
                         clientSubscription.splice(subscriptionIndex, 1)
                         console.log(`client with id "${clientIdMap.get(ws)}" release ${message.feature_id}`)
+                        var previousSubCount = advancedFeaturesSubscriptionsMap.get(message.feature_id)
+                        if (previousSubCount - 1 == 0) {
+                            advancedFeaturesSubscriptionsMap.delete(message.feature_id)
+                        } else {
+                            advancedFeaturesSubscriptionsMap.set(message.feature_id, previousSubCount - 1)
+                        }
                     }
                 }
-            } else if (message.feature_id === 'ground_loccation' && message.action === 'reset') {
+            } else if (message.feature_id === 'ground_location' && message.action === 'reset') {
                 resetGroundLocation = true
             }
         } else if (type === 'application_client') {
@@ -273,7 +286,6 @@ function coroutine(f) {
         o.next(x);
     }
 }
-
 
 //启动串口连接dongle程序
 var workerProcess = childProcess.exec('node ../client/imuClient.js ', function (error, stdout, stderr) {
