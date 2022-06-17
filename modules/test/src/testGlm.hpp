@@ -12,6 +12,33 @@ using namespace glm;
 
 ///https://www.andre-gaschler.com/rotationconverter/ 
 // using eular Y Z X
+
+/**
+ * @brief 
+ * 
+ * print color text with
+ * 
+ * 
+printf("\x1b[32m green text on regular background \x1b[0m  \n");
+printf("\x1b[32;40m green text on black background \x1b[0m  \n");
+printf("\x1b[42m regular text on green background \x1b[0m  \n");
+
++---------+------------+------------+
+|  color  | foreground | background |
+|         |    code    |    code    |
++---------+------------+------------+
+| black   |     30     |     40     |
+| red     |     31     |     41     |
+| green   |     32     |     42     |
+| yellow  |     33     |     43     |
+| blue    |     34     |     44     |
+| magenta |     35     |     45     |
+| cyan    |     36     |     46     |
+| white   |     37     |     47     |
++---------+------------+------------+
+ * 
+ * @param detailPrint 
+ */
 void testGlmLookat(bool detailPrint = false){
     cout << "starting glm lookat testing." << 1 << endl ;
 

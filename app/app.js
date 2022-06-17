@@ -13,6 +13,7 @@ const gazeTracking = require('./src/midware_gaze_tracking');
 //const { type } = require('os');
 const {performance} = require('perf_hooks');
 const messageBuffer = require('./src/message_buffer');
+const childProcess = require('child_process');
 
 var app = express();
 
@@ -70,10 +71,13 @@ var messageLoop = coroutine(function*() {
         type = message.type
 
         messageTime = Math.round(performance.now()*1000)+'μs'
-
+        // console.log(message)
         if(type === 'pose_landmark') {
             //TODO for now only pose provided in message as pose landmark
+            console.log(message)
             pose = message
+            // console.log(pose)
+            pose.timeProfiling = {}
             pose.timeProfiling.serverReceive = messageTime
 
             pose.timeProfiling.processingTime = Math.round(performance.now()*1000)+'μs'
@@ -222,7 +226,8 @@ var messageLoop = coroutine(function*() {
             console.log(`application client with id "${message.id}" attached`)
         } else if (type === 'sensor_client') {
             messageBuffer.createSensorBuffer(message.sensor_type)
-        } else if (type === 'sensor_frame' && message.sensor_type === 'imu') {
+        } else if (type === 'sensor_frame' || type === 'sensor_control') {
+            message.type = 'application_frame'
             activeApplicationClient.forEach(function(ws){
                 if(!ws.notActived) {
                     messageContent = JSON.stringify(message)
@@ -281,3 +286,18 @@ function coroutine(f) {
         o.next(x);
     }
 }
+
+//启动串口连接dongle程序
+var workerProcess = childProcess.exec('node ../client/imuClient.js ', function (error, stdout, stderr) {
+    if (error) {
+        console.log(error.stack);
+        console.log('Error code: '+error.code);
+        console.log('Signal received: '+error.signal);
+    }
+    console.log('stdout: ' + stdout);
+    console.log('stderr: ' + stderr);
+});
+
+workerProcess.on('exit', function (code) {
+    console.log('子进程已退出，退出码 '+code);
+});

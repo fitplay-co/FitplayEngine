@@ -6,28 +6,34 @@ var messageBuffer = {
 
     init: function() {
         this.messageBufferMap.set('pose_landmark', []) //摄像头输入缓冲
-        // this.messageBufferMap.set('imu', []) //IMU输入缓冲
+        this.messageBufferMap.set('imu', []) //IMU输入缓冲
         this.messageBufferMap.set('control', []) //控制消息队列，包括客户端注册及订阅、传感器注册等
+        this.messageBufferMap.set('input', []) //input输入缓冲
+        this.messageBufferMap.set('device_info', []) //device_info输入缓冲
+        this.messageBufferMap.set('vibration', []) //device_info输入缓冲
     },
 
     addNewMessage: function(message, webSocket) {
         var messageType = ''
         if (message.type === 'pose_landmark') {
             messageType = 'pose_landmark'
+        } else if (message.type === 'imu') {
+            messageType = 'imu'
         } else if (message.type === 'application_control' 
                    || message.type === 'application_client' 
                    || message.type === 'sensor_client') {
             messageType = 'control'
-        } else if (message.type === 'sensor_frame') {
+        } else if (message.type === 'sensor_frame' || message.type === 'sensor_control') {
             messageType = message.sensor_type
         }
+
         if (messageType) {
-            if ((messageType === 'pose_landmark' || messageType === 'sensor_frame') && this.messageBufferMap.get(messageType).length >= MAX_BUFFER_SIZE) {
+            if ((messageType === 'pose_landmark' || messageType === 'imu' || messageType === 'input' || messageType === 'device_info' || messageType === 'vibration') && this.messageBufferMap.get(messageType).length >= MAX_BUFFER_SIZE) {
                 console.log('drop earliest frame!!!')
                 this.messageBufferMap.get(messageType).shift()
             }
             this.messageBufferMap.get(messageType).push({'message': message, 'webSocket': webSocket})
-            // console.log('add new message:'+message.type+"|"+this.messageBufferMap.get(messageType).length)
+           // console.log('add new message:'+message.type+"|"+this.messageBufferMap.get(messageType).length)
         }
     },
 
