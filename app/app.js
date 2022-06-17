@@ -74,7 +74,7 @@ var messageLoop = coroutine(function*() {
         // console.log(message)
         if(type === 'pose_landmark') {
             //TODO for now only pose provided in message as pose landmark
-            console.log(message)
+            // console.log(message)
             pose = message
             // console.log(pose)
             pose.timeProfiling = {}
