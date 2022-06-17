@@ -46,15 +46,18 @@ public:
     bool gazeTrackingEnable = false;
     bool groundLocationEnable = false;
     bool groundLocationReset = false;
+    bool fittingEnable = false;
     for(int i = 0; i < featureConfigs->configs()->Length(); i++) {
       auto config = featureConfigs->configs()->Get(i);
       if ("action_detection" == config->feature_id()->str()) {
         actionDetectionEnable = config->enable();
-      } else if ("ground_loccation" == config->feature_id()->str()) {
+      } else if ("ground_location" == config->feature_id()->str()) {
         groundLocationEnable = config->enable();
         groundLocationReset = config->action()->str() == "reset";
       } else if ("gaze_tracking" == config->feature_id()->str()) {
         gazeTrackingEnable = config->enable();
+      } else if ("fitting" == config->feature_id()->str()) {
+        fittingEnable = config->enable();
       }
     }
 
@@ -68,6 +71,7 @@ public:
     flatbuffers::Offset<actionData::Squat> squat; 
     flatbuffers::Offset<actionData::Gaze> gazeOffset; 
     flatbuffers::Offset<actionData::Ground> groundLocation;
+    flatbuffers::Offset<actionData::Fitting> fittingOffset;
     if (actionDetectionEnable) {
       walkInstance.process(walk_data, data);
       jumpInstance.process(jump_data, data);
@@ -84,15 +88,15 @@ public:
       groundInstance.process(ground_data, data, groundLocationReset);
       groundLocation = actionData::CreateGround(action_data, ground_data[0], ground_data[1], ground_data[2], ground_data[3], ground_data[4]);
     }
-
-    fitInstance.process(data);
-    mirrorFitInstance.process(data);
-    auto p1 = fitInstance.writeFlatBuffer(action_data);
-    auto p2 = mirrorFitInstance.writeFlatBuffer(action_data);
-    auto fitting = actionData::CreateFitting(action_data, p1, p2);
+    if (fittingEnable) {
+      fitInstance.process(data);
+      mirrorFitInstance.process(data);
+      auto p1 = fitInstance.writeFlatBuffer(action_data);
+      auto p2 = mirrorFitInstance.writeFlatBuffer(action_data);
+      fittingOffset = actionData::CreateFitting(action_data, p1, p2);
+    }
 
     actionData::ActionBuilder actionBuilder(action_data);
-    actionBuilder.add_fitting(fitting);
 
     if (actionDetectionEnable) {
       actionBuilder.add_walk(walk);
@@ -104,6 +108,9 @@ public:
     }
     if (groundLocationEnable) {
       actionBuilder.add_ground(groundLocation);
+    }
+    if (fittingEnable) {
+      actionBuilder.add_fitting(fittingOffset);
     }
 
     auto build = actionBuilder.Finish();
