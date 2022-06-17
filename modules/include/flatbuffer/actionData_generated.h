@@ -21,6 +21,9 @@ struct WalkBuilder;
 struct Jump;
 struct JumpBuilder;
 
+struct Squat;
+struct SquatBuilder;
+
 struct Gaze;
 struct GazeBuilder;
 
@@ -46,11 +49,20 @@ struct Walk FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   float legUp() const {
     return GetField<float>(VT_LEGUP, 0.0f);
   }
+  bool mutate_legUp(float _legUp = 0.0f) {
+    return SetField<float>(VT_LEGUP, _legUp, 0.0f);
+  }
   float frequency() const {
     return GetField<float>(VT_FREQUENCY, 0.0f);
   }
+  bool mutate_frequency(float _frequency = 0.0f) {
+    return SetField<float>(VT_FREQUENCY, _frequency, 0.0f);
+  }
   float strength() const {
     return GetField<float>(VT_STRENGTH, 0.0f);
+  }
+  bool mutate_strength(float _strength = 0.0f) {
+    return SetField<float>(VT_STRENGTH, _strength, 0.0f);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -106,8 +118,14 @@ struct Jump FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   float up() const {
     return GetField<float>(VT_UP, 0.0f);
   }
+  bool mutate_up(float _up = 0.0f) {
+    return SetField<float>(VT_UP, _up, 0.0f);
+  }
   float strength() const {
     return GetField<float>(VT_STRENGTH, 0.0f);
+  }
+  bool mutate_strength(float _strength = 0.0f) {
+    return SetField<float>(VT_STRENGTH, _strength, 0.0f);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -148,6 +166,50 @@ inline flatbuffers::Offset<Jump> CreateJump(
   return builder_.Finish();
 }
 
+struct Squat FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  typedef SquatBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_STATUS = 4
+  };
+  float status() const {
+    return GetField<float>(VT_STATUS, 0.0f);
+  }
+  bool mutate_status(float _status = 0.0f) {
+    return SetField<float>(VT_STATUS, _status, 0.0f);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<float>(verifier, VT_STATUS, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct SquatBuilder {
+  typedef Squat Table;
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_status(float status) {
+    fbb_.AddElement<float>(Squat::VT_STATUS, status, 0.0f);
+  }
+  explicit SquatBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  flatbuffers::Offset<Squat> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<Squat>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Squat> CreateSquat(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    float status = 0.0f) {
+  SquatBuilder builder_(_fbb);
+  builder_.add_status(status);
+  return builder_.Finish();
+}
+
 struct Gaze FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   typedef GazeBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -158,11 +220,20 @@ struct Gaze FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   float x() const {
     return GetField<float>(VT_X, 0.0f);
   }
+  bool mutate_x(float _x = 0.0f) {
+    return SetField<float>(VT_X, _x, 0.0f);
+  }
   float y() const {
     return GetField<float>(VT_Y, 0.0f);
   }
+  bool mutate_y(float _y = 0.0f) {
+    return SetField<float>(VT_Y, _y, 0.0f);
+  }
   float z() const {
     return GetField<float>(VT_Z, 0.0f);
+  }
+  bool mutate_z(float _z = 0.0f) {
+    return SetField<float>(VT_Z, _z, 0.0f);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -221,17 +292,32 @@ struct Ground FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   float x() const {
     return GetField<float>(VT_X, 0.0f);
   }
+  bool mutate_x(float _x = 0.0f) {
+    return SetField<float>(VT_X, _x, 0.0f);
+  }
   float y() const {
     return GetField<float>(VT_Y, 0.0f);
+  }
+  bool mutate_y(float _y = 0.0f) {
+    return SetField<float>(VT_Y, _y, 0.0f);
   }
   float z() const {
     return GetField<float>(VT_Z, 0.0f);
   }
+  bool mutate_z(float _z = 0.0f) {
+    return SetField<float>(VT_Z, _z, 0.0f);
+  }
   float legLength() const {
     return GetField<float>(VT_LEGLENGTH, 0.0f);
   }
+  bool mutate_legLength(float _legLength = 0.0f) {
+    return SetField<float>(VT_LEGLENGTH, _legLength, 0.0f);
+  }
   float tracing() const {
     return GetField<float>(VT_TRACING, 0.0f);
+  }
+  bool mutate_tracing(float _tracing = 0.0f) {
+    return SetField<float>(VT_TRACING, _tracing, 0.0f);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -302,17 +388,32 @@ struct Joint FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   float w() const {
     return GetField<float>(VT_W, 0.0f);
   }
+  bool mutate_w(float _w = 0.0f) {
+    return SetField<float>(VT_W, _w, 0.0f);
+  }
   float x() const {
     return GetField<float>(VT_X, 0.0f);
+  }
+  bool mutate_x(float _x = 0.0f) {
+    return SetField<float>(VT_X, _x, 0.0f);
   }
   float y() const {
     return GetField<float>(VT_Y, 0.0f);
   }
+  bool mutate_y(float _y = 0.0f) {
+    return SetField<float>(VT_Y, _y, 0.0f);
+  }
   float z() const {
     return GetField<float>(VT_Z, 0.0f);
   }
+  bool mutate_z(float _z = 0.0f) {
+    return SetField<float>(VT_Z, _z, 0.0f);
+  }
   const flatbuffers::String *name() const {
     return GetPointer<const flatbuffers::String *>(VT_NAME);
+  }
+  flatbuffers::String *mutable_name() {
+    return GetPointer<flatbuffers::String *>(VT_NAME);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -398,8 +499,14 @@ struct Fitting FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>> *rotation() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>> *>(VT_ROTATION);
   }
+  flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>> *mutable_rotation() {
+    return GetPointer<flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>> *>(VT_ROTATION);
+  }
   const flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>> *mirrorRotation() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>> *>(VT_MIRRORROTATION);
+  }
+  flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>> *mutable_mirrorRotation() {
+    return GetPointer<flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>> *>(VT_MIRRORROTATION);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -462,23 +569,45 @@ struct Action FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_WALK = 4,
     VT_JUMP = 6,
     VT_GAZE = 8,
-    VT_GROUND = 10,
-    VT_FITTING = 12
+    VT_SQUAT = 10,
+    VT_GROUND = 12,
+    VT_FITTING = 14
   };
   const actionData::Walk *walk() const {
     return GetPointer<const actionData::Walk *>(VT_WALK);
   }
+  actionData::Walk *mutable_walk() {
+    return GetPointer<actionData::Walk *>(VT_WALK);
+  }
   const actionData::Jump *jump() const {
     return GetPointer<const actionData::Jump *>(VT_JUMP);
+  }
+  actionData::Jump *mutable_jump() {
+    return GetPointer<actionData::Jump *>(VT_JUMP);
   }
   const actionData::Gaze *gaze() const {
     return GetPointer<const actionData::Gaze *>(VT_GAZE);
   }
+  actionData::Gaze *mutable_gaze() {
+    return GetPointer<actionData::Gaze *>(VT_GAZE);
+  }
+  const actionData::Squat *squat() const {
+    return GetPointer<const actionData::Squat *>(VT_SQUAT);
+  }
+  actionData::Squat *mutable_squat() {
+    return GetPointer<actionData::Squat *>(VT_SQUAT);
+  }
   const actionData::Ground *ground() const {
     return GetPointer<const actionData::Ground *>(VT_GROUND);
   }
+  actionData::Ground *mutable_ground() {
+    return GetPointer<actionData::Ground *>(VT_GROUND);
+  }
   const actionData::Fitting *fitting() const {
     return GetPointer<const actionData::Fitting *>(VT_FITTING);
+  }
+  actionData::Fitting *mutable_fitting() {
+    return GetPointer<actionData::Fitting *>(VT_FITTING);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -488,6 +617,8 @@ struct Action FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            verifier.VerifyTable(jump()) &&
            VerifyOffset(verifier, VT_GAZE) &&
            verifier.VerifyTable(gaze()) &&
+           VerifyOffset(verifier, VT_SQUAT) &&
+           verifier.VerifyTable(squat()) &&
            VerifyOffset(verifier, VT_GROUND) &&
            verifier.VerifyTable(ground()) &&
            VerifyOffset(verifier, VT_FITTING) &&
@@ -508,6 +639,9 @@ struct ActionBuilder {
   }
   void add_gaze(flatbuffers::Offset<actionData::Gaze> gaze) {
     fbb_.AddOffset(Action::VT_GAZE, gaze);
+  }
+  void add_squat(flatbuffers::Offset<actionData::Squat> squat) {
+    fbb_.AddOffset(Action::VT_SQUAT, squat);
   }
   void add_ground(flatbuffers::Offset<actionData::Ground> ground) {
     fbb_.AddOffset(Action::VT_GROUND, ground);
@@ -531,11 +665,13 @@ inline flatbuffers::Offset<Action> CreateAction(
     flatbuffers::Offset<actionData::Walk> walk = 0,
     flatbuffers::Offset<actionData::Jump> jump = 0,
     flatbuffers::Offset<actionData::Gaze> gaze = 0,
+    flatbuffers::Offset<actionData::Squat> squat = 0,
     flatbuffers::Offset<actionData::Ground> ground = 0,
     flatbuffers::Offset<actionData::Fitting> fitting = 0) {
   ActionBuilder builder_(_fbb);
   builder_.add_fitting(fitting);
   builder_.add_ground(ground);
+  builder_.add_squat(squat);
   builder_.add_gaze(gaze);
   builder_.add_jump(jump);
   builder_.add_walk(walk);
@@ -548,6 +684,14 @@ inline const actionData::Action *GetAction(const void *buf) {
 
 inline const actionData::Action *GetSizePrefixedAction(const void *buf) {
   return flatbuffers::GetSizePrefixedRoot<actionData::Action>(buf);
+}
+
+inline Action *GetMutableAction(void *buf) {
+  return flatbuffers::GetMutableRoot<Action>(buf);
+}
+
+inline actionData::Action *GetMutableSizePrefixedAction(void *buf) {
+  return flatbuffers::GetMutableSizePrefixedRoot<actionData::Action>(buf);
 }
 
 inline bool VerifyActionBuffer(
