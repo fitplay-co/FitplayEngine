@@ -6,6 +6,7 @@ import { Fitting } from '../action-data/fitting';
 import { Gaze } from '../action-data/gaze';
 import { Ground } from '../action-data/ground';
 import { Jump } from '../action-data/jump';
+import { Squat } from '../action-data/squat';
 import { Walk } from '../action-data/walk';
 
 
@@ -42,18 +43,23 @@ gaze(obj?:Gaze):Gaze|null {
   return offset ? (obj || new Gaze()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
 }
 
-ground(obj?:Ground):Ground|null {
+squat(obj?:Squat):Squat|null {
   const offset = this.bb!.__offset(this.bb_pos, 10);
+  return offset ? (obj || new Squat()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
+}
+
+ground(obj?:Ground):Ground|null {
+  const offset = this.bb!.__offset(this.bb_pos, 12);
   return offset ? (obj || new Ground()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
 }
 
 fitting(obj?:Fitting):Fitting|null {
-  const offset = this.bb!.__offset(this.bb_pos, 12);
+  const offset = this.bb!.__offset(this.bb_pos, 14);
   return offset ? (obj || new Fitting()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
 }
 
 static startAction(builder:flatbuffers.Builder) {
-  builder.startObject(5);
+  builder.startObject(6);
 }
 
 static addWalk(builder:flatbuffers.Builder, walkOffset:flatbuffers.Offset) {
@@ -68,12 +74,16 @@ static addGaze(builder:flatbuffers.Builder, gazeOffset:flatbuffers.Offset) {
   builder.addFieldOffset(2, gazeOffset, 0);
 }
 
+static addSquat(builder:flatbuffers.Builder, squatOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(3, squatOffset, 0);
+}
+
 static addGround(builder:flatbuffers.Builder, groundOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(3, groundOffset, 0);
+  builder.addFieldOffset(4, groundOffset, 0);
 }
 
 static addFitting(builder:flatbuffers.Builder, fittingOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(4, fittingOffset, 0);
+  builder.addFieldOffset(5, fittingOffset, 0);
 }
 
 static endAction(builder:flatbuffers.Builder):flatbuffers.Offset {
