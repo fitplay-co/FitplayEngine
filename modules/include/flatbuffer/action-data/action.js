@@ -7,6 +7,7 @@ var fitting_1 = require("../action-data/fitting");
 var gaze_1 = require("../action-data/gaze");
 var ground_1 = require("../action-data/ground");
 var jump_1 = require("../action-data/jump");
+var squat_1 = require("../action-data/squat");
 var walk_1 = require("../action-data/walk");
 var Action = /** @class */ (function () {
     function Action() {
@@ -37,16 +38,20 @@ var Action = /** @class */ (function () {
         var offset = this.bb.__offset(this.bb_pos, 8);
         return offset ? (obj || new gaze_1.Gaze()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
     };
-    Action.prototype.ground = function (obj) {
+    Action.prototype.squat = function (obj) {
         var offset = this.bb.__offset(this.bb_pos, 10);
+        return offset ? (obj || new squat_1.Squat()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
+    };
+    Action.prototype.ground = function (obj) {
+        var offset = this.bb.__offset(this.bb_pos, 12);
         return offset ? (obj || new ground_1.Ground()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
     };
     Action.prototype.fitting = function (obj) {
-        var offset = this.bb.__offset(this.bb_pos, 12);
+        var offset = this.bb.__offset(this.bb_pos, 14);
         return offset ? (obj || new fitting_1.Fitting()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
     };
     Action.startAction = function (builder) {
-        builder.startObject(5);
+        builder.startObject(6);
     };
     Action.addWalk = function (builder, walkOffset) {
         builder.addFieldOffset(0, walkOffset, 0);
@@ -57,11 +62,14 @@ var Action = /** @class */ (function () {
     Action.addGaze = function (builder, gazeOffset) {
         builder.addFieldOffset(2, gazeOffset, 0);
     };
+    Action.addSquat = function (builder, squatOffset) {
+        builder.addFieldOffset(3, squatOffset, 0);
+    };
     Action.addGround = function (builder, groundOffset) {
-        builder.addFieldOffset(3, groundOffset, 0);
+        builder.addFieldOffset(4, groundOffset, 0);
     };
     Action.addFitting = function (builder, fittingOffset) {
-        builder.addFieldOffset(4, fittingOffset, 0);
+        builder.addFieldOffset(5, fittingOffset, 0);
     };
     Action.endAction = function (builder) {
         var offset = builder.endObject();

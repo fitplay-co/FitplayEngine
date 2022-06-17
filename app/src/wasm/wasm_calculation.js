@@ -86,7 +86,7 @@ var wasm_processor = {
         var actionData = new Uint8Array(actionResult)
         var actionBuf = new flatbuffers.ByteBuffer(actionData)
         var actionTemp = action.getRootAsAction(actionBuf)
-        if (actionTemp.walk() || actionTemp.jump()) {
+        if (actionTemp.walk() || actionTemp.jump() || actionTemp.squat()) {
             pose.action_detection = {}
             pose.action_detection.walk = {
                  "legUp" : actionTemp.walk().legUp(),
@@ -96,6 +96,9 @@ var wasm_processor = {
             pose.action_detection.jump = {
                 "up" : actionTemp.jump().up(),
                 "strength" : actionTemp.jump().strength()
+            }
+            pose.action_detection.squat = {
+                "squat" : actionTemp.squat().status()
             }
         }
         if (actionTemp.ground()) {
@@ -128,7 +131,7 @@ var wasm_processor = {
                     "z" : actionTemp.fitting().rotation(i).z(),
                 })
             }
-    
+        
             for(var i = 0; i<18; i++) {
                 pose.fitting.mirrorRotation.push({
                     "name" : actionTemp.fitting().mirrorRotation(i).name(),
