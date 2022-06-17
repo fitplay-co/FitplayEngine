@@ -114,29 +114,30 @@ var wasm_processor = {
                 "z" : actionTemp.gaze().z()
             }
         }
-        
-        pose.fitting = {}
-        pose.fitting.rotation = []
-        pose.fitting.mirrorRotation = []
-
-        for(var i = 0; i<18; i++) {
-            pose.fitting.rotation.push({
-                "name" : actionTemp.fitting().rotation(i).name(),
-                "w" : actionTemp.fitting().rotation(i).w(),
-                "x" : actionTemp.fitting().rotation(i).x(),
-                "y" : actionTemp.fitting().rotation(i).y(),
-                "z" : actionTemp.fitting().rotation(i).z(),
-            })
-        }
-
-        for(var i = 0; i<18; i++) {
-            pose.fitting.mirrorRotation.push({
-                "name" : actionTemp.fitting().mirrorRotation(i).name(),
-                "w" : actionTemp.fitting().mirrorRotation(i).w(),
-                "x" : actionTemp.fitting().mirrorRotation(i).x(),
-                "y" : actionTemp.fitting().mirrorRotation(i).y(),
-                "z" : actionTemp.fitting().mirrorRotation(i).z(),
-            })
+        if (actionTemp.fitting()) {
+            pose.fitting = {}
+            pose.fitting.rotation = []
+            pose.fitting.mirrorRotation = []
+    
+            for(var i = 0; i<18; i++) {
+                pose.fitting.rotation.push({
+                    "name" : actionTemp.fitting().rotation(i).name(),
+                    "w" : actionTemp.fitting().rotation(i).w(),
+                    "x" : actionTemp.fitting().rotation(i).x(),
+                    "y" : actionTemp.fitting().rotation(i).y(),
+                    "z" : actionTemp.fitting().rotation(i).z(),
+                })
+            }
+    
+            for(var i = 0; i<18; i++) {
+                pose.fitting.mirrorRotation.push({
+                    "name" : actionTemp.fitting().mirrorRotation(i).name(),
+                    "w" : actionTemp.fitting().mirrorRotation(i).w(),
+                    "x" : actionTemp.fitting().mirrorRotation(i).x(),
+                    "y" : actionTemp.fitting().mirrorRotation(i).y(),
+                    "z" : actionTemp.fitting().mirrorRotation(i).z(),
+                })
+            }
         }
 
         this.instance.release()
