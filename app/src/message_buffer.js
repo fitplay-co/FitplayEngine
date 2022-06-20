@@ -6,6 +6,7 @@ const MAX_BUFFER_SIZE = 3 //缓冲队列容量上限
 var messageBuffer = {
     messageBufferMap: new Map(),
     imuLastFrameTimestamp: 0,
+    inputLastFrameTimestamp: 0,
     imuFPS: 60,
 
     init: function() {
@@ -38,6 +39,12 @@ var messageBuffer = {
                     return
                 }
                 this.imuLastFrameTimestamp = now
+            } else if (messageType === 'input') {// 对input数据进行抽样以减少帧率
+                const now = performance.now()
+                if (now - this.inputLastFrameTimestamp < 1000 / this.imuFPS) {
+                    return
+                }
+                this.inputLastFrameTimestamp = now
             }
             if ((messageType === 'pose_landmark' || messageType === 'imu' || messageType === 'input' || messageType === 'device_info' || messageType === 'vibration') && this.messageBufferMap.get(messageType).length >= MAX_BUFFER_SIZE) {
                 console.log('drop earliest frame!!!')
