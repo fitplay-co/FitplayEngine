@@ -1,8 +1,12 @@
+const {performance} = require('perf_hooks');
+
 const MAX_BUFFER_SIZE = 3 //缓冲队列容量上限
 
 // 输入数据缓冲，包含传感器输入数据以及客户端发送的消息
 var messageBuffer = {
     messageBufferMap: new Map(),
+    imuLastFrameTimestamp: 0,
+    imuFPS: 60,
 
     init: function() {
         this.messageBufferMap.set('pose_landmark', []) //摄像头输入缓冲
@@ -28,6 +32,13 @@ var messageBuffer = {
         }
 
         if (messageType) {
+            if (messageType === 'imu') {// 对imu数据进行抽样以减少帧率
+                const now = performance.now()
+                if (now - this.imuLastFrameTimestamp < 1000 / this.imuFPS) {
+                    return
+                }
+                this.imuLastFrameTimestamp = now
+            }
             if ((messageType === 'pose_landmark' || messageType === 'imu' || messageType === 'input' || messageType === 'device_info' || messageType === 'vibration') && this.messageBufferMap.get(messageType).length >= MAX_BUFFER_SIZE) {
                 console.log('drop earliest frame!!!')
                 this.messageBufferMap.get(messageType).shift()

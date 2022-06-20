@@ -38,7 +38,7 @@ client.on('connect', function(connection) {
     setInterval(() => {
         sensorFrame.imu.count = count++
         connection.send(JSON.stringify(sensorFrame))
-    }, 1000);
+    }, 5);
     
 });
 

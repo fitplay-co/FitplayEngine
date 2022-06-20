@@ -215,6 +215,8 @@ var messageLoop = coroutine(function*() {
                 }
             } else if (message.feature_id === 'ground_location' && message.action === 'reset') {
                 resetGroundLocation = true
+            } else if (message.feature_id === 'imu' && message.action === 'config') {
+                messageBuffer.imuFPS = message.data.fps
             }
         } else if (type === 'application_client') {
             activeApplicationClient.push(ws)
