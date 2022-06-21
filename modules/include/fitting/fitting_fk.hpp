@@ -3,7 +3,6 @@
 
 #include <string>
 #include <vector>
-#include "json.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtx/quaternion.hpp"
 
@@ -11,7 +10,6 @@
 #include "actionData_generated.h"
 #include "fitting_data.hpp"
 
-using namespace nlohmann;
 using namespace glm;
 using namespace std;
 

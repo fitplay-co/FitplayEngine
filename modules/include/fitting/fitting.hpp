@@ -3,7 +3,6 @@
 
 #include <string>
 #include <vector>
-#include "json.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtx/quaternion.hpp"
 
@@ -13,7 +12,6 @@
 #include "fitting_fk.hpp"
 #include "fitting_landmark.hpp"
 
-using namespace nlohmann;
 using namespace glm;
 using namespace std;
 
