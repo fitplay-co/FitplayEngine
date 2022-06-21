@@ -1,9 +1,0 @@
-{
-    "compilerOptions" : {
-        "module" : "amd",
-        "outFile" : "./out.js",
-    },
-    "include": [
-        "./**/*.ts"
-    ],
-}

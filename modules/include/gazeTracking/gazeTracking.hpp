@@ -3,7 +3,7 @@
 #include <list>
 #include <math.h>
 #include "glm/glm.hpp"
-#include "flatbuffer/actionData_generated.h"
+#include "actionData_generated.h"
 
 using namespace glm;
 

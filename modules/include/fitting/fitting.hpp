@@ -7,8 +7,8 @@
 #include "glm/glm.hpp"
 #include "glm/gtx/quaternion.hpp"
 
-#include "flatbuffer/poseData_generated.h"
-#include "flatbuffer/actionData_generated.h"
+#include "poseData_generated.h"
+#include "actionData_generated.h"
 #include "fitting_data.hpp"
 #include "fitting_fk.hpp"
 #include "fitting_landmark.hpp"
@@ -21,7 +21,7 @@ namespace fitplay {
 
     class fitting {
         private:
-        public: 
+        public:
             bool mirror = true;
             FittingLandmark landmarkFittingInstance;
             FittingFk fkInstance;
@@ -116,5 +116,5 @@ namespace fitplay {
     }
 }
 
-
+        
 #endif

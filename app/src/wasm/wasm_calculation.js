@@ -1,13 +1,13 @@
 var Module = require('../../wasm_modules/processor.js');
 var flatbuffers = require('flatbuffers');
-var Point = require('../../../modules/include/flatbuffer/pose-data/point').Point
-var Pose = require('../../../modules/include/flatbuffer/pose-data/pose').Pose;
+var Point = require('../../../protocol/js/pose-data/point').Point
+var Pose = require('../../../protocol/js/pose-data/pose').Pose;
 var fs = require('fs');
 const { z } = require('../midware_gaze_tracking.js');
 const { type } = require('os');
-var action = require('../../../modules/include/flatbuffer/action-data/action').Action
-var FeatureConfig = require('../../../modules/include/flatbuffer/feature-configs/feature-config').FeatureConfig
-var FeatureConfigList = require('../../../modules/include/flatbuffer/feature-configs/feature-config-list').FeatureConfigList
+var action = require('../../../protocol/js/action-data/action').Action
+var FeatureConfig = require('../../../protocol/js/feature-configs/feature-config').FeatureConfig
+var FeatureConfigList = require('../../../protocol/js/feature-configs/feature-config-list').FeatureConfigList
 
 var wasm_processor = {
     initialized : false ,
@@ -131,7 +131,7 @@ var wasm_processor = {
                     "z" : actionTemp.fitting().rotation(i).z(),
                 })
             }
-        
+    
             for(var i = 0; i<18; i++) {
                 pose.fitting.mirrorRotation.push({
                     "name" : actionTemp.fitting().mirrorRotation(i).name(),
