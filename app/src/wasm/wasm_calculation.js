@@ -66,11 +66,13 @@ var wasm_processor = {
         for (var i = 0; i < featureConfigArray.length; i++) {
             var featureId = configBuilder.createString(featureConfigs[i].featureId)
             var actionString = configBuilder.createString(featureConfigs[i].action)
+            var typeString = configBuilder.createString(featureConfigs[i].type)
             var data = configBuilder.createString(featureConfigs[i].data)
             FeatureConfig.startFeatureConfig(configBuilder)
             FeatureConfig.addFeatureId(configBuilder, featureId)
             FeatureConfig.addEnable(configBuilder, true)
             FeatureConfig.addAction(configBuilder, actionString)
+            FeatureConfig.addType(configBuilder, typeString)
             FeatureConfig.addData(configBuilder, data)
             var config = FeatureConfig.endFeatureConfig(configBuilder)
             //console.log(point)
@@ -110,6 +112,7 @@ var wasm_processor = {
                 "tracing" : actionTemp.ground().tracing()
             }
         }
+        // console.log(pose.ground_location.z)
         if (actionTemp.gaze()) {
             pose.gaze_tracking = {
                 "x" : actionTemp.gaze().x(),
@@ -131,7 +134,7 @@ var wasm_processor = {
                     "z" : actionTemp.fitting().rotation(i).z(),
                 })
             }
-    
+        
             for(var i = 0; i<18; i++) {
                 pose.fitting.mirrorRotation.push({
                     "name" : actionTemp.fitting().mirrorRotation(i).name(),

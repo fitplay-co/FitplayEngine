@@ -46,6 +46,7 @@ public:
     bool gazeTrackingEnable = false;
     bool groundLocationEnable = false;
     bool groundLocationReset = false;
+    bool groundLocationRgbdEnable = false;
     bool fittingEnable = false;
     for(int i = 0; i < featureConfigs->configs()->Length(); i++) {
       auto config = featureConfigs->configs()->Get(i);
@@ -54,6 +55,7 @@ public:
       } else if ("ground_location" == config->feature_id()->str()) {
         groundLocationEnable = config->enable();
         groundLocationReset = config->action()->str() == "reset";
+        groundLocationRgbdEnable = config->type()->str() == "rgbd";
       } else if ("gaze_tracking" == config->feature_id()->str()) {
         gazeTrackingEnable = config->enable();
       } else if ("fitting" == config->feature_id()->str()) {
@@ -85,7 +87,7 @@ public:
       gazeOffset = actionData::CreateGaze(action_data, gaze_data[0], gaze_data[1], gaze_data[2]);
     }
     if (groundLocationEnable) {
-      groundInstance.process(ground_data, data, groundLocationReset);
+      groundInstance.process(ground_data, data, groundLocationReset, groundLocationRgbdEnable);
       groundLocation = actionData::CreateGround(action_data, ground_data[0], ground_data[1], ground_data[2], ground_data[3], ground_data[4]);
     }
     if (fittingEnable) {

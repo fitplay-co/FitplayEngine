@@ -6,10 +6,7 @@ var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-const groundLocation = require('./src/midware_ground_location');
-const actionDetection = require('./src/midware_action_detection');
 const wasm = require('./src/midware_wasm');
-const gazeTracking = require('./src/midware_gaze_tracking');
 //const { type } = require('os');
 const {performance} = require('perf_hooks');
 const messageBuffer = require('./src/message_buffer');
@@ -76,6 +73,8 @@ var messageLoop = coroutine(function*() {
             //TODO for now only pose provided in message as pose landmark
             // console.log(message)
             pose = message
+            // console.log(pose.type)
+            // console.log(pose.sensor_type)
             // console.log(pose)
             pose.timeProfiling = {}
             pose.timeProfiling.serverReceive = messageTime
@@ -112,28 +111,36 @@ var messageLoop = coroutine(function*() {
                 groundLocationAction = 'reset'
                 resetGroundLocation = false
             }
+            var cameraType = ''
+            if (pose.sensor_type == 'rgbd') {
+                cameraType = 'rgbd'
+            }
             featureConfigs.push({
                 featureId: 'ground_location',
                 enable: groundLocationEnable,
                 action: groundLocationAction,
+                type: cameraType,
                 data: ''
             })
             featureConfigs.push({
                 featureId: 'action_detection',
                 enable: actionDetectionEnable,
                 action: '',
+                type: '',
                 data: ''
             })
             featureConfigs.push({
                 featureId: 'gaze_tracking',
                 enable: gazeTrackingEnable,
                 action: '',
+                type: '',
                 data: ''
             })
             featureConfigs.push({
                 featureId: 'fitting',
                 enable: fittingEnable,
                 action: '',
+                type: '',
                 data: ''
             })
             wasm.process(pose, featureConfigs)
@@ -226,6 +233,7 @@ var messageLoop = coroutine(function*() {
             console.log(`application client with id "${message.id}" attached`)
         } else if (type === 'sensor_client') {
             messageBuffer.createSensorBuffer(message.sensor_type)
+            // console.log(message)
         } else if (type === 'sensor_frame' || type === 'sensor_control') {
             message.type = 'application_frame'
             activeApplicationClient.forEach(function(ws){
