@@ -69,7 +69,7 @@ var wasm_processor = {
             var data = configBuilder.createString(featureConfigs[i].data)
             FeatureConfig.startFeatureConfig(configBuilder)
             FeatureConfig.addFeatureId(configBuilder, featureId)
-            FeatureConfig.addEnable(configBuilder, featureConfigs[i].enable)
+            FeatureConfig.addEnable(configBuilder, true)
             FeatureConfig.addAction(configBuilder, actionString)
             FeatureConfig.addData(configBuilder, data)
             var config = FeatureConfig.endFeatureConfig(configBuilder)
@@ -86,7 +86,7 @@ var wasm_processor = {
         var actionData = new Uint8Array(actionResult)
         var actionBuf = new flatbuffers.ByteBuffer(actionData)
         var actionTemp = action.getRootAsAction(actionBuf)
-        if (actionTemp.walk() || actionTemp.jump()) {
+        if (actionTemp.walk() || actionTemp.jump() || actionTemp.squat()) {
             pose.action_detection = {}
             pose.action_detection.walk = {
                  "legUp" : actionTemp.walk().legUp(),
@@ -96,6 +96,9 @@ var wasm_processor = {
             pose.action_detection.jump = {
                 "up" : actionTemp.jump().up(),
                 "strength" : actionTemp.jump().strength()
+            }
+            pose.action_detection.squat = {
+                "squat" : actionTemp.squat().status()
             }
         }
         if (actionTemp.ground()) {
@@ -139,6 +142,7 @@ var wasm_processor = {
                 })
             }
         }
+
         this.instance.release()
         
         // var bbb = builder.asUint8Array()
