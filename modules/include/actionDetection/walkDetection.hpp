@@ -2,7 +2,7 @@
 #include <vector>
 #include <list>
 #include <chrono> 
-#include "flatbuffer/actionData_generated.h"
+#include "actionData_generated.h"
 
 namespace actionwalk {
     class walk {

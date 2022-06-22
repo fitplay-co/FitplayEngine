@@ -34,6 +34,14 @@ client.on('connect', function(connection) {
         "type" : "application_client",
         "id": "test_client"
     }
+    var imuFPS = {
+        "type" : "application_control",
+        "feature_id" : "imu",
+        "action" : "config",
+        "data": {
+            fps: 1
+        }
+    }
     var actionDetectionSubscribe = {
         "type" : "application_control",
         "feature_id" : "action_detection",
@@ -65,6 +73,7 @@ client.on('connect', function(connection) {
         "action" : "reset" 
     }
     connection.send(JSON.stringify(appClientMessage));
+    connection.send(JSON.stringify(imuFPS));
     connection.send(JSON.stringify(actionDetectionSubscribe))
     connection.send(JSON.stringify(groundLocationSubscribe))
     setTimeout(() => {

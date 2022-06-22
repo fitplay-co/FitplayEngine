@@ -3,15 +3,13 @@
 
 #include <string>
 #include <vector>
-#include "json.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtx/quaternion.hpp"
 
-#include "flatbuffer/poseData_generated.h"
-#include "flatbuffer/actionData_generated.h"
+#include "poseData_generated.h"
+#include "actionData_generated.h"
 #include "fitting_data.hpp"
 
-using namespace nlohmann;
 using namespace glm;
 using namespace std;
 

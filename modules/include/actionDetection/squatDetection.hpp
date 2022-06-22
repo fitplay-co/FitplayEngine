@@ -3,7 +3,7 @@
 #include <list>
 #include <chrono> 
 #include <math.h>
-#include "flatbuffer/actionData_generated.h"
+#include "actionData_generated.h"
 
 namespace actionsquat {
     class squat {

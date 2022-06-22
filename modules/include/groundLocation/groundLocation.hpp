@@ -3,7 +3,7 @@
 #include <list>
 #include <math.h>
 #include "glm/glm.hpp"
-#include "flatbuffer/actionData_generated.h"
+#include "actionData_generated.h"
 
 using namespace glm;
 
@@ -31,7 +31,7 @@ namespace ground {
         public:
             groundLocation();
             ~groundLocation();
-            void process(float ground_data[], const PoseData::Pose* data, const bool reset);
+            void process(float ground_data[], const PoseData::Pose* data, const bool reset, const bool rgbdEnable);
             float distance_finder_z_filtered(const PoseData::Pose* data, int num1, int num2);
             void distance_finder_leg(const PoseData::Pose* data);
     };
@@ -39,8 +39,8 @@ namespace ground {
     groundLocation::groundLocation() {}
     groundLocation::~groundLocation() {}
 
-    void groundLocation::process(float ground_data[], const PoseData::Pose* data, const bool reset) {
-        if (reset){
+    void groundLocation::process(float ground_data[], const PoseData::Pose* data, const bool reset, const bool rgbdEnable) {
+        if (reset) {
             startX = pre_x;
             startY = pre_y;
             startZ = pre_z;
@@ -49,7 +49,14 @@ namespace ground {
                                 0, f_dy, centerPointY,
                                 0, 0, 1);
         mat3 cameraInverse = inverse(cameraParam);
-        z_down = distance_finder_z_filtered(data, 23, 24)*2.6;
+
+        if (rgbdEnable) {
+            z_down = (data->keypoints()->Get(24)->z() + data->keypoints()->Get(23)->z())/2;
+        }
+        else {
+            z_down = distance_finder_z_filtered(data, 23, 24)*2.6;
+        }
+
         vec3 arr33 = vec3(data->keypoints()->Get(24)->x()*widthScale*z_down, (1-data->keypoints()->Get(24)->y())*heightScale*z_down, z_down);
         vec3 arr_3down = vec3((data->keypoints()->Get(23)->x()+data->keypoints()->Get(24)->x())*widthScale*z_down*0.5, (1-data->keypoints()->Get(23)->y())*heightScale*z_down, z_down);
         vec3 res_down = cameraInverse * arr_3down;

@@ -1,13 +1,13 @@
 var Module = require('../../wasm_modules/processor.js');
 var flatbuffers = require('flatbuffers');
-var Point = require('../../../modules/include/flatbuffer/pose-data/point').Point
-var Pose = require('../../../modules/include/flatbuffer/pose-data/pose').Pose;
+var Point = require('../../../protocol/js/pose-data/point').Point
+var Pose = require('../../../protocol/js/pose-data/pose').Pose;
 var fs = require('fs');
 const { z } = require('../midware_gaze_tracking.js');
 const { type } = require('os');
-var action = require('../../../modules/include/flatbuffer/action-data/action').Action
-var FeatureConfig = require('../../../modules/include/flatbuffer/feature-configs/feature-config').FeatureConfig
-var FeatureConfigList = require('../../../modules/include/flatbuffer/feature-configs/feature-config-list').FeatureConfigList
+var action = require('../../../protocol/js/action-data/action').Action
+var FeatureConfig = require('../../../protocol/js/feature-configs/feature-config').FeatureConfig
+var FeatureConfigList = require('../../../protocol/js/feature-configs/feature-config-list').FeatureConfigList
 
 var wasm_processor = {
     initialized : false ,
@@ -66,11 +66,13 @@ var wasm_processor = {
         for (var i = 0; i < featureConfigArray.length; i++) {
             var featureId = configBuilder.createString(featureConfigs[i].featureId)
             var actionString = configBuilder.createString(featureConfigs[i].action)
+            var typeString = configBuilder.createString(featureConfigs[i].type)
             var data = configBuilder.createString(featureConfigs[i].data)
             FeatureConfig.startFeatureConfig(configBuilder)
             FeatureConfig.addFeatureId(configBuilder, featureId)
             FeatureConfig.addEnable(configBuilder, true)
             FeatureConfig.addAction(configBuilder, actionString)
+            FeatureConfig.addType(configBuilder, typeString)
             FeatureConfig.addData(configBuilder, data)
             var config = FeatureConfig.endFeatureConfig(configBuilder)
             //console.log(point)
@@ -110,6 +112,7 @@ var wasm_processor = {
                 "tracing" : actionTemp.ground().tracing()
             }
         }
+        // console.log(pose.ground_location.z)
         if (actionTemp.gaze()) {
             pose.gaze_tracking = {
                 "x" : actionTemp.gaze().x(),

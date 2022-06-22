@@ -3,7 +3,6 @@
 
 #include <string>
 #include <vector>
-#include "json.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtx/quaternion.hpp"
 
