@@ -84,7 +84,7 @@ void readCsvFileAsLandmarkList(std::string path, int limit = 1000) {
     return;
 }
 
-landmarks readLandmarks(int index) {
+landmarks readLandmarks3D(int index) {
     landmarks landmarkData(jointPointSize + 1);
 
     landmarkData[HEAD] = landmarkList3D[index][0];
@@ -111,5 +111,41 @@ landmarks readLandmarks(int index) {
                 + landmarkData[R_SHOULDER][1])/2.0f, (landmarkData[L_SHOULDER][2] + landmarkData[R_SHOULDER][2])/2.0f);
     return landmarkData;
 }
+
+landmarks readLandmarks2D(int index) {
+    landmarks landmarkData(jointPointSize + 1);
+
+    landmarkData[HEAD] = landmarkList[index][0];
+    landmarkData[L_SHOULDER] = landmarkList[index][11];
+    landmarkData[R_SHOULDER] = landmarkList[index][12];
+    landmarkData[L_ARM] = landmarkList[index][13];
+    landmarkData[R_ARM] = landmarkList[index][14];
+    landmarkData[L_WRIST] = landmarkList[index][15];
+    landmarkData[R_WRIST] = landmarkList[index][16];
+    landmarkData[L_HAND] = landmarkList[index][19];
+    landmarkData[R_HAND] = landmarkList[index][20];
+    landmarkData[L_HIP] = landmarkList[index][23];
+    landmarkData[R_HIP] = landmarkList[index][24];
+    landmarkData[L_KNEE] = landmarkList[index][25];
+    landmarkData[R_KNEE] = landmarkList[index][26];
+    landmarkData[L_ANKLE] = landmarkList[index][27];
+    landmarkData[R_ANKLE] = landmarkList[index][28];
+    landmarkData[L_FOOT] = landmarkList[index][31];
+    landmarkData[R_FOOT] = landmarkList[index][32];
+
+    landmarkData[HIP_CENTER] = vec3((landmarkData[L_HIP][0] 
+                + landmarkData[R_HIP][0])/2.0f, (landmarkData[L_HIP][1] 
+                + landmarkData[R_HIP][1])/2.0f, (landmarkData[L_HIP][2] + landmarkData[R_HIP][2])/2.0f);
+    
+    landmarkData[NECK] = vec3((landmarkData[L_SHOULDER][0] 
+                + landmarkData[R_SHOULDER][0])/2.0f, (landmarkData[L_SHOULDER][1] 
+                + landmarkData[R_SHOULDER][1])/2.0f, (landmarkData[L_SHOULDER][2] + landmarkData[R_SHOULDER][2])/2.0f);
+    return landmarkData;
+}
+
+landmarks readLandmarks(int index) {
+    return readLandmarks3D(index);
+}
+
 
 #endif

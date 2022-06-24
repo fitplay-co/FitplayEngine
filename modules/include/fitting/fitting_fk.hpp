@@ -136,6 +136,7 @@ namespace fitplay {
         /**
          * @brief simple kinamatic constraints applied here
          */
+        
 
         // hip forwarding
         vec3 hipRightForwarding = normalize(cross(landmarkData[R_HIP] - landmarkData[L_HIP], fitplay::up));

@@ -11,6 +11,7 @@
 #include "fitting_data.hpp"
 #include "fitting_fk.hpp"
 #include "fitting_landmark.hpp"
+#include "fitting_rgbd.hpp"
 
 using namespace glm;
 using namespace std;
@@ -32,10 +33,12 @@ namespace fitplay {
 
     void fitting::process(const PoseData::Pose* data) {
         landmarks landmarkData = readPoseDataToLandmark(data);
-        landmarkFittingInstance.handcraftFitting(landmarkData, fkInstance.jointPoints);
+        
+        // landmarkFittingInstance.handcraftFitting(landmarkData, fkInstance.jointPoints);
         // if(mirror) {
         //     landmarkData = landmarkFittingInstance.currentFitLandmarkData;
         // }
+
         fkInstance.updateLandmarks(landmarkData);
     }
 

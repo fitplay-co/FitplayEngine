@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <numeric>
 #include "glm/glm.hpp"
 #include "glm/gtx/quaternion.hpp"
 #include "testUtils.hpp"
