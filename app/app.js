@@ -114,6 +114,7 @@ var messageLoop = coroutine(function*() {
             var cameraType = ''
             if (pose.sensor_type == 'rgbd') {
                 cameraType = 'rgbd'
+                pose.sensor_type = 'camera'
             }
             featureConfigs.push({
                 featureId: 'ground_location',
@@ -223,6 +224,7 @@ var messageLoop = coroutine(function*() {
             } else if (message.feature_id === 'ground_location' && message.action === 'reset') {
                 resetGroundLocation = true
             } else if (message.feature_id === 'imu' && message.action === 'config') {
+                // console.log(message)
                 messageBuffer.imuFPS = message.data.fps
             }
         } else if (type === 'application_client') {
