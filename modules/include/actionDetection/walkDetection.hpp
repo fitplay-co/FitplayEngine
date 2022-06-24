@@ -32,7 +32,7 @@ namespace actionwalk {
             float current_right = 0;
 
             float amp_threshold = 0.02;
-            float angle_threshold = 10;
+            float angle_threshold = 5;
             bool monitor_process = false;
             float fpm = 0;
             std::list<long long> times;
@@ -73,7 +73,7 @@ namespace actionwalk {
         calculate_current_left();
         calculate_current_right();
 
-        walk_data[0] = current_left;
+        walk_data[0] = test;
         walk_data[1] = current_right;
         walk_data[2] = step_rate;
         walk_data[3] = current_lhip_mean;
@@ -141,7 +141,7 @@ namespace actionwalk {
         }
         if(current_left == -1) {
             if(abs(current_lknee - current_lknee_mean) < angle_threshold) {
-                if(frameShiftFilterCount > 5) {
+                if(frameShiftFilterCount > 3) {
                     current_left = 0;
                     frameShiftFilterCount = 0;
                 } else {
@@ -157,6 +157,7 @@ namespace actionwalk {
                 if(fpmStopCount > 30) {
                     current_left = 0;
                     fpm = 0;
+                    step_rate = 0;
                 }
             } else {
             fpmStopCount = 0;
@@ -196,7 +197,7 @@ namespace actionwalk {
         }
         if(current_right == -1) {
             if(abs(current_rknee - current_rknee_mean) < angle_threshold) {
-                if(frameShiftFilterCount2 > 5) {
+                if(frameShiftFilterCount2 > 3) {
                     current_right = 0;
                     frameShiftFilterCount2 = 0;
                 } else {
@@ -212,9 +213,10 @@ namespace actionwalk {
                 if(fpmStopCount2 > 30) {
                     current_right = 0;
                     fpm = 0;
+                    step_rate = 0;
                 }
             } else {
-            fpmStopCount2 = 0;
+                fpmStopCount2 = 0;
             }
         }
     }
