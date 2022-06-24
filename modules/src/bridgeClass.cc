@@ -63,8 +63,7 @@ public:
       }
     }
 
-    float walk_data[3] = {0,0,0};
-    float move_data[10] = {0,0,0,0,0,0,0,0,0,0};
+    float walk_data[5] = {0,0,0,0,0};
     float jump_data[2] = {0,0};
     float gaze_data[3] = {0,0,0};
     float ground_data[5] = {0,0,0,0,0};
@@ -76,10 +75,10 @@ public:
     flatbuffers::Offset<actionData::Ground> groundLocation;
     flatbuffers::Offset<actionData::Fitting> fittingOffset;
     if (actionDetectionEnable) {
-      walkInstance.process(walk_data, move_data, data);
+      walkInstance.process(walk_data, data);
       jumpInstance.process(jump_data, data);
       squatInstance.process(squat_data, data);
-      walk = actionData::CreateWalk(action_data, walk_data[0], walk_data[1], walk_data[2]);
+      walk = actionData::CreateWalk(action_data, walk_data[0], walk_data[1], walk_data[2], walk_data[3], walk_data[4]);
       jump = actionData::CreateJump(action_data, jump_data[0], jump_data[1]);
       squat = actionData::CreateSquat(action_data, squat_data[0]);
     }
