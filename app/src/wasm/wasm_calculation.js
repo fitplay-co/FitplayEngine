@@ -105,7 +105,7 @@ var wasm_processor = {
                 "squat" : actionTemp.squat().status()
             }
         }
-        console.log(pose.action_detection.walk.leftLeg)
+        // console.log(pose.action_detection.walk.leftLeg)
         if (actionTemp.ground()) {
             pose.ground_location = {
                 "x" : actionTemp.ground().x(),
