@@ -209,7 +209,7 @@ var messageLoop = coroutine(function*() {
             } else if (message.action === 'release') {
                 if (clientSubscriptionMap.has(ws)) {
                     const clientSubscription = clientSubscriptionMap.get(ws)
-                    const subscriptionIndex = clientSubscription.indexOf(       qsqsa.feature_id)
+                    const subscriptionIndex = clientSubscription.indexOf(message.feature_id)
                     if (subscriptionIndex >= 0) {
                         clientSubscription.splice(subscriptionIndex, 1)
                         console.log(`client with id "${clientIdMap.get(ws)}" release ${message.feature_id}`)
@@ -224,7 +224,7 @@ var messageLoop = coroutine(function*() {
             } else if (message.feature_id === 'ground_location' && message.action === 'reset') {
                 resetGroundLocation = true
             } else if (message.feature_id === 'imu' && message.action === 'config') {
-                console.log(message)
+                // console.log(message)
                 messageBuffer.imuFPS = message.data.fps
             }
         } else if (type === 'application_client') {
