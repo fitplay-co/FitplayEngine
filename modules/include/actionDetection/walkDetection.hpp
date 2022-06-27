@@ -73,11 +73,17 @@ namespace actionwalk {
         calculate_current_left();
         calculate_current_right();
 
-        walk_data[0] = test;
+        walk_data[0] = current_left;
         walk_data[1] = current_right;
         walk_data[2] = step_rate;
         walk_data[3] = current_lhip_mean;
         walk_data[4] = current_rhip_mean;
+
+        walk_data[0] = current_rhip_mean;
+        walk_data[1] = current_lhip_mean;
+        walk_data[2] = current_rknee_mean;
+        walk_data[3] = current_lknee_mean;
+        walk_data[4] = current_thigh_mean;
     }
 
     void walk::calculate_current_frame(const PoseData::Pose* data) {
