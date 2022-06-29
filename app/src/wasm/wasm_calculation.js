@@ -105,7 +105,14 @@ var wasm_processor = {
                 "squat" : actionTemp.squat().status()
             }
         }
-        // console.log(pose.action_detection.walk.leftLeg)
+        console.log(pose.action_detection.walk.leftLeg)
+        // var a = parseFloat(pose.keypoints[28].z)
+        // var b = parseFloat(pose.keypoints[26].z)
+        // var c = parseFloat(pose.keypoints[24].z)
+        // console.log(b - c)
+        // var a = parseFloat(pose.keypoints[28].x) + parseFloat(pose.keypoints[30].x) + parseFloat(pose.keypoints[32].x)
+        // var b = parseFloat(pose.keypoints[28].y) + parseFloat(pose.keypoints[30].y) + parseFloat(pose.keypoints[32].y)
+        // console.log(a + b)
         if (actionTemp.ground()) {
             pose.ground_location = {
                 "x" : actionTemp.ground().x(),

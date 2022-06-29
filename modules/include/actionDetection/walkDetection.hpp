@@ -8,22 +8,18 @@
 namespace actionwalk {
     class walk {
         private:
-            float current_lhip = 0;
-            float current_rhip = 0;
-            float current_lknee = 0;
-            float current_rknee = 0;
             float current_lfoot = 0;
             float current_rfoot = 0;
-            float current_thigh = 0;
-
+            float current_lhip = 0;
+            float current_rhip = 0;
             float current_lhip_mean = 0;
             float current_rhip_mean = 0;
-            float current_lknee_mean = 0;
-            float current_rknee_mean = 0;
             float current_lfoot_mean = 0;
             float current_rfoot_mean = 0;
-            float current_lhip_vmean = 0;
-            float current_rhip_vmean = 0;
+
+            float current_lfoot_height = 0;
+            float current_rfoot_height = 0;
+            float current_thigh = 0;
             float current_thigh_mean = 0;
             float current_leg_mean = 0;
             float current_height_mean = 0;
@@ -31,23 +27,22 @@ namespace actionwalk {
             float current_left = 0;
             float current_right = 0;
 
-            float amp_threshold = 0.02;
-            float angle_threshold = 8;
-            bool monitor_process = false;
+            float amp_threshold = 0.01;
             float fpm = 0;
             std::list<long long> times;
 
             float stepCount = 0;
+
             bool tLock = false;
-            long long tStart = 0;
-            long long tEnd = 0;
-            long long tWindow = 0;
+            int tStart = 0;
+            int tEnd = 0;
             float step_rate = 0;
 
             float fpmStopCount = 0;
             float frameShiftFilterCount = 0;
             float fpmStopCount2 = 0;
             float frameShiftFilterCount2 = 0;
+            float fpmStopCount3 = 0;
 
             float test;
 
@@ -61,6 +56,7 @@ namespace actionwalk {
             void calculate_current_right();
             void shiftDirectionStepPerMinutes();
             void calculateWindow();
+            void checkCurrentStepRate();
             float calVecAngle(const PoseData::Pose* data, int num1, int num2, int num3, int config);
             float distanceFinder(const PoseData::Pose* data, int num1, int num2);
     };
@@ -72,43 +68,33 @@ namespace actionwalk {
         calculate_current_mean();
         calculate_current_left();
         calculate_current_right();
-
+        checkCurrentStepRate();
         walk_data[0] = current_left;
         walk_data[1] = current_right;
         walk_data[2] = step_rate;
         walk_data[3] = current_lhip_mean;
         walk_data[4] = current_rhip_mean;
-
-        walk_data[0] = current_rhip_mean;
-        walk_data[1] = current_lhip_mean;
-        walk_data[2] = current_rknee_mean;
-        walk_data[3] = current_lknee_mean;
-        walk_data[4] = current_thigh_mean;
     }
 
     void walk::calculate_current_frame(const PoseData::Pose* data) {
+        current_rfoot = data->keypoints()->Get(28)->y() + data->keypoints()->Get(30)->y() + data->keypoints()->Get(32)->y()
+                        + data->keypoints()->Get(28)->x() + data->keypoints()->Get(30)->x() + data->keypoints()->Get(32)->x();
+        current_lfoot = data->keypoints()->Get(27)->y() + data->keypoints()->Get(29)->y() + data->keypoints()->Get(31)->y()
+                        + data->keypoints()->Get(27)->x() + data->keypoints()->Get(29)->x() + data->keypoints()->Get(31)->x();
+        current_lfoot_height = data->keypoints3D()->Get(31)->y();
+        current_rfoot_height = data->keypoints3D()->Get(32)->y();
         current_rhip = calVecAngle(data, 12, 24, 26, 1);
         current_lhip = calVecAngle(data, 11, 23, 25, 1);
-        current_rknee = calVecAngle(data, 24, 26, 28, 0);
-        current_lknee = calVecAngle(data, 23, 25, 27, 0);
-        current_rfoot = data->keypoints3D()->Get(31)->y();
-        current_lfoot = data->keypoints3D()->Get(32)->y();
-        float right_height = data->keypoints3D()->Get(23)->y() - data->keypoints3D()->Get(25)->y();
-        float left_height = data->keypoints3D()->Get(24)->y() - data->keypoints3D()->Get(26)->y();
+        float left_height = data->keypoints3D()->Get(23)->y() - data->keypoints3D()->Get(25)->y();
+        float right_height = data->keypoints3D()->Get(24)->y() - data->keypoints3D()->Get(26)->y();
         current_thigh = std::max(left_height, right_height);
     }
 
     void walk::calculate_current_mean() {
-        float last_lhip_mean = current_lhip_mean;
-        float last_rhip_mean = current_rhip_mean;
+        current_lfoot_mean = current_lfoot_mean * 0.85 + current_lfoot * 0.15;
+        current_rfoot_mean = current_rfoot_mean * 0.85 + current_rfoot * 0.15;
         current_lhip_mean = current_lhip_mean * 0.9 + current_lhip * 0.1;
         current_rhip_mean = current_rhip_mean * 0.9 + current_rhip * 0.1;
-        current_lknee_mean = current_lknee_mean * 0.9 + current_lknee * 0.1;
-        current_rknee_mean = current_rknee_mean * 0.9 + current_rknee * 0.1;
-        current_lfoot_mean = current_lfoot_mean * 0.9 + current_lfoot * 0.1;
-        current_rfoot_mean = current_rfoot_mean * 0.9 + current_rfoot * 0.1;
-        current_lhip_vmean = current_lhip_vmean * 0.9 + (current_lhip_mean - last_lhip_mean) * 0.1;
-        current_rhip_vmean = current_rhip_vmean * 0.9 + (current_rhip_mean - last_rhip_mean) * 0.1;
         current_thigh_mean = current_thigh_mean * 0.9 + current_thigh * 0.1;
         current_leg_mean = current_thigh_mean * 2.004;
         current_height_mean = current_leg_mean / 0.245;
@@ -116,114 +102,128 @@ namespace actionwalk {
 
     void walk::calculate_current_left() {
         // for left leg
-        // using lhip, lhip mean, lhip velocity, lhip vmean, lfoot, lfoot mean
         // threshold to be tested
-        test = current_lknee - current_lknee_mean;
-        if(current_left == 0) {
-            if(current_lknee - current_lknee_mean < -angle_threshold) {
-                if(frameShiftFilterCount > 2) {
+        if(current_lfoot - current_lfoot_mean > amp_threshold) {
+            if(current_left != -1) {
+                if(frameShiftFilterCount > 3 && current_left == 1) {
+                    current_left = -1;
+                }
+                else {
+                    frameShiftFilterCount = frameShiftFilterCount + 1;
+                }
+            }
+            else {
+                frameShiftFilterCount = 0;
+            }
+        }
+        if(current_lfoot - current_lfoot_mean < -amp_threshold) {
+            if(current_left != 1) {
+                if(frameShiftFilterCount > 3) {
                     current_left = 1;
                     calculateWindow();
-                    shiftDirectionStepPerMinutes();
-                    frameShiftFilterCount = 0;
-                } else {
+                    // shiftDirectionStepPerMinutes();
+                }
+                else {
                     frameShiftFilterCount = frameShiftFilterCount + 1;
                 }
-            } else {
+            }
+            else {
                 frameShiftFilterCount = 0;
             }
         }
-        if(current_left == 1) {
-            if(current_lknee - current_lknee_mean > angle_threshold) {
-                if(frameShiftFilterCount > 2) {
-                    current_left = -1;
-                    frameShiftFilterCount = 0;
-                } else {
-                    frameShiftFilterCount = frameShiftFilterCount + 1;
-                }
-            } else {
-                frameShiftFilterCount = 0;
-            }
-        }
-        if(current_left == -1) {
-            if(abs(current_lknee - current_lknee_mean) < angle_threshold) {
-                if(frameShiftFilterCount > 2) {
+        if(abs(current_lfoot - current_lfoot_mean) < amp_threshold) {
+            if(current_left != 0) {
+                if(frameShiftFilterCount > 6) {
                     current_left = 0;
-                    frameShiftFilterCount = 0;
-                } else {
+                }
+                else {
                     frameShiftFilterCount = frameShiftFilterCount + 1;
                 }
-            } else {
+            }
+            else {
                 frameShiftFilterCount = 0;
             }
         }
         if(current_left != 0) {
-            if(abs(current_lknee - current_lknee_mean) < angle_threshold) {
+            if(abs(current_lfoot - current_lfoot_mean) < amp_threshold) {
                 fpmStopCount = fpmStopCount + 1;
-                if(fpmStopCount > 30) {
+                if(fpmStopCount > 15) {
                     current_left = 0;
-                    fpm = 0;
-                    step_rate = 0;
                 }
-            } else {
-            fpmStopCount = 0;
+            }
+            else {
+                fpmStopCount = 0;
             }
         }
+
     }
 
     void walk::calculate_current_right() {
         // for right leg
-        // using rhip, rhip mean, rhip velocity, rhip vmean, rfoot, rfoot mean
         // threshold to be tested
-        if(current_right == 0) {
-            if(current_rknee - current_rknee_mean < -angle_threshold) {
-                if(frameShiftFilterCount2 > 2) {
+        if(current_rfoot - current_rfoot_mean > amp_threshold) {
+            if(current_right != -1) {
+                if(frameShiftFilterCount2 > 3 && current_right == 1) {
+                    current_right = -1;
+                }
+                else {
+                    frameShiftFilterCount2 = frameShiftFilterCount2 + 1;
+                }
+            }
+            else {
+                frameShiftFilterCount2 = 0;
+            }
+        }
+        if(current_rfoot - current_rfoot_mean < -amp_threshold) {
+            if(current_right != 1) {
+                if(frameShiftFilterCount2 > 3) {
                     current_right = 1;
                     calculateWindow();
-                    shiftDirectionStepPerMinutes();
-                    frameShiftFilterCount2 = 0;
-                } else {
+                    // shiftDirectionStepPerMinutes();
+                }
+                else {
                     frameShiftFilterCount2 = frameShiftFilterCount2 + 1;
                 }
-            } else {
+            }
+            else {
                 frameShiftFilterCount2 = 0;
             }
         }
-        if(current_right == 1) {
-            if(current_rknee - current_rknee_mean > angle_threshold) {
-                if(frameShiftFilterCount2 > 2) {
-                    current_right = -1;
-                    frameShiftFilterCount2 = 0;
-                } else {
-                    frameShiftFilterCount2 = frameShiftFilterCount2 + 1;
-                }
-            } else {
-                frameShiftFilterCount2 = 0;
-            }
-        }
-        if(current_right == -1) {
-            if(abs(current_rknee - current_rknee_mean) < angle_threshold) {
-                if(frameShiftFilterCount2 > 2) {
+        if(abs(current_rfoot - current_rfoot_mean) < amp_threshold) {
+            if(current_right != 0) {
+                if(frameShiftFilterCount2 > 6) {
                     current_right = 0;
-                    frameShiftFilterCount2 = 0;
-                } else {
+                }
+                else {
                     frameShiftFilterCount2 = frameShiftFilterCount2 + 1;
                 }
-            } else {
+            }
+            else {
                 frameShiftFilterCount2 = 0;
             }
         }
         if(current_right != 0) {
-            if(abs(current_rknee - current_rknee_mean) < angle_threshold) {
+            if(abs(current_rfoot - current_rfoot_mean) < amp_threshold) {
                 fpmStopCount2 = fpmStopCount2 + 1;
-                if(fpmStopCount2 > 30) {
+                if(fpmStopCount2 > 15) {
                     current_right = 0;
-                    fpm = 0;
-                    step_rate = 0;
                 }
-            } else {
+            }
+            else {
                 fpmStopCount2 = 0;
             }
+        }
+    }
+
+    void walk::checkCurrentStepRate() {
+        if(current_left == 0 && current_right == 0) {
+            fpmStopCount3 = fpmStopCount3 + 1;
+            if(fpmStopCount3 > 15) {
+                step_rate = 0;
+            }
+        }
+        else {
+            fpmStopCount3 = 0;
         }
     }
 
@@ -235,16 +235,21 @@ namespace actionwalk {
         times.push_back(now);
         stepCount = times.size();
         if(stepCount < 2) step_rate = 0;
-        fpm = times.size() * 12;
+        fpm = times.size() * 60;
     }
 
     void walk::calculateWindow() {
-        long long now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-        if(!tLock) tStart = now;
+        auto now = chrono::high_resolution_clock::now();
+        auto timeMillis = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
+        int mili = (int)timeMillis;
+        if(!tLock) {
+            tStart = mili;
+            tLock = true;
+        }
         else {
             tLock = false;
-            tEnd = now;
-            tWindow = (tEnd - tStart)/1000;
+            tEnd = mili;
+            float tWindow = float((tEnd - tStart))/1000;
             step_rate = 0.7/tWindow;
         }
     }
