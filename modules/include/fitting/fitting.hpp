@@ -41,10 +41,8 @@ namespace fitplay {
         readPoseDataToLandmark3D(data, landmarkData3D);
     
         landmarkFittingInstance.handcraftFitting(landmarkData3D, fkInstance.jointPoints);
-        if(mirror) {
-            landmarkData3D = landmarkFittingInstance.currentFitLandmarkData;
-        }
-
+        landmarkData3D = landmarkFittingInstance.currentFitLandmarkData;
+        
         //  if(mirror) {
         //     readPoseDataToLandmark2D(data, landmarkData2D);
         //     rgbdFittingInstance.update3DlandmarkWithRGBD(landmarkData3D, landmarkData2D);
