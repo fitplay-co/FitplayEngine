@@ -26,6 +26,9 @@ private:
     /* cached past frame joint points */
     std::vector<jointPoint> currentJointPoints;
 
+    //TODO ugly temp variables should take care in each different calculators
+    float gravityErrorMean = 1.0f;
+
 public:
     landmarks cachedLandmarkData;
     landmarks currentRawLandmarkData;
@@ -106,8 +109,8 @@ void FittingLandmark::handcraftFittingRound() {
     if(!frameCached) {
         errorDataList[0].errorWeight = 0.0f;
         errorDataList[1].errorWeight = 0.0f;
-        errorDataList[2].errorWeight = 1.0f;
-        errorDataList[3].errorWeight = 0.0f;
+        errorDataList[2].errorWeight = 0.0f;
+        errorDataList[3].errorWeight = 1.0f;
     }
 
     // smoothError(errorDataList[0]);
@@ -190,8 +193,31 @@ void FittingLandmark::jointBoneLengthCalculate(int index, int fromPoint, int toP
 }
 
 void FittingLandmark::humanBodyGravityError(BodyErrorData & errorData) {
-    //1.calculate each joint gravity model
-    //2.total body rotation with gradient as rotation 
+    //1.calculate joint gravity model 
+    //2.pick lower leg
+    float leftFootZ = currentFitLandmarkData[L_FOOT].z + currentFitLandmarkData[L_ANKLE].z;
+    float rightFootZ = currentFitLandmarkData[R_FOOT].z + currentFitLandmarkData[R_ANKLE].z;
+    float leftFootY = currentFitLandmarkData[L_FOOT].y + currentFitLandmarkData[L_ANKLE].y;
+    float rightFootY = currentFitLandmarkData[R_FOOT].y + currentFitLandmarkData[R_ANKLE].y;
+
+    float rawGravityErrorOnFoot = 0; 
+    if (leftFootY > rightFootY ) {
+        rawGravityErrorOnFoot = rightFootZ / 2.0f;
+    } else { 
+        rawGravityErrorOnFoot = leftFootZ / 2.0f;
+    }
+    if (abs(leftFootY - rightFootY < 0.05)) {
+        rawGravityErrorOnFoot = (rightFootZ + leftFootZ) / 4.0f;
+    }
+    gravityErrorMean = gravityErrorMean * 0.99 + rawGravityErrorOnFoot * 0.1;
+    //2.total body rotation with gradient as rotation for lower leg z
+    //3.evaluate some z axis static bias 
+    for(int i = 0; i < jointPointSize + 1 ; i ++) {
+        float residual = rawGravityErrorOnFoot * kinamaticChainRotationErrorParams[i];
+        errorData.landmarkErrorData[i].errorScore = abs(residual);
+        errorData.landmarkErrorData[i].toPointIndex = i;
+        errorData.landmarkErrorData[i].toPointHandcraftSolution = vec3(0, 0, residual);
+    }
 }
 
 void FittingLandmark::updateToKenamaticChain(int index, vec3 updateVec) {
@@ -221,9 +247,11 @@ void FittingLandmark::jointGredientsUpdate() {
 float FittingLandmark::summarizeError(){
     float sumError = 0.0f;
     for(int i = 0; i < errorDataDims ; i ++) {
+        float localSum = 0.0f;
         for(int j = 0; j < jointPointSize + 1 ; j++) {
-            sumError += errorDataList[i].landmarkErrorData[j].errorScore;
+            localSum += errorDataList[i].landmarkErrorData[j].errorScore;
         }
+        sumError += localSum * errorDataList[i].errorWeight;
     }
     return sumError;
 }

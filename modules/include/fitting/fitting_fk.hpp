@@ -151,10 +151,10 @@ namespace fitplay {
 
         // knee forwarding  
         /** TODO need test */
-        vec3 rlegToAnkleKinamaticForwarding = - normalize(landmarkData[R_ANKLE] - landmarkData[R_KNEE]);
-        vec3 llegToAnkleKinamaticForwarding = - normalize(landmarkData[L_ANKLE] - landmarkData[L_KNEE]);
-        vec3 rankleToLegKinamaticForwarding = - normalize(landmarkData[R_HIP] - landmarkData[R_KNEE]);
-        vec3 lAnkleToLegKinamaticForwarding = - normalize(landmarkData[L_HIP] - landmarkData[L_KNEE]);
+        vec3 rlegToAnkleKinamaticForwarding = - normalize(- hipRightForwarding *0.1f + landmarkData[R_ANKLE] - landmarkData[R_KNEE]);
+        vec3 llegToAnkleKinamaticForwarding = - normalize(- hipRightForwarding *0.1f + landmarkData[L_ANKLE] - landmarkData[L_KNEE]);
+        vec3 rankleToLegKinamaticForwarding = - normalize(- hipRightForwarding *0.1f + landmarkData[R_HIP] - landmarkData[R_KNEE]);
+        vec3 lAnkleToLegKinamaticForwarding = - normalize(- hipRightForwarding *0.1f + landmarkData[L_HIP] - landmarkData[L_KNEE]);
 
         // wrist forwarding 
         vec3 rwristForwarding = fitplay::forward;

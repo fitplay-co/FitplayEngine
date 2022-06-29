@@ -45,27 +45,49 @@ namespace fitplay {
     static constexpr int NO_NEXT = -1;
 
     static constexpr int kinamaticChainNext[jointPointSize + 1][3] {
-        { NECK, L_HIP, R_HIP }, //0
-        { HEAD, L_SHOULDER, R_SHOULDER }, //1
-        { NO_NEXT }, //2 
-        { L_ARM, NO_NEXT},  //3
-        { R_ARM, NO_NEXT},  //4
-        { L_WRIST, NO_NEXT},//5
-        { R_WRIST, NO_NEXT},//6
-        { L_HAND,  NO_NEXT},//7
-        { R_HAND,  NO_NEXT}, //8
-        { NO_NEXT }, //9
-        { NO_NEXT }, //10 
-        { L_KNEE, NO_NEXT}, //11
-        { R_KNEE, NO_NEXT}, //12
-        { L_ANKLE, NO_NEXT}, //13
-        { R_ANKLE, NO_NEXT}, //14
-        { L_FOOT, NO_NEXT}, //15
-        { R_FOOT, NO_NEXT}, //16
-        { NO_NEXT }, //17
-        { NO_NEXT }  //18 
+        { NECK, L_HIP, R_HIP }, //0 HIP_CENTER
+        { HEAD, L_SHOULDER, R_SHOULDER }, //1 NECK
+        { NO_NEXT }, //2 HEAD
+        { L_ARM, NO_NEXT},  //3 L_SHOULDER
+        { R_ARM, NO_NEXT},  //4 R_SHOULDER
+        { L_WRIST, NO_NEXT},//5 L_ARM
+        { R_WRIST, NO_NEXT},//6 R_ARM
+        { L_HAND,  NO_NEXT},//7 L_WRIST
+        { R_HAND,  NO_NEXT}, //8 R_WRIST
+        { NO_NEXT }, //9 L_HAND
+        { NO_NEXT }, //10 R_HAND
+        { L_KNEE, NO_NEXT}, //11 L_HIP
+        { R_KNEE, NO_NEXT}, //12 R_HIP
+        { L_ANKLE, NO_NEXT}, //13 L_KNEE
+        { R_ANKLE, NO_NEXT}, //14 R_KNEE
+        { L_FOOT, NO_NEXT}, //15 L_ANKLE
+        { R_FOOT, NO_NEXT}, //16 R_ANKLE
+        { NO_NEXT }, //17 L_FOOT
+        { NO_NEXT }  //18 R_FOOT
     };
 
+    static constexpr float kinamaticChainRotationErrorParams[jointPointSize + 1] {
+        0.0f, //0 HIP_CENTER
+        0.4f, //1 NECK
+        0.0f, //2 HEAD
+        0.0f, //3 L_SHOULDER
+        0.0f, //4 R_SHOULDER
+        0.0f, //5 L_ARM
+        0.0f, //6 R_ARM
+        0.0f, //7 L_WRIST
+        0.0f, //8 R_WRIST
+        0.0f, //9 L_HAND
+        0.0f, //10 R_HAND
+        0.0f, //11 L_HIP
+        0.0f, //12 R_HIP
+       -0.3f, //13 L_KNEE
+       -0.3f, //14 L_ANKLE
+       -0.7f, //15 L_KNEE
+       -0.7f, //16 R_ANKLE
+        0.0f, //17 L_FOOT
+        0.0f  //18 R_FOOT
+    };
+    
 
     constexpr int errorDataDims = 4;
     constexpr int fittingRoundMaxium = 1;

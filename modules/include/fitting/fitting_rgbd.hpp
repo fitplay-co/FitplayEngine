@@ -48,6 +48,8 @@ namespace fitplay {
     }
 
     void FittingRGBD::update3DlandmarkWithRGBD(landmarks & landmarkData3D, landmarks const & landmarkData2D ) {
+        updateRGBDOcculusion(landmarkData3D, landmarkData2D);
+        //start updating from chain 0 hipcenter
         update3DlandmarkWithRGBDChain(landmarkData3D, landmarkData2D, HIP_CENTER);
     }
 
@@ -62,6 +64,16 @@ namespace fitplay {
                     poseZOffset[nextIndex] = landmarkData3D[nextIndex].z - landmarkData3D[index].z;
                     rgbdZOffset[nextIndex] = landmarkData2D[nextIndex].z - landmarkData2D[index].z;
                     float updateZ = rgbdZOffset[nextIndex]  - poseZOffset[nextIndex];
+                    // cout << "calculate RGBD index in" << index << " to " << nextIndex << endl;
+
+                    // cout << "    source next Index landmark 3D data " << landmarkData3D[nextIndex].z << endl;
+                    // cout << "    source this Index landmark 3D data " << landmarkData3D[index].z << endl; 
+                    // cout << "    source next Index landmark 2D data " << landmarkData2D[nextIndex].z << endl;
+                    // cout << "    source this Index landmark 2D data " << landmarkData2D[index].z << endl;
+
+                    // cout << "    pose z " << poseZOffset[nextIndex] << " rgbd " << rgbdZOffset[nextIndex] << endl;
+                    // cout << "    update with RGBD chain "  << " with z offset " << updateZ << endl;
+                    // cout << "  " << endl;
                     updateToKinamaticChain(landmarkData3D, landmarkData2D, nextIndex, updateZ);
                 }
                 update3DlandmarkWithRGBDChain(landmarkData3D, landmarkData2D, nextIndex);
