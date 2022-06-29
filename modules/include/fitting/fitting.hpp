@@ -42,7 +42,7 @@ namespace fitplay {
     
         landmarkFittingInstance.handcraftFitting(landmarkData3D, fkInstance.jointPoints);
         if(mirror) {
-            landmarkData = landmarkFittingInstance.currentFitLandmarkData;
+            landmarkData3D = landmarkFittingInstance.currentFitLandmarkData;
         }
 
         //  if(mirror) {
