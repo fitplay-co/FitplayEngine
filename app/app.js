@@ -113,8 +113,12 @@ var messageLoop = coroutine(function*() {
             }
             var cameraType = ''
             if (pose.sensor_type == 'rgbd') {
+                //TODO some protocol bad behavior ,correct here and change later 
                 cameraType = 'rgbd'
                 pose.sensor_type = 'camera'
+                pose.rgbdEnabled = true
+            } else {
+                pose.rgbdEnabled = false
             }
             featureConfigs.push({
                 featureId: 'ground_location',

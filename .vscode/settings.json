@@ -95,6 +95,7 @@
         "span": "cpp",
         "*.ipp": "cpp",
         "cassert": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "__functional_03": "cpp"
     }
 }

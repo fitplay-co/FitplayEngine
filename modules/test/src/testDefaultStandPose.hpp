@@ -27,28 +27,28 @@ using namespace glm;
 
 void testDefaultStandPose1(fitplay::FittingFk fitInstance, bool detailPrint = false) {
         //mock landmarks
-    fitplay::landmarks landmarkData;
-        
+    landmarks landmarkData(19);
+
     //emulating landmarks reflecting y from right hand camera axis to left hand unity axis
-    landmarkData.hipcenter = vec3(0.0f ,0.0f ,0.0f);
-    landmarkData.neck = landmarkData.hipcenter + (testup);
-    landmarkData.head = landmarkData.neck + (testup);
-    landmarkData.lshoulder = landmarkData.neck + testleft;
-    landmarkData.rshoulder = landmarkData.neck + testright;
-    landmarkData.larm = landmarkData.lshoulder + testleft;
-    landmarkData.rarm = landmarkData.rshoulder + testright;
-    landmarkData.lwrist = landmarkData.larm + testleft;
-    landmarkData.rwrist = landmarkData.rarm + testright;
-    landmarkData.lhand = landmarkData.lwrist + testleft;
-    landmarkData.rhand = landmarkData.rwrist + testright;
-    landmarkData.lhip = landmarkData.hipcenter + testleft;
-    landmarkData.rhip = landmarkData.hipcenter + testright;
-    landmarkData.lknee = landmarkData.lhip + (testdown);
-    landmarkData.rknee = landmarkData.rhip + (testdown);
-    landmarkData.lankle = landmarkData.lknee + (testdown);
-    landmarkData.rankle = landmarkData.rknee + (testdown);
-    landmarkData.lfoot = landmarkData.lankle + (testdown);
-    landmarkData.rfoot = landmarkData.rankle + (testdown);
+    landmarkData[HIP_CENTER] = vec3(0.0f ,0.0f ,0.0f);
+    landmarkData[NECK] = landmarkData[HIP_CENTER] + (testup);
+    landmarkData[HEAD] = landmarkData[NECK] + (testup);
+    landmarkData[L_SHOULDER] = landmarkData[NECK] + testleft;
+    landmarkData[R_SHOULDER] = landmarkData[NECK] + testright;
+    landmarkData[L_ARM] = landmarkData[L_SHOULDER] + testleft;
+    landmarkData[R_ARM] = landmarkData[R_SHOULDER] + testright;
+    landmarkData[L_WRIST] = landmarkData[L_ARM] + testleft;
+    landmarkData[R_WRIST] = landmarkData[R_ARM] + testright;
+    landmarkData[L_HAND] = landmarkData[L_WRIST] + testleft;
+    landmarkData[R_HAND] = landmarkData[R_WRIST] + testright;
+    landmarkData[L_HIP] = landmarkData[HIP_CENTER] + testleft;
+    landmarkData[R_HIP] = landmarkData[HIP_CENTER] + testright;
+    landmarkData[L_KNEE] = landmarkData[L_HIP] + (testdown);
+    landmarkData[R_KNEE] = landmarkData[R_HIP] + (testdown);
+    landmarkData[L_ANKLE] = landmarkData[L_KNEE] + (testdown);
+    landmarkData[R_ANKLE] = landmarkData[R_KNEE] + (testdown);
+    landmarkData[L_FOOT] = landmarkData[L_ANKLE] + (testdown);
+    landmarkData[R_FOOT] = landmarkData[R_ANKLE] + (testdown);
 
     fitInstance.updateLandmarks(landmarkData);
     //check fk rotation 
@@ -151,34 +151,34 @@ void testDefaultStandPose1(fitplay::FittingFk fitInstance, bool detailPrint = fa
 //
 
 void testDefaultStandPose2(fitplay::FittingFk fitInstance, bool detailPrint = false) {
-        //mock landmarks
-    fitplay::landmarks landmarkData;
-        
+    //mock landmarks
+    cout << "===  stand pose 2 rotation ===" << endl;
+
+    landmarks landmarkData(19);
+
     //emulating landmarks reflecting y from right hand camera axis to left hand unity axis
-    landmarkData.hipcenter = vec3(0.0f ,0.0f ,0.0f);
-    landmarkData.neck = landmarkData.hipcenter + (testup);
-    landmarkData.head = landmarkData.neck + (testup);
-    landmarkData.lshoulder = landmarkData.neck + testleft;
-    landmarkData.rshoulder = landmarkData.neck + testright;
-    landmarkData.larm = landmarkData.lshoulder + testleft;
-    landmarkData.rarm = landmarkData.rshoulder + testright;
-    landmarkData.lwrist = landmarkData.larm + (testdown);
-    landmarkData.rwrist = landmarkData.rarm + testright;
-    landmarkData.lhand = landmarkData.lwrist + (testdown);
-    landmarkData.rhand = landmarkData.rwrist + testright;
-    landmarkData.lhip = landmarkData.hipcenter + testleft;
-    landmarkData.rhip = landmarkData.hipcenter + testright;
-    landmarkData.lknee = landmarkData.lhip + (testdown);
-    landmarkData.rknee = landmarkData.rhip + (testdown);
-    landmarkData.lankle = landmarkData.lknee + (testdown);
-    landmarkData.rankle = landmarkData.rknee + (testdown);
-    landmarkData.lfoot = landmarkData.lankle + (testdown);
-    landmarkData.rfoot = landmarkData.rankle + (testdown);
+    landmarkData[HIP_CENTER] = vec3(0.0f ,0.0f ,0.0f);
+    landmarkData[NECK] = landmarkData[HIP_CENTER] + (testup);
+    landmarkData[HEAD] = landmarkData[NECK] + (testup);
+    landmarkData[L_SHOULDER] = landmarkData[NECK] + testleft;
+    landmarkData[R_SHOULDER] = landmarkData[NECK] + testright;
+    landmarkData[L_ARM] = landmarkData[L_SHOULDER] + testleft;
+    landmarkData[R_ARM] = landmarkData[R_SHOULDER] + testright;
+    landmarkData[L_WRIST] = landmarkData[L_ARM] + (testdown);
+    landmarkData[R_WRIST] = landmarkData[R_ARM] + testright;
+    landmarkData[L_HAND] = landmarkData[L_WRIST] + (testdown);
+    landmarkData[R_HAND] = landmarkData[R_WRIST] + testright;
+    landmarkData[L_HIP] = landmarkData[HIP_CENTER] + testleft;
+    landmarkData[R_HIP] = landmarkData[HIP_CENTER] + testright;
+    landmarkData[L_KNEE] = landmarkData[L_HIP] + (testdown);
+    landmarkData[R_KNEE] = landmarkData[R_HIP] + (testdown);
+    landmarkData[L_ANKLE] = landmarkData[L_KNEE] + (testdown);
+    landmarkData[R_ANKLE] = landmarkData[R_KNEE] + (testdown);
+    landmarkData[L_FOOT] = landmarkData[L_ANKLE] + (testdown);
+    landmarkData[R_FOOT] = landmarkData[R_ANKLE] + (testdown);
 
     fitInstance.updateLandmarks(landmarkData);
     //check fk rotation 
-
-    cout << "===  stand pose 2 rotation ===" << endl;
     //print default rotation and assert default rotations
     for(int i = 0; i < 18 ; i++) {
         std::string name = fitInstance.jointPoints[i].jointName;
@@ -285,28 +285,28 @@ void testDefaultStandPose2(fitplay::FittingFk fitInstance, bool detailPrint = fa
 
 void testDefaultStandPose3(fitplay::FittingFk fitInstance, bool detailPrint = false) {
         //mock landmarks
-    fitplay::landmarks landmarkData;
+    landmarks landmarkData(19);
         
     //emulating landmarks reflecting y from right hand camera axis to left hand unity axis
-    landmarkData.hipcenter = vec3(0.0f ,0.0f ,0.0f);
-    landmarkData.neck = landmarkData.hipcenter + (testup);
-    landmarkData.head = landmarkData.neck + (testup);
-    landmarkData.lshoulder = landmarkData.neck + testleft;
-    landmarkData.rshoulder = landmarkData.neck + testright;
-    landmarkData.larm = landmarkData.lshoulder + testleft;
-    landmarkData.rarm = landmarkData.rshoulder +  (testdown);
-    landmarkData.lwrist = landmarkData.larm + (testdown);
-    landmarkData.rwrist = landmarkData.rarm +  (testdown);
-    landmarkData.lhand = landmarkData.lwrist + (testdown);
-    landmarkData.rhand = landmarkData.rwrist +  (testdown);
-    landmarkData.lhip = landmarkData.hipcenter + testleft;
-    landmarkData.rhip = landmarkData.hipcenter + testright;
-    landmarkData.lknee = landmarkData.lhip + (testdown);
-    landmarkData.rknee = landmarkData.rhip + (testdown);
-    landmarkData.lankle = landmarkData.lknee + (testdown);
-    landmarkData.rankle = landmarkData.rknee + (testdown);
-    landmarkData.lfoot = landmarkData.lankle + (testdown);
-    landmarkData.rfoot = landmarkData.rankle + (testdown);
+    landmarkData[HIP_CENTER] = vec3(0.0f ,0.0f ,0.0f);
+    landmarkData[NECK] = landmarkData[HIP_CENTER] + (testup);
+    landmarkData[HEAD] = landmarkData[NECK] + (testup);
+    landmarkData[L_SHOULDER] = landmarkData[NECK] + testleft;
+    landmarkData[R_SHOULDER] = landmarkData[NECK] + testright;
+    landmarkData[L_ARM] = landmarkData[L_SHOULDER] + testleft;
+    landmarkData[R_ARM] = landmarkData[R_SHOULDER] +  (testdown);
+    landmarkData[L_WRIST] = landmarkData[L_ARM] + (testdown);
+    landmarkData[R_WRIST] = landmarkData[R_ARM] +  (testdown);
+    landmarkData[L_HAND] = landmarkData[L_WRIST] + (testdown);
+    landmarkData[R_HAND] = landmarkData[R_WRIST] +  (testdown);
+    landmarkData[L_HIP] = landmarkData[HIP_CENTER] + testleft;
+    landmarkData[R_HIP] = landmarkData[HIP_CENTER] + testright;
+    landmarkData[L_KNEE] = landmarkData[L_HIP] + (testdown);
+    landmarkData[R_KNEE] = landmarkData[R_HIP] + (testdown);
+    landmarkData[L_ANKLE] = landmarkData[L_KNEE] + (testdown);
+    landmarkData[R_ANKLE] = landmarkData[R_KNEE] + (testdown);
+    landmarkData[L_FOOT] = landmarkData[L_ANKLE] + (testdown);
+    landmarkData[R_FOOT] = landmarkData[R_ANKLE] + (testdown);
 
     fitInstance.updateLandmarks(landmarkData);
     //check fk rotation 
@@ -417,28 +417,28 @@ void testDefaultStandPose3(fitplay::FittingFk fitInstance, bool detailPrint = fa
 
 void testDefaultStandPose4(fitplay::FittingFk fitInstance, bool detailPrint = false) {
         //mock landmarks
-    fitplay::landmarks landmarkData;
+    landmarks landmarkData(19);
         
     //emulating landmarks reflecting y from right hand camera axis to left hand unity axis
-    landmarkData.hipcenter = vec3(0.0f ,0.0f ,0.0f);
-    landmarkData.neck = landmarkData.hipcenter + (testup);
-    landmarkData.head = landmarkData.neck + (testup);
-    landmarkData.lshoulder = landmarkData.neck + testleft;
-    landmarkData.rshoulder = landmarkData.neck + testright;
-    landmarkData.larm = landmarkData.lshoulder + testleft;
-    landmarkData.rarm = landmarkData.rshoulder + testright;
-    landmarkData.lwrist = landmarkData.larm + (testdown) + testleft;
-    landmarkData.rwrist = landmarkData.rarm + testright;
-    landmarkData.lhand = landmarkData.lwrist + (testdown) + testright;
-    landmarkData.rhand = landmarkData.rwrist + testright;
-    landmarkData.lhip = landmarkData.hipcenter + testleft;
-    landmarkData.rhip = landmarkData.hipcenter + testright;
-    landmarkData.lknee = landmarkData.lhip + (testdown);
-    landmarkData.rknee = landmarkData.rhip + (testdown);
-    landmarkData.lankle = landmarkData.lknee + (testdown);
-    landmarkData.rankle = landmarkData.rknee + (testdown);
-    landmarkData.lfoot = landmarkData.lankle + (testdown);
-    landmarkData.rfoot = landmarkData.rankle + (testdown);
+    landmarkData[HIP_CENTER] = vec3(0.0f ,0.0f ,0.0f);
+    landmarkData[NECK] = landmarkData[HIP_CENTER] + (testup);
+    landmarkData[HEAD] = landmarkData[NECK] + (testup);
+    landmarkData[L_SHOULDER] = landmarkData[NECK] + testleft;
+    landmarkData[R_SHOULDER] = landmarkData[NECK] + testright;
+    landmarkData[L_ARM] = landmarkData[L_SHOULDER] + testleft;
+    landmarkData[R_ARM] = landmarkData[R_SHOULDER] + testright;
+    landmarkData[L_WRIST] = landmarkData[L_ARM] + (testdown) + testleft;
+    landmarkData[R_WRIST] = landmarkData[R_ARM] + testright;
+    landmarkData[L_HAND] = landmarkData[L_WRIST] + (testdown) + testright;
+    landmarkData[R_HAND] = landmarkData[R_WRIST] + testright;
+    landmarkData[L_HIP] = landmarkData[HIP_CENTER] + testleft;
+    landmarkData[R_HIP] = landmarkData[HIP_CENTER] + testright;
+    landmarkData[L_KNEE] = landmarkData[L_HIP] + (testdown);
+    landmarkData[R_KNEE] = landmarkData[R_HIP] + (testdown);
+    landmarkData[L_ANKLE] = landmarkData[L_KNEE] + (testdown);
+    landmarkData[R_ANKLE] = landmarkData[R_KNEE] + (testdown);
+    landmarkData[L_FOOT] = landmarkData[L_ANKLE] + (testdown);
+    landmarkData[R_FOOT] = landmarkData[R_ANKLE] + (testdown);
 
     fitInstance.updateLandmarks(landmarkData);
     //check fk rotation 

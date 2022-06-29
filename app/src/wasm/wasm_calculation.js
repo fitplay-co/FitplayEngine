@@ -55,6 +55,7 @@ var wasm_processor = {
 
         Pose.startPose(builder)
         Pose.addAction(builder, actionName)
+        Pose.addRgbdEnabled(builder, pose.rgbdEnabled)
         Pose.addKeypoints(builder,KeyPoints)
         Pose.addKeypoints3D(builder,keyPoints3d)
         var res = Pose.endPose(builder)
