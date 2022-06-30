@@ -283,8 +283,8 @@ namespace actionwalk {
         float vec[3][3];
         int angle_points[3] = {num1, num2, num3};
         for (int i = 0; i < 3; i++) {
-            vec[i][0] = data->keypoints()->Get(angle_points[i])->x();
-            vec[i][1] = data->keypoints()->Get(angle_points[i])->y();
+            vec[i][0] = data->keypoints3D()->Get(angle_points[i])->x();
+            vec[i][1] = data->keypoints3D()->Get(angle_points[i])->y();
             vec[i][2] = data->keypoints3D()->Get(angle_points[i])->z();
         }
         float Lba = sqrt(pow((vec[0][0]-vec[1][0]),2) + pow((vec[0][1]-vec[1][1]),2) + pow((vec[0][2]-vec[1][2]),2));
