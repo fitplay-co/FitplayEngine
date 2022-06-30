@@ -105,7 +105,8 @@ var wasm_processor = {
                 "squat" : actionTemp.squat().status()
             }
         }
-        console.log(pose.action_detection.walk.leftLeg)
+        // console.log(pose.keypoints[26].z)
+        console.log(pose.action_detection.walk.leftStrength)
         // var a = parseFloat(pose.keypoints[28].z)
         // var b = parseFloat(pose.keypoints[26].z)
         // var c = parseFloat(pose.keypoints[24].z)
