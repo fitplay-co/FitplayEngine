@@ -60,7 +60,8 @@ void readCsvFileAsLandmarkList(std::string path, int limit = 1000) {
                 jointIndex = 0;
             } else {
                 std::vector<string> tempSplited = stringSplit(tmp, ',');
-                vec3 v = vec3(std::stof(tempSplited[1]), std::stof(tempSplited[2]), std::stof(tempSplited[3]));
+                //revert y for captured data
+                vec3 v = vec3(std::stof(tempSplited[1]),  - std::stof(tempSplited[2]), std::stof(tempSplited[3]));
                 currentRes.push_back(v);
                 jointIndex++;
             }

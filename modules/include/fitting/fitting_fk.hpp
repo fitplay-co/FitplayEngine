@@ -120,8 +120,9 @@ namespace fitplay {
         //here read from parent pose direction 
         vec3& parentPosDirection3d = jointPoints[p.parentIndex].posDirection3d;
         quat& parentFkRotation = jointPoints[p.parentIndex].fkRotation;
-        //fkRotation = jointLocationRotation *（parent.fkRotation * defatultJointRotation）
-        p.jointGlobalRotation = inverse(parentFkRotation) * p.fkRotation ;
+        //fkRotation = parent.fkRotation * (defatultJointRotation * jointLocationRotation)
+        p.jointGlobalRotation = inverse(parentFkRotation) * p.fkRotation;
+        //global = default * local 
         p.jointLocalRotation = inverse(p.tposeDefaultJointRotation) * p.jointGlobalRotation;
         //calculate fk
         p.fromPointFk = jointPoints[p.parentIndex].toPointFk;
@@ -130,16 +131,14 @@ namespace fitplay {
     }
     
     void FittingFk::updateLandmarks(landmarks const & landmarkData) {
-        // update root joint with landmarks froward 
-        jointPoints[18].fkRotation = jointPoints[18].initRotation;
-
         /**
          * @brief simple kinamatic constraints applied here
          */
-        
-
         // hip forwarding
         vec3 hipRightForwarding = normalize(cross(landmarkData[R_HIP] - landmarkData[L_HIP], fitplay::up));
+        // update root joint with landmarks froward 
+        jointPoints[18].posLeft3d = normalize(crossSafe(fitplay::down, hipRightForwarding));
+        jointPoints[18].fkRotation = lookatRotationSafe(fitplay::down, jointPoints[18].posLeft3d, fitplay::forward);
         // up body forwarding
         vec3 spineTwistingForwarding = normalize(cross(landmarkData[R_SHOULDER] - landmarkData[L_SHOULDER], fitplay::up));
         // armpit forwarding 

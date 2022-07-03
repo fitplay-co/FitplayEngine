@@ -47,8 +47,8 @@ int main() {
       testDefaultStandPose4(fitInstance.fkInstance);
 
       // //test on a captured pose
-      testCapturedStandPose(fitInstance);
-
+      readCsvFileAsLandmarkList("data/test_data_full.csv", 1000000);
+      testCapturedStandPose(fitInstance, true);
       // //round one 
       testFittingStandPose(fitInstance);
 
