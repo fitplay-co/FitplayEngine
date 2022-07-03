@@ -97,7 +97,7 @@ public:
       auto p2 = mirrorFitInstance.writeFlatBuffer(action_data);
       auto pl1 = fitInstance.writeFlatBufferLocal(action_data);
       auto pl2 = mirrorFitInstance.writeFlatBufferLocal(action_data);
-      fittingOffset = actionData::CreateFitting(action_data, pl1, pl2, p1, p2);
+      fittingOffset = actionData::CreateFitting(action_data, p1, p2, pl1, pl2);
     }
 
     actionData::ActionBuilder actionBuilder(action_data);
