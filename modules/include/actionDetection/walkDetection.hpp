@@ -32,7 +32,7 @@ namespace actionwalk {
             // std::list<long long> times;
 
             // float stepCount = 0;
-            // bool tLock = false;
+            bool tLock = false;
             int tStart = 0;
             int tStart2 = 0;
             int tEnd = 0;
@@ -58,7 +58,7 @@ namespace actionwalk {
             void calculate_current_left();
             void calculate_current_right();
             // void shiftDirectionStepPerMinutes();
-            // void calculateWindow();
+            void calculateWindow();
             int militime();
             void checkCurrentStepRate();
             float calVecAngle(const PoseData::Pose* data, int num1, int num2, int num3, int config);
@@ -111,8 +111,8 @@ namespace actionwalk {
             if(current_left != -1) {
                 if(frameShiftFilterCount > 3 && current_left == 1) {
                     current_left = -1;
-                    tEnd = militime();
-                    tWindow = float((tEnd - tStart))/1000;
+                    // tEnd = militime();
+                    // tWindow = float((tEnd - tStart))/1000;
                     // calculateWindow();
                 }
                 else {
@@ -127,8 +127,8 @@ namespace actionwalk {
             if(current_left != 1) {
                 if(frameShiftFilterCount > 3) {
                     current_left = 1;
-                    tStart = militime();
-                    // calculateWindow();
+                    // tStart = militime();
+                    calculateWindow();
                     // shiftDirectionStepPerMinutes();
                 }
                 else {
@@ -173,8 +173,8 @@ namespace actionwalk {
             if(current_right != -1) {
                 if(frameShiftFilterCount2 > 3 && current_right == 1) {
                     current_right = -1;
-                    tEnd2 = militime();
-                    tWindow2 = float((tEnd2 - tStart2))/1000;
+                    // tEnd2 = militime();
+                    // tWindow2 = float((tEnd2 - tStart2))/1000;
                 }
                 else {
                     frameShiftFilterCount2 = frameShiftFilterCount2 + 1;
@@ -188,8 +188,8 @@ namespace actionwalk {
             if(current_right != 1) {
                 if(frameShiftFilterCount2 > 3) {
                     current_right = 1;
-                    tStart2 = militime();
-                    // calculateWindow();
+                    // tStart2 = militime();
+                    calculateWindow();
                     // shiftDirectionStepPerMinutes();
                 }
                 else {
@@ -232,17 +232,18 @@ namespace actionwalk {
             if(fpmStopCount3 > 15) {
                 tWindow = 0;
                 tWindow2 = 0;
+                step_rate = 0;
             }
         }
         else {
             fpmStopCount3 = 0;
         }
-        if(tWindow!=0 || tWindow2!=0) {
-            step_rate = 0.6 / std::max(tWindow, tWindow2);
-        }
-        else {
-            step_rate = 0;
-        }
+        // if(tWindow!=0 || tWindow2!=0) {
+        //     step_rate = 0.6 / std::max(tWindow, tWindow2);
+        // }
+        // else {
+        //     step_rate = 0;
+        // }
     }
 
     // void walk::shiftDirectionStepPerMinutes() {
@@ -263,21 +264,21 @@ namespace actionwalk {
         return mili;
     }
 
-    // void walk::calculateWindow() {
-    //     auto now = chrono::high_resolution_clock::now();
-    //     auto timeMillis = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
-    //     int mili = (int)timeMillis;
-    //     if(!tLock) {
-    //         tStart = mili;
-    //         tLock = true;
-    //     }
-    //     else {
-    //         tLock = false;
-    //         tEnd = mili;
-    //         float tWindow = float((tEnd - tStart))/1000;
-    //         step_rate = 0.7/tWindow;
-    //     }
-    // }
+    void walk::calculateWindow() {
+        auto now = chrono::high_resolution_clock::now();
+        auto timeMillis = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
+        int mili = (int)timeMillis;
+        if(!tLock) {
+            tStart = mili;
+            tLock = true;
+        }
+        else {
+            tLock = false;
+            tEnd = mili;
+            float tWindow = float((tEnd - tStart))/1000;
+            step_rate = 0.7/tWindow;
+        }
+    }
 
     float walk::calVecAngle(const PoseData::Pose* data, int num1, int num2, int num3, int config) {
         float vec[3][3];
