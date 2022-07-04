@@ -166,7 +166,7 @@ var wasm_processor = {
                     "z" : actionTemp.fitting().mirrorLocalRotation(i).z(),
                 })
             }
-            console.log(pose.fitting)
+            // console.log(pose.fitting)
         }
 
         this.instance.release()
