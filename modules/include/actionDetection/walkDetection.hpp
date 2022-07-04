@@ -233,6 +233,7 @@ namespace actionwalk {
                 tWindow = 0;
                 tWindow2 = 0;
                 step_rate = 0;
+                tLock = false;
             }
         }
         else {
@@ -277,6 +278,8 @@ namespace actionwalk {
             tEnd = mili;
             float tWindow = float((tEnd - tStart))/1000;
             step_rate = 0.7/tWindow;
+            tLock = true;
+            tStart = mili;
         }
     }
 
