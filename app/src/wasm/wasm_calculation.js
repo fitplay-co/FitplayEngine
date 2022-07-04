@@ -106,7 +106,7 @@ var wasm_processor = {
             }
         }
         // console.log(pose.keypoints[26].z)
-        console.log(pose.action_detection.walk.frequency)
+        // console.log(pose.action_detection.walk.frequency)
         // var a = parseFloat(pose.keypoints[28].z)
         // var b = parseFloat(pose.keypoints[26].z)
         // var c = parseFloat(pose.keypoints[24].z)
