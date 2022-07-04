@@ -95,7 +95,9 @@ public:
       mirrorFitInstance.process(data);
       auto p1 = fitInstance.writeFlatBuffer(action_data);
       auto p2 = mirrorFitInstance.writeFlatBuffer(action_data);
-      fittingOffset = actionData::CreateFitting(action_data, p1, p2);
+      auto pl1 = fitInstance.writeFlatBufferLocal(action_data);
+      auto pl2 = mirrorFitInstance.writeFlatBufferLocal(action_data);
+      fittingOffset = actionData::CreateFitting(action_data, p1, p2, pl1, pl2);
     }
 
     actionData::ActionBuilder actionBuilder(action_data);
@@ -124,8 +126,7 @@ public:
   // val jump_pose() {
   //   jump_data = jumpInstance.process(data);
   //   uint8_t *byteBuffer = jump_data.GetBufferPointer();
-  //   size_t bufferLength = jump_data.GetSize();
-  //   return val(typed_memory_view(bufferLength, byteBuffer));
+  //   size_t bufferLength = jump_data.Get5Length, byteBuffer));
   // }
 
   static std::string getStringFromInstance(const BridgeClass& instance) {
