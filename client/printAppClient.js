@@ -57,6 +57,11 @@ client.on('connect', function(connection) {
         "feature_id" : "ground_location",
         "action" : "subscribe" 
     }
+    var heartControlSubscribe = {
+        "type" : "sensor_control",
+        "feature_id" : "heart_control",
+        "command" : "3"
+    }
     var groundLocationRelease = {
         "type" : "application_control",
         "feature_id" : "ground_location",
@@ -76,6 +81,7 @@ client.on('connect', function(connection) {
     connection.send(JSON.stringify(imuFPS));
     connection.send(JSON.stringify(actionDetectionSubscribe))
     connection.send(JSON.stringify(groundLocationSubscribe))
+    connection.send(JSON.stringify(heartControlSubscribe))
     setTimeout(() => {
         connection.send(JSON.stringify(actionDetectionRelease))
     }, 10000);

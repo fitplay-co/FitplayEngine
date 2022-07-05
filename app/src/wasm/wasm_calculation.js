@@ -90,7 +90,9 @@ var wasm_processor = {
         var actionBuf = new flatbuffers.ByteBuffer(actionData)
         var actionTemp = action.getRootAsAction(actionBuf)
         if (actionTemp.walk() || actionTemp.jump() || actionTemp.squat()) {
-            pose.action_detection = {}
+            pose.action_detection = {
+                "version" : "0.2.0"
+            }
             pose.action_detection.walk = {
                 "leftLeg" : actionTemp.walk().leftLeg(),
                 "rightLeg" : actionTemp.walk().rightLeg(),

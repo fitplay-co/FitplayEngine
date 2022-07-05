@@ -16,6 +16,7 @@ var messageBuffer = {
         this.messageBufferMap.set('input', []) //input输入缓冲
         this.messageBufferMap.set('device_info', []) //device_info输入缓冲
         this.messageBufferMap.set('vibration', []) //device_info输入缓冲
+        this.messageBufferMap.set('heart_control', []) // placeholder for heart control
     },
 
     addNewMessage: function(message, webSocket) {
