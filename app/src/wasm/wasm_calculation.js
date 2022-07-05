@@ -93,9 +93,12 @@ var wasm_processor = {
             pose.action_detection.walk = {
                 "leftLeg" : actionTemp.walk().leftLeg(),
                 "rightLeg" : actionTemp.walk().rightLeg(),
-                "frequency" : actionTemp.walk().frequency(),
+                "leftFrequency" : actionTemp.walk().leftFrequency(),
+                "rightFrequency" : actionTemp.walk().rightFrequency(),
                 "leftStrength" : actionTemp.walk().leftStrength(),
-                "rightStrength" : actionTemp.walk().rightStrength()
+                "rightStrength" : actionTemp.walk().rightStrength(),
+                "leftStepLength" : actionTemp.walk().leftStepLength(),
+                "rightStepLength" : actionTemp.walk().rightStepLength()
             }
             pose.action_detection.jump = {
                 "up" : actionTemp.jump().up(),
