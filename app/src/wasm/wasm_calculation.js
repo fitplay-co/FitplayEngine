@@ -96,8 +96,8 @@ var wasm_processor = {
                 "rightLeg" : actionTemp.walk().rightLeg(),
                 "leftFrequency" : actionTemp.walk().leftFrequency(),
                 "rightFrequency" : actionTemp.walk().rightFrequency(),
-                "leftStrength" : actionTemp.walk().leftStrength(),
-                "rightStrength" : actionTemp.walk().rightStrength(),
+                "leftHipAng" : actionTemp.walk().leftHipAng(),
+                "rightHipAng" : actionTemp.walk().rightHipAng(),
                 "leftStepLength" : actionTemp.walk().leftStepLength(),
                 "rightStepLength" : actionTemp.walk().rightStepLength()
             }
