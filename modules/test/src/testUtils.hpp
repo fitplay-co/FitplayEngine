@@ -8,6 +8,7 @@
 
 using namespace std;
 using namespace glm;
+using namespace fitplay;
 
 //here defines left hand axis related to unity
 vec3 testup = vec3 (0.0f, 1.0f, 0.0f);
@@ -93,5 +94,31 @@ bool testUtilsAssertEqual(quat left ,quat right){
         return false;
     }
     return true;
+}
+
+//from 0 to 18
+std::string testUtilsGetLandmarkNameFromLandmarkIndex(int index){
+    switch(index) {
+        case HIP_CENTER : return "HIP_CENTER";
+        case NECK : return "NECK";
+        case HEAD : return "HEAD";
+        case L_SHOULDER : return "L_SHOULDER";
+        case R_SHOULDER : return "R_SHOULDER";
+        case L_ARM : return "L_ARM";
+        case R_ARM : return "R_ARM";
+        case L_WRIST : return "L_WRIST";
+        case R_WRIST : return "R_WRIST";
+        case L_HAND : return "L_HAND";
+        case R_HAND : return "R_HAND";
+        case L_HIP : return "L_HIP";
+        case R_HIP : return "R_HIP";
+        case L_KNEE : return "L_KNEE";
+        case R_KNEE : return "R_KNEE";
+        case L_ANKLE : return "L_ANKLE";
+        case R_ANKLE : return "R_ANKLE";
+        case L_FOOT : return "L_FOOT";
+        case R_FOOT : return "R_FOOT";
+        default: return "NO_NEXT";
+    }
 }
 #endif

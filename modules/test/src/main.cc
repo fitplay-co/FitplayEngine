@@ -13,6 +13,8 @@
 #include "testCapturedStandPose.hpp"
 #include "testFittingStandPose.hpp"
 #include "testUtilsMocLandmark.hpp"
+#include "testFittingRgbd.hpp"
+#include "testFittingStandPoseGravity.hpp"
 
 using namespace std;
 using namespace glm;
@@ -36,43 +38,46 @@ fitplay::fitting fitInstance;
 
 int main() {
     cout << "starting module testing." << endl;
-    testGlmLookat();
-    testDefaultTPose(fitInstance.fkInstance);
+      testGlmLookat();
+      testDefaultTPose(fitInstance.fkInstance);
+      // //default stand pose testing
+      testDefaultStandPose1(fitInstance.fkInstance);
+      testDefaultStandPose2(fitInstance.fkInstance);
+      testDefaultStandPose3(fitInstance.fkInstance);
+      testDefaultStandPose4(fitInstance.fkInstance);
 
-    // //default stand pose testing
-    testDefaultStandPose1(fitInstance.fkInstance);
-    testDefaultStandPose2(fitInstance.fkInstance);
-    testDefaultStandPose3(fitInstance.fkInstance);
-    testDefaultStandPose4(fitInstance.fkInstance);
+      // //test on a captured pose
+      readCsvFileAsLandmarkList("data/test_data_full.csv", 1000000);
+      testCapturedStandPose(fitInstance, true);
+      // //round one 
+      testFittingStandPose(fitInstance);
 
-    // //test on a captured pose
-    testCapturedStandPose(fitInstance);
+    //   // //scale up and down full data error 
+      readCsvFileAsLandmarkList("data/test_data_heavy.csv", 1000000);
 
-    // //round one 
-    testFittingStandPose(fitInstance);
+      // //test basic fitting 
+      // for(int i = 0; i < 20; i++ ) {
+      //   testFittingStandPoseFullData(fitInstance, i);
+      // }
 
-    // //scale up and down full data error 
-    readCsvFileAsLandmarkList("data/test_data_heavy.csv", 1000000);
+      //
+      testFittingUpdateErrorCheck(fitInstance);
+      // //print full bone length statistics
+      testFittingUpdateErrorCheck2(fitInstance);
+      testFittingBoneLengthBiasCalculation(fitInstance);
+      testFittingBoneLengthBiasCalculationErrorCheck(fitInstance);
+      testFittingBoneLengthBiasCalculationErrorHeavySequence(fitInstance);
 
-    // //test basic fitting 
-    // for(int i = 0; i < 20; i++ ) {
-    //   testFittingStandPoseFullData(fitInstance, i);
-    // }
+      readCsvFileAsLandmarkList("data/test_data_full.csv", 1000000);
+      testFittingBoneLengthBiasCalculationErrorFullSequence(fitInstance);
+      readCsvFileAsLandmarkList("data/test_data_heavy.csv", 1000000);
+      testFittingBoneLengthBiasCalculationErrorHeavySequence(fitInstance);
+      readCsvFileAsLandmarkList("data/test_data_full.csv", 1000000);
+      testFittingBoneLengthBiasCalculationErrorFullSequence(fitInstance);
+    readCsvFileAsLandmarkList("data/rgbd_stand_pose_test.csv", 1000000);
 
-    //
-  testFittingUpdateErrorCheck(fitInstance);
-    //print full bone length statistics
-  testFittingUpdateErrorCheck2(fitInstance);
-  testFittingBoneLengthBiasCalculation(fitInstance);
-  testFittingBoneLengthBiasCalculationErrorCheck(fitInstance);
-  testFittingBoneLengthBiasCalculationErrorHeavySequence(fitInstance);
-
-  readCsvFileAsLandmarkList("data/test_data_full.csv", 1000000);
-  testFittingBoneLengthBiasCalculationErrorFullSequence(fitInstance);
-  readCsvFileAsLandmarkList("data/test_data_heavy.csv", 1000000);
-  testFittingBoneLengthBiasCalculationErrorHeavySequence(fitInstance);
-  readCsvFileAsLandmarkList("data/test_data_full.csv", 1000000);
-  testFittingBoneLengthBiasCalculationErrorFullSequence(fitInstance);
-
+    testFittingRGBDOcculusionFullSquence(fitInstance);
+    testFittingRGBDUpdateSequence(fitInstance);
+    testFittingGravityStandPose(fitInstance);
 }
 

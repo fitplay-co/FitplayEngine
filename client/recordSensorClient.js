@@ -8,7 +8,7 @@ process.stdin.setRawMode(true);
 // read csv
 var fs = require('fs')
 var path = require('path')
-var file = path.join(__dirname, '../modules/test/data/test_data_heavy.csv')
+var file = path.join(__dirname, '../modules/test/data/test_data_full.csv')
 var textByLine = fs.readFileSync(file).toString().split("\n")
 const res = textByLine.map((line) => line.split(","))
 var arr = []

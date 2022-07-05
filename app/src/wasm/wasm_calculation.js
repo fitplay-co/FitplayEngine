@@ -55,6 +55,7 @@ var wasm_processor = {
 
         Pose.startPose(builder)
         Pose.addAction(builder, actionName)
+        Pose.addRgbdEnabled(builder, pose.rgbdEnabled)
         Pose.addKeypoints(builder,KeyPoints)
         Pose.addKeypoints3D(builder,keyPoints3d)
         var res = Pose.endPose(builder)
@@ -138,6 +139,8 @@ var wasm_processor = {
             pose.fitting = {}
             pose.fitting.rotation = []
             pose.fitting.mirrorRotation = []
+            pose.fitting.localRotation = []
+            pose.fitting.mirrorLocalRotation = []
     
             for(var i = 0; i<18; i++) {
                 pose.fitting.rotation.push({
@@ -158,6 +161,26 @@ var wasm_processor = {
                     "z" : actionTemp.fitting().mirrorRotation(i).z(),
                 })
             }
+            
+            for(var i = 0; i<18; i++) {
+                pose.fitting.localRotation.push({
+                    "name" : actionTemp.fitting().localRotation(i).name(),
+                    "w" : actionTemp.fitting().localRotation(i).w(),
+                    "x" : actionTemp.fitting().localRotation(i).x(),
+                    "y" : actionTemp.fitting().localRotation(i).y(),
+                    "z" : actionTemp.fitting().localRotation(i).z(),
+                })
+            }
+            for(var i = 0; i<18; i++) {
+                pose.fitting.mirrorLocalRotation.push({
+                    "name" : actionTemp.fitting().mirrorLocalRotation(i).name(),
+                    "w" : actionTemp.fitting().mirrorLocalRotation(i).w(),
+                    "x" : actionTemp.fitting().mirrorLocalRotation(i).x(),
+                    "y" : actionTemp.fitting().mirrorLocalRotation(i).y(),
+                    "z" : actionTemp.fitting().mirrorLocalRotation(i).z(),
+                })
+            }
+            // console.log(pose.fitting)
         }
 
         this.instance.release()
