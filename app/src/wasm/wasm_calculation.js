@@ -92,9 +92,14 @@ var wasm_processor = {
         if (actionTemp.walk() || actionTemp.jump() || actionTemp.squat()) {
             pose.action_detection = {}
             pose.action_detection.walk = {
-                 "legUp" : actionTemp.walk().legUp(),
-                 "frequency" : actionTemp.walk().frequency(),
-                 "strength" : actionTemp.walk().strength()
+                "leftLeg" : actionTemp.walk().leftLeg(),
+                "rightLeg" : actionTemp.walk().rightLeg(),
+                "leftFrequency" : actionTemp.walk().leftFrequency(),
+                "rightFrequency" : actionTemp.walk().rightFrequency(),
+                "leftStrength" : actionTemp.walk().leftStrength(),
+                "rightStrength" : actionTemp.walk().rightStrength(),
+                "leftStepLength" : actionTemp.walk().leftStepLength(),
+                "rightStepLength" : actionTemp.walk().rightStepLength()
             }
             pose.action_detection.jump = {
                 "up" : actionTemp.jump().up(),
@@ -104,6 +109,15 @@ var wasm_processor = {
                 "squat" : actionTemp.squat().status()
             }
         }
+        // console.log(pose.keypoints[26].z)
+        // console.log(pose.action_detection.walk.frequency)
+        // var a = parseFloat(pose.keypoints[28].z)
+        // var b = parseFloat(pose.keypoints[26].z)
+        // var c = parseFloat(pose.keypoints[24].z)
+        // console.log(b - c)
+        // var a = parseFloat(pose.keypoints[28].x) + parseFloat(pose.keypoints[30].x) + parseFloat(pose.keypoints[32].x)
+        // var b = parseFloat(pose.keypoints[28].y) + parseFloat(pose.keypoints[30].y) + parseFloat(pose.keypoints[32].y)
+        // console.log(a + b)
         if (actionTemp.ground()) {
             pose.ground_location = {
                 "x" : actionTemp.ground().x(),
@@ -127,7 +141,7 @@ var wasm_processor = {
             pose.fitting.mirrorRotation = []
             pose.fitting.localRotation = []
             pose.fitting.mirrorLocalRotation = []
-
+    
             for(var i = 0; i<18; i++) {
                 pose.fitting.rotation.push({
                     "name" : actionTemp.fitting().rotation(i).name(),
@@ -202,72 +216,6 @@ var wasm_processor = {
         //test.process()
 
         //var result = this.instance.jsonFunc(builder.asUint8Array())
-
-        
-        
-       
-        // console.log(result)
-        // var data = new Uint8Array(result)
-
-        // // console.log("result length:"+result.length)
-        // // for (let i = 0; i < result.length; i++) {
-        // //     data[i] = result.charAt(i)
-        // // }
-        // var buf = new flatbuffers.ByteBuffer(data)
-        // var temp = Pose.getRootAsPose(buf)
-        // // var temp2 = temp.keypoints3DLength
-        // //console.log(temp.keypoints3D(1).x())
-        // this.instance.release()
-
-        // result = JSON.parse(this.instance.jsonFunc(JSON.stringify(pose)))
-
-        // pose.fitting = result.fitting
-        //console.log(this.instance.jsonFunc(jsonstr))
-
-        // builder = new flatbuffers.Builder(1024)
-        // keyPoints = new Array(3)
-        // var name = builder.createString('nose')
-        // Point.startPoint(builder)
-        // Point.addX(builder, 1)
-        // Point.addY(builder, 1)
-        // Point.addZ(builder, 1)
-        // Point.addScore(builder, 1)
-        // Point.addName(builder,name)
-        // var point = Point.endPoint(builder)
-        // //console.log(point)
-        // keyPoints[0] = point
-
-        // name = builder.createString('arm')
-        // Point.startPoint(builder)
-        // Point.addX(builder, 1)
-        // Point.addY(builder, 1)
-        // Point.addZ(builder, 1)
-        // Point.addScore(builder, 1)
-        // Point.addName(builder,name)
-        // point = Point.endPoint(builder)
-        // //console.log(point)
-        // keyPoints[1] = point
-
-        // name = builder.createString('leg')
-        // Point.startPoint(builder)
-        // Point.addX(builder, 1)
-        // Point.addY(builder, 1)
-        // Point.addZ(builder, 1)
-        // Point.addScore(builder, 1)
-        // Point.addName(builder,name)
-        // point = Point.endPoint(builder)
-        // //console.log(point)
-        // keyPoints[2] = point
-
-        // KeyPoints = Pose.createKeypointsVector(builder,keyPoints)
-        // //console.log(KeyPoints)
-        // keyPoints3d = Pose.createKeypoints3DVector(builder,keyPoints)
-        // Pose.startPose(builder)
-        // Pose.addKeypoints(builder,KeyPoints)
-        // Pose.addKeypoints3D(builder,keyPoints3d)
-        // var poseT = Pose.endPose(builder)
-        // builder.finish(poseT)
-        // console.log("after: "+builder.asUint8Array())
     }, 
 }
 
