@@ -122,9 +122,9 @@ modules/build
 modules/vendor/emscripten
 modules/legacy
 
-.vscodee/
+.vscode/
 
-app/.vscodee/
+app/.vscode/
 
 */build/*
 modules/test/build/*
