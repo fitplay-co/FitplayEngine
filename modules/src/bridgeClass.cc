@@ -63,7 +63,6 @@ public:
       }
     }
 
-    float jump_data[2] = {0,0};
     float gaze_data[3] = {0,0,0};
     float ground_data[5] = {0,0,0,0,0};
     float squat_data[1] = {0};
@@ -75,10 +74,10 @@ public:
     flatbuffers::Offset<actionData::Fitting> fittingOffset;
     if (actionDetectionEnable) {
       walkInstance.process(data);
-      jumpInstance.process(jump_data, data);
+      jumpInstance.process(data);
       squatInstance.process(squat_data, data);
       walk = walkInstance.writeFlatBuffer(action_data);
-      jump = actionData::CreateJump(action_data, jump_data[0], jump_data[1]);
+      jump = jumpInstance.writeFlatBuffer(action_data);
       squat = actionData::CreateSquat(action_data, squat_data[0]);
     }
     if (gazeTrackingEnable) {
