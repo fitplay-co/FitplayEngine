@@ -111,8 +111,13 @@ var wasm_processor = {
                 "squat" : actionTemp.squat().status()
             }
         }
+        pose.monitor = {
+            "m1" : pose.keypoints[27].y,
+            "m2" : pose.keypoints[25].y
+        }
         // console.log(pose.keypoints[26].z)
-        // console.log(pose.action_detection.walk.frequency)
+        // console.log(pose.action_detection.jump.up)
+        // console.log(pose.action_detection.squat.squat)
         // var a = parseFloat(pose.keypoints[28].z)
         // var b = parseFloat(pose.keypoints[26].z)
         // var c = parseFloat(pose.keypoints[24].z)
