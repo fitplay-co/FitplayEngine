@@ -104,17 +104,19 @@ var wasm_processor = {
                 "rightStepLength" : actionTemp.walk().rightStepLength()
             }
             pose.action_detection.jump = {
-                "up" : actionTemp.jump().up(),
-                "strength" : actionTemp.jump().strength()
+                "takeOff" : actionTemp.jump().takeOff(),
+                "offGround" : actionTemp.jump().offGround(),
+                "height" : actionTemp.jump().height(),
+                "velocity" : actionTemp.jump().velocity()
             }
             pose.action_detection.squat = {
                 "squat" : actionTemp.squat().status()
             }
         }
         pose.monitor = {
-            "m1" : pose.action_detection.jump.up,
+            "m1" : pose.action_detection.jump.takeOff,
             "m1Name" : "footUp",
-            "m2" : pose.action_detection.jump.strength,
+            "m2" : pose.action_detection.jump.offGround,
             "m2Name" : "timestamp"
         }
         // pose.monitor = {

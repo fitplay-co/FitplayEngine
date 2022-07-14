@@ -51,8 +51,10 @@ namespace actionjump {
 
     flat jump::writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder) {
         return actionData::CreateJump(resultBuilder, 
+            kneeOff,
             footOff,
-            timeData["window"]);
+            height,
+            velocity);
     }
 
     void jump::calculateCurrent(const PoseData::Pose* data) {
