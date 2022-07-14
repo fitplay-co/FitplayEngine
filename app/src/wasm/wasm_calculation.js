@@ -112,19 +112,17 @@ var wasm_processor = {
             }
         }
         pose.monitor = {
-            "m1" : pose.keypoints[27].y,
-            "m2" : pose.keypoints[25].y
+            "m1" : pose.action_detection.jump.up,
+            "m1Name" : "footUp",
+            "m2" : pose.action_detection.jump.strength,
+            "m2Name" : "timestamp"
         }
-        // console.log(pose.keypoints[26].z)
-        // console.log(pose.action_detection.jump.up)
-        // console.log(pose.action_detection.squat.squat)
-        // var a = parseFloat(pose.keypoints[28].z)
-        // var b = parseFloat(pose.keypoints[26].z)
-        // var c = parseFloat(pose.keypoints[24].z)
-        // console.log(b - c)
-        // var a = parseFloat(pose.keypoints[28].x) + parseFloat(pose.keypoints[30].x) + parseFloat(pose.keypoints[32].x)
-        // var b = parseFloat(pose.keypoints[28].y) + parseFloat(pose.keypoints[30].y) + parseFloat(pose.keypoints[32].y)
-        // console.log(a + b)
+        // pose.monitor = {
+        //     "m1" : pose.keypoints[25].y,
+        //     "m1Name" : "leftKnee",
+        //     "m2" : pose.keypoints[27].y,
+        //     "m2Name" : "leftFoot"
+        // }
         if (actionTemp.ground()) {
             pose.ground_location = {
                 "x" : actionTemp.ground().x(),

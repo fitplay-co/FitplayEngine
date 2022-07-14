@@ -1,6 +1,6 @@
 let ws=null;
 let url='ws://localhost:8181/';
-let isRconnect=false;
+let isReconnect=false;
 websocketConnect();
 
 function websocketConnect(){ 
@@ -15,15 +15,15 @@ function websocketConnect(){
 }
 
 function websocketReconnect(){
-  if(isRconnect==true)
+  if(isReconnect==true)
   {
     return;
   }
-  isRconnect=true;
+  isReconnect=true;
   console.log("will reconnect "+url);
   setTimeout(()=>{
     websocketConnect();
-    isRconnect=false;
+    isReconnect=false;
   },2000);
 }
 
@@ -119,11 +119,17 @@ function addData(inputData){
     num2.push(jsonObj.monitor.m2)
     num2.shift()
     myChart1.setOption({
+        title: {
+          subtext: jsonObj.monitor.m1Name
+        },
         series: [{
           data: num1
         }]
     });
     myChart2.setOption({
+        title: {
+          subtext: jsonObj.monitor.m2Name
+        },
         series: [{
           data: num2
         }]
