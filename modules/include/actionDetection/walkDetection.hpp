@@ -63,7 +63,7 @@ namespace actionwalk {
     flat walk::writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder) {
         return actionData::CreateWalk(resultBuilder, 
             currentLeft,
-            frameData["leftFoot"] - meanData["leftFoot"],
+            currentRight,
             stepRateLeft,
             stepRateRight,
             meanData["leftHip"],
@@ -96,99 +96,97 @@ namespace actionwalk {
 
     void walk::calculateLeft() {
         // for left leg
-        // leg down
-        // if(currentLeft == 2) {
-        //     if(frameData["rightLeg"] - frameData["leftLeg"] > 0.1) {
-        //         currentLeft == 2;
-        //     }
-        // }
-        if(frameData["leftFoot"] - meanData["leftFoot"] > 0.01) {
-            if(currentLeft != -1) {
-                if(frameShiftFilterCount > 3 && (currentLeft == 1 || currentLeft == 2)) {
-                    currentLeft = -1;
-                    timeData["tEndLeft"] = militime();
-                    timeData["tWindowLeft"] = float((timeData["tEndLeft"] - timeData["tStartLeft"]))/1000;
-                }
-                else { frameShiftFilterCount = frameShiftFilterCount + 1; }
+        if(currentLeft == 2) {
+            if(frameData["rightLeg"] - frameData["leftLeg"] < 0.1) {
+                currentLeft = 0;
             }
-            else { frameShiftFilterCount = 0; }
         }
-        // leg up testing
-        if(frameData["leftFoot"] - meanData["leftFoot"] < -0.01) {
-            if(currentLeft != 1) {
-                if(frameShiftFilterCount > 3 && (currentLeft == 0 || currentLeft == -1)) {
-                    currentLeft = 1;
-                    timeData["tStartLeft"] = militime();
-                }
-                else { frameShiftFilterCount = frameShiftFilterCount + 1; }
-            }
-            else { frameShiftFilterCount = 0; }
-        }
-        // leg still
-        if((-0.01 < (frameData["leftFoot"] - meanData["leftFoot"])) && ((frameData["leftFoot"] - meanData["leftFoot"]) < 0.01)) {
-            if(currentLeft != 0 && currentLeft != 2) {
-                if(frameShiftFilterCount > 6) {
-                    // threshold to be tested
-                    if(frameData["rightLeg"] - frameData["leftLeg"] > 0.1 && currentLeft == 1) {
-                        currentLeft = 2;
+        else {
+            // leg down
+            if(frameData["leftFoot"] - meanData["leftFoot"] > 0.01) {
+                if(currentLeft != -1) {
+                    if(frameShiftFilterCount > 3 && currentLeft == 1) {
+                        currentLeft = -1;
+                        timeData["tEndLeft"] = militime();
+                        timeData["tWindowLeft"] = float((timeData["tEndLeft"] - timeData["tStartLeft"]))/1000;
                     }
-                    else { currentLeft = 0; }
+                    else { frameShiftFilterCount = frameShiftFilterCount + 1; }
                 }
-                else { frameShiftFilterCount = frameShiftFilterCount + 1; }
+                else { frameShiftFilterCount = 0; }
             }
-            else { frameShiftFilterCount = 0; }
+            // leg up
+            if(frameData["leftFoot"] - meanData["leftFoot"] < -0.01) {
+                if(currentLeft != 1) {
+                    if(frameShiftFilterCount > 3 && (currentLeft == 0 || currentLeft == -1)) {
+                        currentLeft = 1;
+                        timeData["tStartLeft"] = militime();
+                    }
+                    else { frameShiftFilterCount = frameShiftFilterCount + 1; }
+                }
+                else { frameShiftFilterCount = 0; }
+            }
+            // leg still
+            if((-0.01 < (frameData["leftFoot"] - meanData["leftFoot"])) && ((frameData["leftFoot"] - meanData["leftFoot"]) < 0.01)) {
+                if(currentLeft != 0 && currentLeft != 2) {
+                    if(frameShiftFilterCount > 6) {
+                        // threshold to be tested
+                        if(frameData["rightLeg"] - frameData["leftLeg"] > 0.1 && currentLeft == 1) {
+                            currentLeft = 2;
+                        }
+                        else { currentLeft = 0; }
+                    }
+                    else { frameShiftFilterCount = frameShiftFilterCount + 1; }
+                }
+                else { frameShiftFilterCount = 0; }
+            }
         }
-        // if(currentLeft != 0) {
-        //     if(abs(frameData["leftFoot"] - meanData["leftFoot"]) < threshold) {
-        //         fpmStopCount = fpmStopCount + 1;
-        //         if(fpmStopCount > 15) {
-        //             currentLeft = 0;
-        //         }
-        //     }
-        //     else { fpmStopCount = 0; }
-        // }
     }
 
     void walk::calculateRight() {
         // for right leg
-        if(frameData["rightFoot"] - meanData["rightFoot"] > threshold) {
-            if(currentRight != -1) {
-                if(frameShiftFilterCount2 > 3 && currentRight == 1) {
-                    currentRight = -1;
-                    timeData["tEndRight"] = militime();
-                    timeData["tWindowRight"] = float((timeData["tEndRight"] - timeData["tStartRight"]))/1000;
-                }
-                else { frameShiftFilterCount2 = frameShiftFilterCount2 + 1; }
+        if(currentRight == 2) {
+            if(frameData["leftLeg"] - frameData["rightLeg"] < 0.1) {
+                currentRight = 0;
             }
-            else { frameShiftFilterCount2 = 0; }
         }
-        if(frameData["rightFoot"] - meanData["rightFoot"] < -threshold) {
-            if(currentRight != 1) {
-                if(frameShiftFilterCount2 > 3) {
-                    currentRight = 1;
-                    timeData["tStartRight"] = militime();
+        else {
+            // leg down
+            if(frameData["rightFoot"] - meanData["rightFoot"] > 0.01) {
+                if(currentRight != -1) {
+                    if(frameShiftFilterCount2 > 3 && currentRight == 1) {
+                        currentRight = -1;
+                        timeData["tEndRight"] = militime();
+                        timeData["tWindowRight"] = float((timeData["tEndRight"] - timeData["tStartRight"]))/1000;
+                    }
+                    else { frameShiftFilterCount2 = frameShiftFilterCount2 + 1; }
                 }
-                else { frameShiftFilterCount2 = frameShiftFilterCount2 + 1; }
+                else { frameShiftFilterCount2 = 0; }
             }
-            else { frameShiftFilterCount2 = 0; }
-        }
-        if(abs(frameData["rightFoot"] - meanData["rightFoot"]) < threshold) {
-            if(currentRight != 0) {
-                if(frameShiftFilterCount2 > 6) {
-                    currentRight = 0;
+            // leg up
+            if(frameData["rightFoot"] - meanData["rightFoot"] < -0.01) {
+                if(currentRight != 1) {
+                    if(frameShiftFilterCount2 > 3 && (currentRight == 0 || currentRight == -1)) {
+                        currentRight = 1;
+                        timeData["tStartRight"] = militime();
+                    }
+                    else { frameShiftFilterCount2 = frameShiftFilterCount2 + 1; }
                 }
-                else { frameShiftFilterCount2 = frameShiftFilterCount2 + 1; }
+                else { frameShiftFilterCount2 = 0; }
             }
-            else { frameShiftFilterCount2 = 0; }
-        }
-        if(currentRight != 0) {
-            if(abs(frameData["rightFoot"] - meanData["rightFoot"]) < threshold) {
-                fpmStopCount2 = fpmStopCount2 + 1;
-                if(fpmStopCount2 > 15) {
-                    currentRight = 0;
+            // leg still
+            if((-0.01 < (frameData["rightFoot"] - meanData["rightFoot"])) && ((frameData["rightFoot"] - meanData["rightFoot"]) < 0.01)) {
+                if(currentRight != 0 && currentRight != 2) {
+                    if(frameShiftFilterCount2 > 6) {
+                        // threshold to be tested
+                        if(frameData["leftLeg"] - frameData["rightLeg"] > 0.1 && currentRight == 1) {
+                            currentRight = 2;
+                        }
+                        else { currentRight = 0; }
+                    }
+                    else { frameShiftFilterCount2 = frameShiftFilterCount2 + 1; }
                 }
+                else { frameShiftFilterCount2 = 0; }
             }
-            else { fpmStopCount2 = 0; }
         }
     }
 
