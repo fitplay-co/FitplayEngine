@@ -117,7 +117,7 @@ var wasm_processor = {
             "m1" : pose.action_detection.walk.leftLeg,
             "m1Name" : "leftLeg",
             "m2" : pose.action_detection.walk.rightLeg,
-            "m2Name" : "footDiff"
+            "m2Name" : "metric"
         }
         // pose.monitor = {
         //     "m1" : pose.keypoints[25].y,

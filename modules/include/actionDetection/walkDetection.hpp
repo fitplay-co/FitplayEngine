@@ -29,7 +29,7 @@ namespace actionwalk {
             float frameShiftFilterCount2 = 0;
             float fpmStopCount3 = 0;
 
-            float threshold = 0.01;
+            float threshold = 0.05;
 
         public:
             walk();
@@ -73,17 +73,15 @@ namespace actionwalk {
     }
 
     void walk::calculateFrame(const PoseData::Pose* data) {
-        frameData["rightFoot"] = data->keypoints()->Get(28)->y() + data->keypoints()->Get(32)->y()
-                        + data->keypoints()->Get(28)->x() + data->keypoints()->Get(32)->x();
-        frameData["leftFoot"] = data->keypoints()->Get(27)->y() + data->keypoints()->Get(31)->y()
-                        + data->keypoints()->Get(27)->x() + data->keypoints()->Get(31)->x();
-        frameData["leftFootHeight"] = data->keypoints3D()->Get(31)->y();
-        frameData["rightFootHeight"] = data->keypoints3D()->Get(32)->y();
+        frameData["rightFoot"] = data->keypoints()->Get(28)->y() + data->keypoints()->Get(32)->y();
+        frameData["leftFoot"] = data->keypoints()->Get(27)->y() + data->keypoints()->Get(31)->y();
         frameData["rightHip"] = calVecAngle(data, 12, 24, 26, 1);
         frameData["leftHip"] = calVecAngle(data, 11, 23, 25, 1);
         float leftThighHeight = data->keypoints3D()->Get(23)->y() - data->keypoints3D()->Get(25)->y();
         float rightThighHeight = data->keypoints3D()->Get(24)->y() - data->keypoints3D()->Get(26)->y();
         frameData["thigh"] = std::max(leftThighHeight, rightThighHeight);
+        frameData["leftLeg"] = data->keypoints3D()->Get(27)->y() - data->keypoints3D()->Get(23)->y();
+        frameData["rightLeg"] = data->keypoints3D()->Get(28)->y() - data->keypoints3D()->Get(24)->y();
     }
 
     void walk::calculateMean() {
@@ -98,9 +96,15 @@ namespace actionwalk {
 
     void walk::calculateLeft() {
         // for left leg
-        if(frameData["leftFoot"] - meanData["leftFoot"] > threshold) {
+        // leg down
+        // if(currentLeft == 2) {
+        //     if(frameData["rightLeg"] - frameData["leftLeg"] > 0.1) {
+        //         currentLeft == 2;
+        //     }
+        // }
+        if(frameData["leftFoot"] - meanData["leftFoot"] > 0.01) {
             if(currentLeft != -1) {
-                if(frameShiftFilterCount > 3 && currentLeft == 1) {
+                if(frameShiftFilterCount > 3 && (currentLeft == 1 || currentLeft == 2)) {
                     currentLeft = -1;
                     timeData["tEndLeft"] = militime();
                     timeData["tWindowLeft"] = float((timeData["tEndLeft"] - timeData["tStartLeft"]))/1000;
@@ -109,9 +113,10 @@ namespace actionwalk {
             }
             else { frameShiftFilterCount = 0; }
         }
-        if(frameData["leftFoot"] - meanData["leftFoot"] < -threshold) {
+        // leg up testing
+        if(frameData["leftFoot"] - meanData["leftFoot"] < -0.01) {
             if(currentLeft != 1) {
-                if(frameShiftFilterCount > 3) {
+                if(frameShiftFilterCount > 3 && (currentLeft == 0 || currentLeft == -1)) {
                     currentLeft = 1;
                     timeData["tStartLeft"] = militime();
                 }
@@ -119,24 +124,29 @@ namespace actionwalk {
             }
             else { frameShiftFilterCount = 0; }
         }
-        if(abs(frameData["leftFoot"] - meanData["leftFoot"]) < threshold) {
-            if(currentLeft != 0) {
+        // leg still
+        if((-0.01 < (frameData["leftFoot"] - meanData["leftFoot"])) && ((frameData["leftFoot"] - meanData["leftFoot"]) < 0.01)) {
+            if(currentLeft != 0 && currentLeft != 2) {
                 if(frameShiftFilterCount > 6) {
-                    currentLeft = 0;
+                    // threshold to be tested
+                    if(frameData["rightLeg"] - frameData["leftLeg"] > 0.1 && currentLeft == 1) {
+                        currentLeft = 2;
+                    }
+                    else { currentLeft = 0; }
                 }
                 else { frameShiftFilterCount = frameShiftFilterCount + 1; }
             }
             else { frameShiftFilterCount = 0; }
         }
-        if(currentLeft != 0) {
-            if(abs(frameData["leftFoot"] - meanData["leftFoot"]) < threshold) {
-                fpmStopCount = fpmStopCount + 1;
-                if(fpmStopCount > 15) {
-                    currentLeft = 0;
-                }
-            }
-            else { fpmStopCount = 0; }
-        }
+        // if(currentLeft != 0) {
+        //     if(abs(frameData["leftFoot"] - meanData["leftFoot"]) < threshold) {
+        //         fpmStopCount = fpmStopCount + 1;
+        //         if(fpmStopCount > 15) {
+        //             currentLeft = 0;
+        //         }
+        //     }
+        //     else { fpmStopCount = 0; }
+        // }
     }
 
     void walk::calculateRight() {
@@ -191,7 +201,7 @@ namespace actionwalk {
     }
 
     void walk::checkStepRate() {
-        if(currentLeft == 0 && currentRight == 0) {
+        if((currentLeft == 0 || currentLeft == 2) && (currentRight == 0 || currentLeft == 2)) {
             fpmStopCount3 = fpmStopCount3 + 1;
             if(fpmStopCount3 > 15) {
                 timeData["tWindowLeft"] = 0;
