@@ -191,11 +191,13 @@ namespace actionwalk {
     }
 
     void walk::calculateStepLen() {
-        float maxSL = frameData["height"] * 1.2;
+        float maxSL = meanData["height"] * 1.2;
         float leftFlexion = (180 - meanData["leftHip"]) > 90 ? 90 : (180 - meanData["leftHip"]);
         float rightFlexion = (180 - meanData["rightHip"]) > 90 ? 90 : (180 - meanData["rightHip"]);
-        stepLenLeft = (maxSL / pow(90,(1/3))) * pow(leftFlexion,(1/3));
-        stepLenRight = (maxSL / pow(90,(1/3))) * pow(rightFlexion,(1/3));
+        stepLenLeft = (maxSL / pow(90,(float)1/3)) * pow(leftFlexion,(float)1/3);
+        stepLenRight = (maxSL / pow(90,(float)1/3)) * pow(rightFlexion,(float)1/3);
+        if(meanData["leftHip"] > 171) { stepLenLeft = 0; }
+        if(meanData["rightHip"] > 171) { stepLenRight = 0; }
     }
 
     void walk::checkStepRate() {
