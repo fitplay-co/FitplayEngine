@@ -196,8 +196,8 @@ namespace actionwalk {
         float rightFlexion = (180 - meanData["rightHip"]) > 90 ? 90 : (180 - meanData["rightHip"]);
         stepLenLeft = (maxSL / pow(90,(float)1/3)) * pow(leftFlexion,(float)1/3);
         stepLenRight = (maxSL / pow(90,(float)1/3)) * pow(rightFlexion,(float)1/3);
-        if(meanData["leftHip"] > 171) { stepLenLeft = 0; }
-        if(meanData["rightHip"] > 171) { stepLenRight = 0; }
+        if(currentLeft == 0 || currentLeft == 2) { stepLenLeft = 0; }
+        if(currentRight == 0 || currentRight == 2) { stepLenRight = 0; }
     }
 
     void walk::checkStepRate() {

@@ -114,7 +114,7 @@ var wasm_processor = {
             }
         }
         pose.monitor = {
-            "m1" : pose.action_detection.walk.leftHipAng,
+            "m1" : pose.action_detection.walk.leftStepLength,
             "m1Name" : "left",
             "m2" : pose.action_detection.walk.rightStepLength,
             "m2Name" : "right"
