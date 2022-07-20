@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+from one_euro_filter import OneEuroFilter
 
 file_path = "./app/legacy/expr_data/re1_foot.csv"
 readData = pd.read_csv(file_path,header=None)
@@ -66,11 +67,27 @@ for i in range(1,len(data)) :
 
 
     res[i] = current
-
-
+# Decreasing the minimum cutoff frequency decreases slow speed jitter
+# Increasing the speed coefficient decreases speed lag
+min_cutoff = 0.01
+beta = 1.2
+one_euro_filter = OneEuroFilter(
+    xData[0], data[0],
+    min_cutoff=min_cutoff,
+    beta=beta
+)
+euro_mean = list(range(1,len(data)+1))
+for i in range(1,len(data)) :
+    euro_mean[i] = one_euro_filter(xData[i], data[i])
+euro_mean[0] = data[0]
 print(mean)
 plt.subplot(211)
-plt.plot(xData, mean)
+plt.plot(xData, data, label = "noisy")
+plt.plot(xData, euro_mean, label = "euro")
+plt.plot(xData, mean, label = "low_pass")
+plt.legend()
 plt.subplot(212)
-plt.plot(xData, res)
+plt.plot(xData, euro_mean, label = "euro")
+plt.plot(xData, mean, label = "low_pass")
+plt.legend()
 plt.show() 

@@ -5,6 +5,8 @@
 #include <chrono> 
 #include <math.h>
 #include "actionData_generated.h"
+#include "euroFilter.hpp"
+#include "walkData.hpp"
 
 namespace actionwalk {
 
@@ -12,9 +14,9 @@ namespace actionwalk {
 
     class walk {
         private:
-            map<std::string, float> frameData;
-            map<std::string, float> meanData;
-            map<std::string, float> timeData;
+            map<int, float> frameData;
+            map<int, float> meanData;
+            map<int, float> timeData;
 
             float currentLeft = 0;
             float currentRight = 0;
@@ -22,6 +24,8 @@ namespace actionwalk {
             float stepRateRight = 0;
             float stepLenLeft = 0;
             float stepLenRight = 0;
+
+            float frameCount = 0;
 
             float fpmStopCount = 0;
             float frameShiftFilterCount = 0;
@@ -66,71 +70,79 @@ namespace actionwalk {
             currentRight,
             stepRateLeft,
             stepRateRight,
-            meanData["leftHip"],
-            meanData["rightHip"],
+            meanData[leftHip],
+            meanData[rightHip],
             stepLenLeft,
             stepLenRight);
     }
 
     void walk::calculateFrame(const PoseData::Pose* data) {
-        frameData["rightFoot"] = data->keypoints()->Get(28)->y() + data->keypoints()->Get(32)->y();
-        frameData["leftFoot"] = data->keypoints()->Get(27)->y() + data->keypoints()->Get(31)->y();
-        frameData["rightHip"] = calVecAngle(data, 12, 24, 26, 1);
-        frameData["leftHip"] = calVecAngle(data, 11, 23, 25, 1);
+        frameData[rightFoot] = data->keypoints()->Get(28)->y() + data->keypoints()->Get(32)->y();
+        frameData[leftFoot] = data->keypoints()->Get(27)->y() + data->keypoints()->Get(31)->y();
+        frameData[rightHip] = calVecAngle(data, 12, 24, 26, 1);
+        frameData[leftHip] = calVecAngle(data, 11, 23, 25, 1);
         float leftThighHeight = data->keypoints3D()->Get(23)->y() - data->keypoints3D()->Get(25)->y();
         float rightThighHeight = data->keypoints3D()->Get(24)->y() - data->keypoints3D()->Get(26)->y();
-        frameData["thigh"] = std::max(leftThighHeight, rightThighHeight);
-        frameData["leftLeg"] = data->keypoints3D()->Get(27)->y() - data->keypoints3D()->Get(23)->y();
-        frameData["rightLeg"] = data->keypoints3D()->Get(28)->y() - data->keypoints3D()->Get(24)->y();
+        frameData[thigh] = std::max(leftThighHeight, rightThighHeight);
+        frameData[leftLeg] = data->keypoints3D()->Get(27)->y() - data->keypoints3D()->Get(23)->y();
+        frameData[rightLeg] = data->keypoints3D()->Get(28)->y() - data->keypoints3D()->Get(24)->y();
     }
 
     void walk::calculateMean() {
-        meanData["leftFoot"] = meanData["leftFoot"] * 0.85 + frameData["leftFoot"] * 0.15;
-        meanData["rightFoot"] = meanData["rightFoot"] * 0.85 + frameData["rightFoot"] * 0.15;
-        meanData["leftHip"] = meanData["leftHip"] * 0.8 + frameData["leftHip"] * 0.2;
-        meanData["rightHip"] = meanData["rightHip"] * 0.8 + frameData["rightHip"] * 0.2;
-        meanData["thigh"] = (meanData["thigh"] * 0.9 + frameData["thigh"] * 0.1) * 0.79 + 0.15;
-        meanData["leg"] = meanData["thigh"] * 2.004;
-        meanData["height"] = meanData["thigh"] / 0.245;
+        double frequency = 60, mincutoff = 0.01, beta = 1.2, dcutoff = 1.0;
+        double timestamp = frameCount/frequency;
+        detection::OneEuroFilter leftFootFilter(frequency, mincutoff, beta, dcutoff);
+        detection::OneEuroFilter rightFootFilter(frequency, mincutoff, beta, dcutoff);
+        double leftFootFiltered = leftFootFilter.filter(frameData[leftFoot], timestamp);
+        double rightFootFiltered = rightFootFilter.filter(frameData[rightFoot], timestamp);
+        // meanData[leftFoot] = float(leftFootFiltered);
+        // meanData[rightFoot] = float(rightFootFiltered);
+        meanData[leftFoot] = meanData[leftFoot] * 0.85 + frameData[leftFoot] * 0.15;
+        meanData[rightFoot] = meanData[rightFoot] * 0.85 + frameData[rightFoot] * 0.15;
+        meanData[leftHip] = meanData[leftHip] * 0.8 + frameData[leftHip] * 0.2;
+        meanData[rightHip] = meanData[rightHip] * 0.8 + frameData[rightHip] * 0.2;
+        meanData[thigh] = (meanData[thigh] * 0.9 + frameData[thigh] * 0.1) * 0.79 + 0.15;
+        meanData[leg] = meanData[thigh] * 2.004;
+        meanData[height] = meanData[thigh] / 0.245;
     }
 
     void walk::calculateLeft() {
         // for left leg
         if(currentLeft == 2) {
-            if(frameData["rightLeg"] - frameData["leftLeg"] < 0.1) {
+            if(frameData[rightLeg] - frameData[leftLeg] < 0.1) {
                 currentLeft = 0;
             }
         }
         else {
             // leg down
-            if(frameData["leftFoot"] - meanData["leftFoot"] > 0.01) {
+            if(frameData[leftFoot] - meanData[leftFoot] > 0.01) {
                 if(currentLeft != -1) {
                     if(frameShiftFilterCount > 3 && currentLeft == 1) {
                         currentLeft = -1;
-                        timeData["tEndLeft"] = militime();
-                        timeData["tWindowLeft"] = float((timeData["tEndLeft"] - timeData["tStartLeft"]))/1000;
+                        timeData[tEndLeft] = militime();
+                        timeData[tWindowLeft] = float((timeData[tEndLeft] - timeData[tStartLeft]))/1000;
                     }
                     else { frameShiftFilterCount = frameShiftFilterCount + 1; }
                 }
                 else { frameShiftFilterCount = 0; }
             }
             // leg up
-            if(frameData["leftFoot"] - meanData["leftFoot"] < -0.01) {
+            if(frameData[leftFoot] - meanData[leftFoot] < -0.01) {
                 if(currentLeft != 1) {
                     if(frameShiftFilterCount > 3 && (currentLeft == 0 || currentLeft == -1)) {
                         currentLeft = 1;
-                        timeData["tStartLeft"] = militime();
+                        timeData[tStartLeft] = militime();
                     }
                     else { frameShiftFilterCount = frameShiftFilterCount + 1; }
                 }
                 else { frameShiftFilterCount = 0; }
             }
             // leg still
-            if((-0.01 < (frameData["leftFoot"] - meanData["leftFoot"])) && ((frameData["leftFoot"] - meanData["leftFoot"]) < 0.01)) {
+            if((-0.01 < (frameData[leftFoot] - meanData[leftFoot])) && ((frameData[leftFoot] - meanData[leftFoot]) < 0.01)) {
                 if(currentLeft != 0 && currentLeft != 2) {
                     if(frameShiftFilterCount > 6) {
                         // threshold to be tested
-                        if(frameData["rightLeg"] - frameData["leftLeg"] > 0.1 && currentLeft == 1) {
+                        if(frameData[rightLeg] - frameData[leftLeg] > 0.1 && currentLeft == 1) {
                             currentLeft = 2;
                         }
                         else { currentLeft = 0; }
@@ -145,40 +157,40 @@ namespace actionwalk {
     void walk::calculateRight() {
         // for right leg
         if(currentRight == 2) {
-            if(frameData["leftLeg"] - frameData["rightLeg"] < 0.1) {
+            if(frameData[leftLeg] - frameData[rightLeg] < 0.1) {
                 currentRight = 0;
             }
         }
         else {
             // leg down
-            if(frameData["rightFoot"] - meanData["rightFoot"] > 0.01) {
+            if(frameData[rightFoot] - meanData[rightFoot] > 0.01) {
                 if(currentRight != -1) {
                     if(frameShiftFilterCount2 > 3 && currentRight == 1) {
                         currentRight = -1;
-                        timeData["tEndRight"] = militime();
-                        timeData["tWindowRight"] = float((timeData["tEndRight"] - timeData["tStartRight"]))/1000;
+                        timeData[tEndRight] = militime();
+                        timeData[tWindowRight] = float((timeData[tEndRight] - timeData[tStartRight]))/1000;
                     }
                     else { frameShiftFilterCount2 = frameShiftFilterCount2 + 1; }
                 }
                 else { frameShiftFilterCount2 = 0; }
             }
             // leg up
-            if(frameData["rightFoot"] - meanData["rightFoot"] < -0.01) {
+            if(frameData[rightFoot] - meanData[rightFoot] < -0.01) {
                 if(currentRight != 1) {
                     if(frameShiftFilterCount2 > 3 && (currentRight == 0 || currentRight == -1)) {
                         currentRight = 1;
-                        timeData["tStartRight"] = militime();
+                        timeData[tStartRight] = militime();
                     }
                     else { frameShiftFilterCount2 = frameShiftFilterCount2 + 1; }
                 }
                 else { frameShiftFilterCount2 = 0; }
             }
             // leg still
-            if((-0.01 < (frameData["rightFoot"] - meanData["rightFoot"])) && ((frameData["rightFoot"] - meanData["rightFoot"]) < 0.01)) {
+            if((-0.01 < (frameData[rightFoot] - meanData[rightFoot])) && ((frameData[rightFoot] - meanData[rightFoot]) < 0.01)) {
                 if(currentRight != 0 && currentRight != 2) {
                     if(frameShiftFilterCount2 > 6) {
                         // threshold to be tested
-                        if(frameData["leftLeg"] - frameData["rightLeg"] > 0.1 && currentRight == 1) {
+                        if(frameData[leftLeg] - frameData[rightLeg] > 0.1 && currentRight == 1) {
                             currentRight = 2;
                         }
                         else { currentRight = 0; }
@@ -191,25 +203,27 @@ namespace actionwalk {
     }
 
     void walk::calculateStepLen() {
-        float maxSL = frameData["height"] * 1.2;
-        float leftFlexion = (180 - meanData["leftHip"]) > 90 ? 90 : (180 - meanData["leftHip"]);
-        float rightFlexion = (180 - meanData["rightHip"]) > 90 ? 90 : (180 - meanData["rightHip"]);
-        stepLenLeft = (maxSL / pow(90,(1/3))) * pow(leftFlexion,(1/3));
-        stepLenRight = (maxSL / pow(90,(1/3))) * pow(rightFlexion,(1/3));
+        float maxSL = meanData[height] * 1.2;
+        float leftFlexion = (180 - meanData[leftHip]) > 90 ? 90 : (180 - meanData[leftHip]);
+        float rightFlexion = (180 - meanData[rightHip]) > 90 ? 90 : (180 - meanData[rightHip]);
+        stepLenLeft = (maxSL / pow(90,(float)1/3)) * pow(leftFlexion,(float)1/3);
+        stepLenRight = (maxSL / pow(90,(float)1/3)) * pow(rightFlexion,(float)1/3);
+        if(currentLeft == 0 || currentLeft == 2) { stepLenLeft = 0; }
+        if(currentRight == 0 || currentRight == 2) { stepLenRight = 0; }
     }
 
     void walk::checkStepRate() {
         if((currentLeft == 0 || currentLeft == 2) && (currentRight == 0 || currentLeft == 2)) {
             fpmStopCount3 = fpmStopCount3 + 1;
             if(fpmStopCount3 > 15) {
-                timeData["tWindowLeft"] = 0;
-                timeData["tWindowRight"] = 0;
+                timeData[tWindowLeft] = 0;
+                timeData[tWindowRight] = 0;
             }
         }
         else { fpmStopCount3 = 0; }
-        if (timeData["tWindowLeft"] != 0) stepRateLeft = 0.6 / timeData["tWindowLeft"]; 
+        if (timeData[tWindowLeft] != 0) stepRateLeft = 0.6 / timeData[tWindowLeft]; 
         else { stepRateLeft = 0; }
-        if (timeData["tWindowRight"] != 0) stepRateRight = 0.6 / timeData["tWindowRight"];
+        if (timeData[tWindowRight] != 0) stepRateRight = 0.6 / timeData[tWindowRight];
         else { stepRateRight = 0; }
     }
 
