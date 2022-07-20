@@ -114,9 +114,9 @@ var wasm_processor = {
             }
         }
         pose.monitor = {
-            "m1" : pose.action_detection.walk.leftStepLength,
-            "m1Name" : "left",
-            "m2" : pose.action_detection.walk.rightStepLength,
+            "m1" : pose.action_detection.walk.leftLeg,
+            "m1Name" : "left_euro",
+            "m2" : pose.action_detection.walk.rightLeg,
             "m2Name" : "right"
         }
         // pose.monitor = {
