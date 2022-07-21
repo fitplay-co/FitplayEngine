@@ -18,6 +18,10 @@ namespace actionwalk {
             map<int, float> meanData;
             map<int, float> timeData;
 
+            double frequency = 60, mincutoff = 0.85, beta = 1.2, dcutoff = 1.0;
+            detection::OneEuroFilter *leftFootFilter;
+            detection::OneEuroFilter *rightFootFilter;
+
             float currentLeft = 0;
             float currentRight = 0;
             float stepRateLeft = 0;
@@ -51,7 +55,10 @@ namespace actionwalk {
             float distanceFinder(const PoseData::Pose* data, int num1, int num2);
     };
 
-    walk::walk() {}
+    walk::walk() {
+        leftFootFilter = new detection::OneEuroFilter(frequency, mincutoff, beta, dcutoff);
+        rightFootFilter = new detection::OneEuroFilter(frequency, mincutoff, beta, dcutoff);
+    }
 
     walk::~walk() {}
 
@@ -67,7 +74,7 @@ namespace actionwalk {
     flat walk::writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder) {
         return actionData::CreateWalk(resultBuilder, 
             currentLeft,
-            currentRight,
+            frameData[leftFoot] - meanData[leftFoot],
             stepRateLeft,
             stepRateRight,
             meanData[leftHip],
@@ -89,16 +96,15 @@ namespace actionwalk {
     }
 
     void walk::calculateMean() {
-        double frequency = 60, mincutoff = 0.01, beta = 1.2, dcutoff = 1.0;
         double timestamp = frameCount/frequency;
-        detection::OneEuroFilter leftFootFilter(frequency, mincutoff, beta, dcutoff);
-        detection::OneEuroFilter rightFootFilter(frequency, mincutoff, beta, dcutoff);
-        double leftFootFiltered = leftFootFilter.filter(frameData[leftFoot], timestamp);
-        double rightFootFiltered = rightFootFilter.filter(frameData[rightFoot], timestamp);
-        // meanData[leftFoot] = float(leftFootFiltered);
+        frameCount = frameCount + 1;
+        double leftFootFiltered = leftFootFilter->filter(frameData[leftFoot], timestamp);
+        double rightFootFiltered = rightFootFilter->filter(frameData[rightFoot], timestamp);
+        meanData[leftFoot] = meanData[15];
+        meanData[15] = float(leftFootFiltered);
         // meanData[rightFoot] = float(rightFootFiltered);
-        meanData[leftFoot] = meanData[leftFoot] * 0.85 + frameData[leftFoot] * 0.15;
-        meanData[rightFoot] = meanData[rightFoot] * 0.85 + frameData[rightFoot] * 0.15;
+        meanData[rightFoot] = meanData[rightFoot] * 0.85 + frameData[leftFoot] * 0.15;
+        // meanData[rightFoot] = meanData[rightFoot] * 0.85 + frameData[rightFoot] * 0.15;
         meanData[leftHip] = meanData[leftHip] * 0.8 + frameData[leftHip] * 0.2;
         meanData[rightHip] = meanData[rightHip] * 0.8 + frameData[rightHip] * 0.2;
         meanData[thigh] = (meanData[thigh] * 0.9 + frameData[thigh] * 0.1) * 0.79 + 0.15;

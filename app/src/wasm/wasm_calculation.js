@@ -115,15 +115,15 @@ var wasm_processor = {
         }
         pose.monitor = {
             "m1" : pose.action_detection.walk.leftLeg,
-            "m1Name" : "left_euro",
+            "m1Name" : "euro_mean",
             "m2" : pose.action_detection.walk.rightLeg,
-            "m2Name" : "right"
+            "m2Name" : "mean"
         }
         // pose.monitor = {
-        //     "m1" : pose.keypoints[25].y,
-        //     "m1Name" : "leftKnee",
-        //     "m2" : pose.keypoints[27].y,
-        //     "m2Name" : "leftFoot"
+        //     "m1" : pose.keypoints[23].y,
+        //     "m1Name" : "leftHip",
+        //     "m2" : pose.keypoints[24].y,
+        //     "m2Name" : "rightHip"
         // }
         if (actionTemp.ground()) {
             pose.ground_location = {
