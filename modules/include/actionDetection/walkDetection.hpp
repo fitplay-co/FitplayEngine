@@ -28,6 +28,8 @@ namespace actionwalk {
             float stepRateRight = 0;
             float stepLenLeft = 0;
             float stepLenRight = 0;
+            float leftProgress = 0;
+            float rightProgress = 0;
 
             float frameCount = 0;
 
@@ -74,7 +76,7 @@ namespace actionwalk {
     flat walk::writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder) {
         return actionData::CreateWalk(resultBuilder, 
             currentLeft,
-            frameData[leftFoot] - meanData[leftFoot],
+            currentRight,
             stepRateLeft,
             stepRateRight,
             meanData[leftHip],
@@ -100,10 +102,11 @@ namespace actionwalk {
         frameCount = frameCount + 1;
         double leftFootFiltered = leftFootFilter->filter(frameData[leftFoot], timestamp);
         double rightFootFiltered = rightFootFilter->filter(frameData[rightFoot], timestamp);
-        meanData[leftFoot] = meanData[15];
-        meanData[15] = float(leftFootFiltered);
-        // meanData[rightFoot] = float(rightFootFiltered);
-        meanData[rightFoot] = meanData[rightFoot] * 0.85 + frameData[leftFoot] * 0.15;
+        meanData[leftFoot] = meanData[currentLeftFoot];
+        meanData[currentLeftFoot] = float(leftFootFiltered);
+        meanData[rightFoot] = meanData[currentRightFoot];
+        meanData[currentRightFoot] = float(rightFootFiltered);
+        // meanData[leftFoot] = meanData[leftFoot] * 0.85 + frameData[leftFoot] * 0.15;
         // meanData[rightFoot] = meanData[rightFoot] * 0.85 + frameData[rightFoot] * 0.15;
         meanData[leftHip] = meanData[leftHip] * 0.8 + frameData[leftHip] * 0.2;
         meanData[rightHip] = meanData[rightHip] * 0.8 + frameData[rightHip] * 0.2;
