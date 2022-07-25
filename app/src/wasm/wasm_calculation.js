@@ -101,7 +101,10 @@ var wasm_processor = {
                 "leftHipAng" : actionTemp.walk().leftHipAng(),
                 "rightHipAng" : actionTemp.walk().rightHipAng(),
                 "leftStepLength" : actionTemp.walk().leftStepLength(),
-                "rightStepLength" : actionTemp.walk().rightStepLength()
+                "rightStepLength" : actionTemp.walk().rightStepLength(),
+                "leftProgress" : actionTemp.walk().leftProgress(),
+                "rightProgress" : actionTemp.walk().rightProgress(),
+                "turn" : actionTemp.walk().turn()
             }
             pose.action_detection.jump = {
                 "takeOff" : actionTemp.jump().takeOff(),
@@ -115,9 +118,9 @@ var wasm_processor = {
         }
         pose.monitor = {
             "m1" : pose.action_detection.walk.leftLeg,
-            "m1Name" : "euro_mean",
-            "m2" : pose.action_detection.walk.rightLeg,
-            "m2Name" : "mean"
+            "m1Name" : "leftLeg",
+            "m2" : pose.action_detection.walk.turn,
+            "m2Name" : "turn"
         }
         // pose.monitor = {
         //     "m1" : pose.keypoints[23].y,
