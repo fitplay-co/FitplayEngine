@@ -343,8 +343,9 @@ namespace actionwalk {
     void walk::calculateTurn(const PoseData::Pose* data) {
         float a[2] = {data->keypoints3D()->Get(11)->x() - data->keypoints3D()->Get(12)->x()
                     ,data->keypoints3D()->Get(11)->z() - data->keypoints3D()->Get(12)->z()};
-        float b[2] = {data->keypoints3D()->Get(23)->x() - data->keypoints3D()->Get(24)->x()
-                    ,data->keypoints3D()->Get(23)->z() - data->keypoints3D()->Get(24)->z()};
+        // float b[2] = {data->keypoints3D()->Get(23)->x() - data->keypoints3D()->Get(24)->x()
+        //             ,data->keypoints3D()->Get(23)->z() - data->keypoints3D()->Get(24)->z()};
+        float b[2] = {1,0};
         float ab,a1,b1,cosr;
         ab = a[0]*b[0]+a[1]*b[1];
         a1 = sqrt(a[0]*a[0]+a[1]*a[1]);
