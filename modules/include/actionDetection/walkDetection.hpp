@@ -14,25 +14,43 @@ namespace actionwalk {
 
     class walk {
         private:
+            // calculated data
             map<int, float> frameData;
             map<int, float> meanData;
             map<int, float> timeData;
 
+            // for one euro filter
+            float frameCount = 0;
+            double frequency = 60, mincutoff = 0.85, beta = 1.2, dcutoff = 1.0;
+            detection::OneEuroFilter *leftFootFilter;
+            detection::OneEuroFilter *rightFootFilter;
+
+            // output data
             float currentLeft = 0;
             float currentRight = 0;
             float stepRateLeft = 0;
             float stepRateRight = 0;
             float stepLenLeft = 0;
             float stepLenRight = 0;
+            float leftProgress = 0;
+            float rightProgress = 0;
+            float turn = 0;
 
-            float frameCount = 0;
+            // progress info
+            float preLeft = 0;
+            float preRight = 0;
+            float maxLeft = 30;
+            float maxRight = 30;
+            float lenLeft = 0;
+            float lenRight = 0;
+            float frameLeft = 0;
+            float frameRight = 0;
 
             float fpmStopCount = 0;
             float frameShiftFilterCount = 0;
             float fpmStopCount2 = 0;
             float frameShiftFilterCount2 = 0;
             float fpmStopCount3 = 0;
-
             float threshold = 0.05;
 
         public:
@@ -45,13 +63,18 @@ namespace actionwalk {
             void calculateRight();
             void calculateStepLen();
             void checkStepRate();
+            void calculateProgress();
+            void calculateTurn(const PoseData::Pose* data);
             flat writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder);
             int militime();
             float calVecAngle(const PoseData::Pose* data, int num1, int num2, int num3, int config);
             float distanceFinder(const PoseData::Pose* data, int num1, int num2);
     };
 
-    walk::walk() {}
+    walk::walk() {
+        leftFootFilter = new detection::OneEuroFilter(frequency, mincutoff, beta, dcutoff);
+        rightFootFilter = new detection::OneEuroFilter(frequency, mincutoff, beta, dcutoff);
+    }
 
     walk::~walk() {}
 
@@ -62,6 +85,9 @@ namespace actionwalk {
         calculateRight();
         calculateStepLen();
         checkStepRate();
+        calculateProgress();
+        calculateTurn(data);
+
     }
 
     flat walk::writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder) {
@@ -73,10 +99,16 @@ namespace actionwalk {
             meanData[leftHip],
             meanData[rightHip],
             stepLenLeft,
-            stepLenRight);
+            stepLenRight,
+            leftProgress,
+            rightProgress,
+            turn);
     }
 
     void walk::calculateFrame(const PoseData::Pose* data) {
+
+        frameData[preLeftFoot] = frameData[leftFoot];
+        frameData[preRightFoot] = frameData[rightFoot];
         frameData[rightFoot] = data->keypoints()->Get(28)->y() + data->keypoints()->Get(32)->y();
         frameData[leftFoot] = data->keypoints()->Get(27)->y() + data->keypoints()->Get(31)->y();
         frameData[rightHip] = calVecAngle(data, 12, 24, 26, 1);
@@ -89,16 +121,16 @@ namespace actionwalk {
     }
 
     void walk::calculateMean() {
-        double frequency = 60, mincutoff = 0.01, beta = 1.2, dcutoff = 1.0;
         double timestamp = frameCount/frequency;
-        detection::OneEuroFilter leftFootFilter(frequency, mincutoff, beta, dcutoff);
-        detection::OneEuroFilter rightFootFilter(frequency, mincutoff, beta, dcutoff);
-        double leftFootFiltered = leftFootFilter.filter(frameData[leftFoot], timestamp);
-        double rightFootFiltered = rightFootFilter.filter(frameData[rightFoot], timestamp);
-        // meanData[leftFoot] = float(leftFootFiltered);
-        // meanData[rightFoot] = float(rightFootFiltered);
-        meanData[leftFoot] = meanData[leftFoot] * 0.85 + frameData[leftFoot] * 0.15;
-        meanData[rightFoot] = meanData[rightFoot] * 0.85 + frameData[rightFoot] * 0.15;
+        frameCount = frameCount + 1;
+        double leftFootFiltered = leftFootFilter->filter(frameData[leftFoot], timestamp);
+        double rightFootFiltered = rightFootFilter->filter(frameData[rightFoot], timestamp);
+        meanData[leftFoot] = meanData[currentLeftFoot];
+        meanData[currentLeftFoot] = float(leftFootFiltered);
+        meanData[rightFoot] = meanData[currentRightFoot];
+        meanData[currentRightFoot] = float(rightFootFiltered);
+        // meanData[leftFoot] = meanData[leftFoot] * 0.85 + frameData[leftFoot] * 0.15;
+        // meanData[rightFoot] = meanData[rightFoot] * 0.85 + frameData[rightFoot] * 0.15;
         meanData[leftHip] = meanData[leftHip] * 0.8 + frameData[leftHip] * 0.2;
         meanData[rightHip] = meanData[rightHip] * 0.8 + frameData[rightHip] * 0.2;
         meanData[thigh] = (meanData[thigh] * 0.9 + frameData[thigh] * 0.1) * 0.79 + 0.15;
@@ -107,6 +139,7 @@ namespace actionwalk {
     }
 
     void walk::calculateLeft() {
+        preLeft = currentLeft;
         // for left leg
         if(currentLeft == 2) {
             if(frameData[rightLeg] - frameData[leftLeg] < 0.1) {
@@ -145,7 +178,10 @@ namespace actionwalk {
                         if(frameData[rightLeg] - frameData[leftLeg] > 0.1 && currentLeft == 1) {
                             currentLeft = 2;
                         }
-                        else { currentLeft = 0; }
+                        else {
+                            preLeft = currentLeft; 
+                            currentLeft = 0;
+                        }
                     }
                     else { frameShiftFilterCount = frameShiftFilterCount + 1; }
                 }
@@ -155,6 +191,7 @@ namespace actionwalk {
     }
 
     void walk::calculateRight() {
+        preRight = currentRight;
         // for right leg
         if(currentRight == 2) {
             if(frameData[leftLeg] - frameData[rightLeg] < 0.1) {
@@ -193,7 +230,10 @@ namespace actionwalk {
                         if(frameData[leftLeg] - frameData[rightLeg] > 0.1 && currentRight == 1) {
                             currentRight = 2;
                         }
-                        else { currentRight = 0; }
+                        else {
+                            preRight = currentRight;
+                            currentRight = 0; 
+                        }
                     }
                     else { frameShiftFilterCount2 = frameShiftFilterCount2 + 1; }
                 }
@@ -225,6 +265,93 @@ namespace actionwalk {
         else { stepRateLeft = 0; }
         if (timeData[tWindowRight] != 0) stepRateRight = 0.6 / timeData[tWindowRight];
         else { stepRateRight = 0; }
+    }
+
+    void walk::calculateProgress() {
+        // left progress
+        if(preLeft == 0 && currentLeft == 0) { 
+            float increment = - (frameData[leftFoot] - frameData[preLeftFoot]);
+            lenLeft = lenLeft + increment;
+            leftProgress = lenLeft / maxLeft * 0.5;
+            leftProgress = leftProgress < 0.05 ? 0 : leftProgress;
+        }
+        if(frameLeft == 0) {
+            if(currentLeft == 1) {
+                float increment = - (frameData[leftFoot] - frameData[preLeftFoot]);
+                if(increment < 0) {
+                    maxLeft = lenLeft;
+                    lenLeft = 0;
+                    frameLeft = -1;
+                    leftProgress = 0.5;
+                }
+                else {
+                    lenLeft = lenLeft + increment;
+                    leftProgress = lenLeft / maxLeft * 0.5;
+                    leftProgress = leftProgress > 0.5 ? 0.5 : leftProgress;
+                }
+            }
+        }
+        if(frameLeft == -1){
+            float increment = (frameData[leftFoot] - frameData[preLeftFoot]);
+            lenLeft = lenLeft + increment;
+            leftProgress = lenLeft / maxLeft * 0.5 + 0.5;
+            leftProgress = leftProgress > 1 ? 1 : leftProgress;
+        }
+        if(preLeft == -1 && currentLeft != preLeft) {
+            frameLeft = 0;
+            lenLeft = 0;
+            leftProgress = 1;
+        }
+
+        // right progress
+        if(preRight == 0 && currentRight == 0) { 
+            float increment = - (frameData[rightFoot] - frameData[preRightFoot]);
+            lenRight = lenRight + increment;
+            rightProgress = lenRight / maxRight * 0.5;
+            rightProgress = rightProgress < 0.05 ? 0 : rightProgress;
+        }
+        if(frameRight == 0) {
+            if(currentRight == 1) {
+                float increment = - (frameData[rightFoot] - frameData[preRightFoot]);
+                if(increment < 0) {
+                    maxRight = lenRight;
+                    lenRight = 0;
+                    frameRight = -1;
+                    rightProgress = 0.5;
+                }
+                else {
+                    lenRight = lenRight + increment;
+                    rightProgress = lenRight / maxRight * 0.5;
+                    rightProgress = rightProgress > 0.5 ? 0.5 : rightProgress;
+                }
+            }
+        }
+        if(frameRight == -1){
+            float increment = (frameData[rightFoot] - frameData[preRightFoot]);
+            lenRight = lenRight + increment;
+            rightProgress = lenRight / maxRight * 0.5 + 0.5;
+            rightProgress = rightProgress > 1 ? 1 : rightProgress;
+        }
+        if(preRight == -1 && currentRight != preRight) {
+            frameRight = 0;
+            lenRight = 0;
+            rightProgress = 1;
+        }
+
+    }
+
+    void walk::calculateTurn(const PoseData::Pose* data) {
+        float a[2] = {data->keypoints3D()->Get(11)->x() - data->keypoints3D()->Get(12)->x()
+                    ,data->keypoints3D()->Get(11)->z() - data->keypoints3D()->Get(12)->z()};
+        float b[2] = {data->keypoints3D()->Get(23)->x() - data->keypoints3D()->Get(24)->x()
+                    ,data->keypoints3D()->Get(23)->z() - data->keypoints3D()->Get(24)->z()};
+        float ab,a1,b1,cosr;
+        ab = a[0]*b[0]+a[1]*b[1];
+        a1 = sqrt(a[0]*a[0]+a[1]*a[1]);
+        b1 = sqrt(b[0]*b[0]+b[1]*b[1]);
+        cosr = ab/a1/b1;
+        turn = acos(cosr)*180/acos(-1);
+        if(data->keypoints3D()->Get(12)->z() < data->keypoints3D()->Get(11)->z()) turn = - turn;
     }
 
     int walk::militime() {

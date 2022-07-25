@@ -101,7 +101,10 @@ var wasm_processor = {
                 "leftHipAng" : actionTemp.walk().leftHipAng(),
                 "rightHipAng" : actionTemp.walk().rightHipAng(),
                 "leftStepLength" : actionTemp.walk().leftStepLength(),
-                "rightStepLength" : actionTemp.walk().rightStepLength()
+                "rightStepLength" : actionTemp.walk().rightStepLength(),
+                "leftProgress" : actionTemp.walk().leftProgress(),
+                "rightProgress" : actionTemp.walk().rightProgress(),
+                "turn" : actionTemp.walk().turn()
             }
             pose.action_detection.jump = {
                 "takeOff" : actionTemp.jump().takeOff(),
@@ -115,15 +118,15 @@ var wasm_processor = {
         }
         pose.monitor = {
             "m1" : pose.action_detection.walk.leftLeg,
-            "m1Name" : "left_euro",
-            "m2" : pose.action_detection.walk.rightLeg,
-            "m2Name" : "right"
+            "m1Name" : "leftLeg",
+            "m2" : pose.action_detection.walk.turn,
+            "m2Name" : "turn"
         }
         // pose.monitor = {
-        //     "m1" : pose.keypoints[25].y,
-        //     "m1Name" : "leftKnee",
-        //     "m2" : pose.keypoints[27].y,
-        //     "m2Name" : "leftFoot"
+        //     "m1" : pose.keypoints[23].y,
+        //     "m1Name" : "leftHip",
+        //     "m2" : pose.keypoints[24].y,
+        //     "m2Name" : "rightHip"
         // }
         if (actionTemp.ground()) {
             pose.ground_location = {
