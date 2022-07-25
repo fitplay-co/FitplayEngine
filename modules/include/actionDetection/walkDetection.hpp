@@ -18,6 +18,7 @@ namespace actionwalk {
             map<int, float> frameData;
             map<int, float> meanData;
             map<int, float> timeData;
+            map<int, int> timeData2;
 
             // for one euro filter
             float frameCount = 0;
@@ -30,6 +31,7 @@ namespace actionwalk {
             float currentRight = 0;
             float stepRateLeft = 0;
             float stepRateRight = 0;
+            float stepRate = 0;
             float stepLenLeft = 0;
             float stepLenRight = 0;
             float leftProgress = 0;
@@ -74,6 +76,7 @@ namespace actionwalk {
     walk::walk() {
         leftFootFilter = new detection::OneEuroFilter(frequency, mincutoff, beta, dcutoff);
         rightFootFilter = new detection::OneEuroFilter(frequency, mincutoff, beta, dcutoff);
+        timeData2[tlock] = 0;
     }
 
     walk::~walk() {}
@@ -95,7 +98,7 @@ namespace actionwalk {
             currentLeft,
             currentRight,
             stepRateLeft,
-            stepRateRight,
+            stepRate,
             meanData[leftHip],
             meanData[rightHip],
             stepLenLeft,
@@ -163,6 +166,14 @@ namespace actionwalk {
             if(frameData[leftFoot] - meanData[leftFoot] < -0.01) {
                 if(currentLeft != 1) {
                     if(frameShiftFilterCount > 3 && (currentLeft == 0 || currentLeft == -1)) {
+                        if(timeData2[tlock] == 1){
+                            timeData2[t2] = militime();
+                            timeData2[tlock] = 0;
+                        }
+                        else {
+                            timeData2[tlock] = 1;
+                            timeData2[t1] = militime();
+                        }
                         currentLeft = 1;
                         timeData[tStartLeft] = militime();
                     }
@@ -215,6 +226,14 @@ namespace actionwalk {
             if(frameData[rightFoot] - meanData[rightFoot] < -0.01) {
                 if(currentRight != 1) {
                     if(frameShiftFilterCount2 > 3 && (currentRight == 0 || currentRight == -1)) {
+                        // if(timeData2[tlock] == 1){
+                        //     timeData2[t2] = militime();
+                        //     timeData2[tlock] = 0;
+                        // }
+                        // else {
+                        //     timeData2[tlock] = 1;
+                        //     timeData2[t1] = militime();
+                        // }
                         currentRight = 1;
                         timeData[tStartRight] = militime();
                     }
@@ -253,9 +272,13 @@ namespace actionwalk {
     }
 
     void walk::checkStepRate() {
-        if((currentLeft == 0 || currentLeft == 2) && (currentRight == 0 || currentLeft == 2)) {
+        if((currentLeft == 0 || currentLeft == 2) && (currentRight == 0 || currentRight == 2)) {
             fpmStopCount3 = fpmStopCount3 + 1;
             if(fpmStopCount3 > 15) {
+                timeData2[t1] = 0;
+                timeData2[t2] = 0;
+                timeData2[tlock] = 0;
+                stepRate = 0;
                 timeData[tWindowLeft] = 0;
                 timeData[tWindowRight] = 0;
             }
@@ -265,6 +288,10 @@ namespace actionwalk {
         else { stepRateLeft = 0; }
         if (timeData[tWindowRight] != 0) stepRateRight = 0.6 / timeData[tWindowRight];
         else { stepRateRight = 0; }
+
+        if(timeData2[t1]!=0&&timeData2[t2]!=0){
+            stepRate = 2 / (float(abs(timeData2[t1] - timeData2[t2]))/1000);
+        }
     }
 
     void walk::calculateProgress() {

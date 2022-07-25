@@ -117,10 +117,10 @@ var wasm_processor = {
             }
         }
         pose.monitor = {
-            "m1" : pose.action_detection.walk.leftLeg,
-            "m1Name" : "leftLeg",
-            "m2" : pose.action_detection.walk.turn,
-            "m2Name" : "turn"
+            "m1" : pose.action_detection.walk.leftFrequency,
+            "m1Name" : "v2",
+            "m2" : pose.action_detection.walk.rightFrequency,
+            "m2Name" : "v1"
         }
         // pose.monitor = {
         //     "m1" : pose.keypoints[23].y,

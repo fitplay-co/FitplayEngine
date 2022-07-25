@@ -17,7 +17,9 @@ namespace actionwalk {
     static constexpr int tStartRight = 14;
     static constexpr int currentLeftFoot = 15;
     static constexpr int currentRightFoot = 16;
-    static constexpr int preLeftFoot = 16;
-    static constexpr int preRightFoot = 17;
-
+    static constexpr int preLeftFoot = 17;
+    static constexpr int preRightFoot = 18;
+    static constexpr int t1 = 19;
+    static constexpr int t2 = 20;
+    static constexpr int tlock = 21;
 }
