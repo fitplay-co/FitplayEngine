@@ -98,7 +98,7 @@ namespace actionwalk {
             currentLeft,
             currentRight,
             stepRateLeft,
-            stepRate,
+            stepRateRight,
             meanData[leftHip],
             meanData[rightHip],
             stepLenLeft,
