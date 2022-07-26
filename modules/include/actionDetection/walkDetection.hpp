@@ -37,6 +37,7 @@ namespace actionwalk {
             float leftProgress = 0;
             float rightProgress = 0;
             float turn = 0;
+            float velocity = 0;
 
             // progress info
             float preLeft = 0;
@@ -95,7 +96,7 @@ namespace actionwalk {
 
     flat walk::writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder) {
         return actionData::CreateWalk(resultBuilder, 
-            currentLeft,
+            velocity,
             stepRate,
             stepRateLeft,
             stepRateRight,
@@ -265,10 +266,10 @@ namespace actionwalk {
         float maxSL = meanData[height] * 1.2;
         float leftFlexion = (180 - meanData[leftHip]) > 90 ? 90 : (180 - meanData[leftHip]);
         float rightFlexion = (180 - meanData[rightHip]) > 90 ? 90 : (180 - meanData[rightHip]);
-        stepLenLeft = (maxSL / pow(90,(float)1/3)) * pow(leftFlexion,(float)1/3);
-        stepLenRight = (maxSL / pow(90,(float)1/3)) * pow(rightFlexion,(float)1/3);
-        if(currentLeft == 0 || currentLeft == 2) { stepLenLeft = 0; }
-        if(currentRight == 0 || currentRight == 2) { stepLenRight = 0; }
+        if(preLeft == 1 && currentLeft == -1) stepLenLeft = (maxSL / pow(90,(float)1/3)) * pow(leftFlexion,(float)1/3);
+        if(preRight == 1 && currentRight == -1) stepLenRight = (maxSL / pow(90,(float)1/3)) * pow(rightFlexion,(float)1/3);
+        // if(currentLeft == 0 || currentLeft == 2) { stepLenLeft = 0; }
+        // if(currentRight == 0 || currentRight == 2) { stepLenRight = 0; }
     }
 
     void walk::checkStepRate() {
@@ -296,6 +297,7 @@ namespace actionwalk {
             stepRate = 2 / (float(abs(timeData2[t1] - timeData2[t2]))/1000);
         }
         stepRate = preStepRate * 0.8 + stepRate * 0.2;
+        velocity = stepRate * stepLenLeft;
     }
 
     void walk::calculateProgress() {
