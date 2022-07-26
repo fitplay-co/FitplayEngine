@@ -33,9 +33,10 @@ namespace fitplay {
             auto pl1 = fitInstance.writeFlatBufferLocal(builder);
             auto pl2 = mirrorFitInstance.writeFlatBufferLocal(builder);
             flatbuffersOffset = actionData::CreateFitting(builder, p1, p2, pl1, pl2);
+            return true;
         }
         
-        return true;
+        return false;
     }
 
     void fittingComponent::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {

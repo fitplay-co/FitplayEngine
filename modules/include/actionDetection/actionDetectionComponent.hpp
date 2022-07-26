@@ -27,9 +27,10 @@ namespace actionDetection {
             walkInstance.process(data, builder);
             jumpInstance.process(data, builder);
             squatInstance.process(data, builder);
+            return true;
         }
         
-        return true;
+        return false;
     }
 
     void actionDetectionComponent::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {

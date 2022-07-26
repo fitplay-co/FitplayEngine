@@ -52,9 +52,11 @@ namespace gaze {
             pre_z = z;
 
             flatbuffersOffset = actionData::CreateGaze(builder, res_x, res_y, z);
+
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     void gazeTracking::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {
