@@ -96,7 +96,7 @@ namespace actionwalk {
     flat walk::writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder) {
         return actionData::CreateWalk(resultBuilder, 
             currentLeft,
-            currentRight,
+            stepRate,
             stepRateLeft,
             stepRateRight,
             meanData[leftHip],
@@ -284,9 +284,9 @@ namespace actionwalk {
             }
         }
         else { fpmStopCount3 = 0; }
-        if (timeData[tWindowLeft] != 0) stepRateLeft = 0.6 / timeData[tWindowLeft]; 
+        if (timeData[tWindowLeft] != 0) stepRateLeft = 0.35 / timeData[tWindowLeft]; 
         else { stepRateLeft = 0; }
-        if (timeData[tWindowRight] != 0) stepRateRight = 0.6 / timeData[tWindowRight];
+        if (timeData[tWindowRight] != 0) stepRateRight = 0.35 / timeData[tWindowRight];
         else { stepRateRight = 0; }
 
         if(timeData2[t1]!=0&&timeData2[t2]!=0){
