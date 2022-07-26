@@ -308,6 +308,7 @@ namespace actionwalk {
         }
         // stepRate = preStepRate * 0.8 + stepRate * 0.2;
         velocity = velocity * 0.8 + (stepRate * stepLen) * 0.2;
+        if(velocity > 10) velocity = 10;
         if(velocity < 0.01) velocity = 0;
         // velocity = stepRate * stepLenLeft;
     }
