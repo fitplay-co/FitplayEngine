@@ -274,7 +274,7 @@ namespace actionwalk {
     void walk::checkStepRate() {
         if((currentLeft == 0 || currentLeft == 2) && (currentRight == 0 || currentRight == 2)) {
             fpmStopCount3 = fpmStopCount3 + 1;
-            if(fpmStopCount3 > 15) {
+            if(fpmStopCount3 > 20) {
                 timeData2[t1] = 0;
                 timeData2[t2] = 0;
                 timeData2[tlock] = 0;
@@ -289,9 +289,13 @@ namespace actionwalk {
         if (timeData[tWindowRight] != 0) stepRateRight = 0.35 / timeData[tWindowRight];
         else { stepRateRight = 0; }
 
+        float preStepRate = stepRate;
+        stepRate = stepRateLeft;
+
         if(timeData2[t1]!=0&&timeData2[t2]!=0){
             stepRate = 2 / (float(abs(timeData2[t1] - timeData2[t2]))/1000);
         }
+        stepRate = preStepRate * 0.8 + stepRate * 0.2;
     }
 
     void walk::calculateProgress() {
