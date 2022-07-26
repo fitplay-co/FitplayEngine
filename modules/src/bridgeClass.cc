@@ -3,34 +3,28 @@
 #include <emscripten/val.h>
 #include <string>
 #include <vector>
-#include "fitting/fitting.hpp"
+#include "fitting/fitting_component.hpp"
 #include "poseData_generated.h"
 #include "actionData_generated.h"
 #include "featureConfig_generated.h"
-#include "actionDetection/walkDetection.hpp"
-#include "actionDetection/jumpDetection.hpp"
-#include "actionDetection/squatDetection.hpp"
+#include "inputMessage_generated.h"
+#include "actionDetection/actionDetectionComponent.hpp"
 #include "gazeTracking/gazeTracking.hpp"
 #include "groundLocation/groundLocation.hpp"
+#include "midwareComponent/midwareComponent.hpp"
+#include "midwareComponent/midwareManager.hpp"
 
 using namespace emscripten;
 
 class BridgeClass {
 public:
-  BridgeClass(int x, std::string y)
-    : x(x)
-    , y(y)
+  BridgeClass()
   {
-    fitInstance.mirror = false;
-    mirrorFitInstance.mirror = true;
+    midwareManager.registerMidwareComponent(&groundInstance);
+    midwareManager.registerMidwareComponent(&gazeInstance);
+    midwareManager.registerMidwareComponent(&actionDetectionInstance);
+    midwareManager.registerMidwareComponent(&fittingInstance);
   }
-
-  void incrementX() {
-    ++x;
-  }
-
-  int getX() const { return x; }
-  void setX(int x_) { x = x_; }
 
   void release() {
     if (action_data.GetSize() > 0) {
@@ -38,119 +32,45 @@ public:
     }
   }
 
-  val entry(std::string inputData, std::string configs) {
-    const PoseData::Pose* data = PoseData::GetPose(&inputData[0]);
-    const FeatureConfigs::FeatureConfigList* featureConfigs = FeatureConfigs::GetFeatureConfigList(&configs[0]);
+  val entry(std::string inputData) {
+    const Input::InputMessage* inputMessage = Input::GetInputMessage(&inputData[0]);
 
-    bool actionDetectionEnable = false;
-    bool gazeTrackingEnable = false;
-    bool groundLocationEnable = false;
-    bool groundLocationReset = false;
-    bool groundLocationRgbdEnable = false;
-    bool fittingEnable = false;
-    for(int i = 0; i < featureConfigs->configs()->Length(); i++) {
-      auto config = featureConfigs->configs()->Get(i);
-      if ("action_detection" == config->feature_id()->str()) {
-        actionDetectionEnable = config->enable();
-      } else if ("ground_location" == config->feature_id()->str()) {
-        groundLocationEnable = config->enable();
-        groundLocationReset = config->action()->str() == "reset";
-        groundLocationRgbdEnable = config->type()->str() == "rgbd";
-      } else if ("gaze_tracking" == config->feature_id()->str()) {
-        gazeTrackingEnable = config->enable();
-      } else if ("fitting" == config->feature_id()->str()) {
-        fittingEnable = config->enable();
+    vector<int> componentIndexWithOutput;
+    for (int i = 0; i < midwareManager.componentList.size(); i++) {
+      bool hasOutput = midwareManager.componentList.at(i)->handleInput(inputMessage, action_data);
+      if (hasOutput) {
+        componentIndexWithOutput.push_back(i);
       }
-    }
-
-    float gaze_data[3] = {0,0,0};
-    float ground_data[5] = {0,0,0,0,0};
-    float squat_data[1] = {0};
-    flatbuffers::Offset<actionData::Walk> walk;
-    flatbuffers::Offset<actionData::Jump> jump;
-    flatbuffers::Offset<actionData::Squat> squat; 
-    flatbuffers::Offset<actionData::Gaze> gazeOffset; 
-    flatbuffers::Offset<actionData::Ground> groundLocation;
-    flatbuffers::Offset<actionData::Fitting> fittingOffset;
-    if (actionDetectionEnable) {
-      walkInstance.process(data);
-      jumpInstance.process(data);
-      squatInstance.process(squat_data, data);
-      walk = walkInstance.writeFlatBuffer(action_data);
-      jump = jumpInstance.writeFlatBuffer(action_data);
-      squat = actionData::CreateSquat(action_data, squat_data[0]);
-    }
-    if (gazeTrackingEnable) {
-      gazeInstance.process(gaze_data, data);
-      gazeOffset = actionData::CreateGaze(action_data, gaze_data[0], gaze_data[1], gaze_data[2]);
-    }
-    if (groundLocationEnable) {
-      groundInstance.process(ground_data, data, groundLocationReset, groundLocationRgbdEnable);
-      groundLocation = actionData::CreateGround(action_data, ground_data[0], ground_data[1], ground_data[2], ground_data[3], ground_data[4]);
-    }
-    if (fittingEnable) {
-      fitInstance.process(data);
-      mirrorFitInstance.process(data);
-      auto p1 = fitInstance.writeFlatBuffer(action_data);
-      auto p2 = mirrorFitInstance.writeFlatBuffer(action_data);
-      auto pl1 = fitInstance.writeFlatBufferLocal(action_data);
-      auto pl2 = mirrorFitInstance.writeFlatBufferLocal(action_data);
-      fittingOffset = actionData::CreateFitting(action_data, p1, p2, pl1, pl2);
     }
 
     actionData::ActionBuilder actionBuilder(action_data);
 
-    if (actionDetectionEnable) {
-      actionBuilder.add_walk(walk);
-      actionBuilder.add_jump(jump);
-      actionBuilder.add_squat(squat);
-    }
-    if (gazeTrackingEnable) {
-      actionBuilder.add_gaze(gazeOffset);
-    }
-    if (groundLocationEnable) {
-      actionBuilder.add_ground(groundLocation);
-    }
-    if (fittingEnable) {
-      actionBuilder.add_fitting(fittingOffset);
+    for (int i = 0; i < componentIndexWithOutput.size(); i++) {
+      midwareManager.componentList.at(componentIndexWithOutput.at(i))->writeToFlatbuffers(actionBuilder);
     }
 
     auto build = actionBuilder.Finish();
     action_data.Finish(build);
     uint8_t *byteBuffer = action_data.GetBufferPointer();
     size_t bufferLength = action_data.GetSize();
-    return val(typed_memory_view(bufferLength, byteBuffer));
+    return val(typed_memory_view(componentIndexWithOutput.size() <= 0 ? 0 : bufferLength, byteBuffer));
   }
-  // val jump_pose() {
-  //   jump_data = jumpInstance.process(data);
-  //   uint8_t *byteBuffer = jump_data.GetBufferPointer();
-  //   size_t bufferLength = jump_data.Get5Length, byteBuffer));
-  // }
 
-  static std::string getStringFromInstance(const BridgeClass& instance) {
-    return instance.y;
-  }
 
 private:
-  int x;
-  std::string y;
-  fitplay::fitting fitInstance;
-  fitplay::fitting mirrorFitInstance;
-  actionwalk::walk walkInstance;
-  actionjump::jump jumpInstance;
-  actionsquat::squat squatInstance;
+  fitplay::fittingComponent fittingInstance;
+  actionDetection::actionDetectionComponent actionDetectionInstance;
   gaze::gazeTracking gazeInstance;
   ground::groundLocation groundInstance;
   flatbuffers::FlatBufferBuilder action_data;
+  Midware::MidwareManager midwareManager;
 };
 
 // Binding code
 EMSCRIPTEN_BINDINGS(my_class_example) {
   class_<BridgeClass>("BridgeClass")
-    .constructor<int, std::string>()
+    .constructor<>()
     .function("entry", &BridgeClass::entry)
     .function("release", &BridgeClass::release)
-    .property("x", &BridgeClass::getX, &BridgeClass::setX)
-    .class_function("getStringFromInstance", &BridgeClass::getStringFromInstance)
     ;
 }

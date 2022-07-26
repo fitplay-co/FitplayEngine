@@ -5,12 +5,11 @@
 #include <chrono> 
 #include <math.h>
 #include "actionData_generated.h"
+#include "midwareComponent/midwareComponent.hpp"
 
 namespace actionjump {
 
-    typedef flatbuffers::Offset<actionData::Jump> flat;
-
-    class jump {
+    class jump: public Midware::MidwareComponent {
         private:
             bool init = false;
             map<std::string, float> frameData;
@@ -25,36 +24,45 @@ namespace actionjump {
             float frameShiftCount2 = 0;
             bool timeLock = false;
 
+            flatbuffers::Offset<actionData::Jump> flatbuffersOffset;
+
         public:
             jump();
             ~ jump();
-            void process(const PoseData::Pose* data);
+            bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
+            void writeToFlatbuffers(actionData::ActionBuilder&);
             void calculateCurrent(const PoseData::Pose* data);
             void calculateFoot();
             void calculateKnee();
             void calculateAnkle();
             void checkTimestamp();
-            flat writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder);
             float militime();
     };
 
-    jump::jump() {}
+    jump::jump(): MidwareComponent("jump")  {}
 
     jump::~jump() {}
 
-    void jump::process(const PoseData::Pose* data) {
-        calculateCurrent(data);
-        calculateFoot();
-        calculateKnee();
-        checkTimestamp();
+    bool jump::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
+        if (data->type() == Input::MessageType::MessageType_Pose) {
+            const PoseData::Pose* pose = data->pose();
+            calculateCurrent(pose);
+            calculateFoot();
+            calculateKnee();
+            checkTimestamp();
+
+            flatbuffersOffset = actionData::CreateJump(builder, 
+                                                        kneeOff,
+                                                        footOff,
+                                                        height,
+                                                        velocity);
+        }
+
+        return true;
     }
 
-    flat jump::writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder) {
-        return actionData::CreateJump(resultBuilder, 
-            kneeOff,
-            footOff,
-            height,
-            velocity);
+    void jump::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {
+        actionBuilder.add_jump(flatbuffersOffset);
     }
 
     void jump::calculateCurrent(const PoseData::Pose* data) {

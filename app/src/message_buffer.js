@@ -1,4 +1,5 @@
 const {performance} = require('perf_hooks');
+var MessageType = require('../../protocol/js/input/message-type').MessageType
 
 const MAX_BUFFER_SIZE = 3 //缓冲队列容量上限
 
@@ -19,18 +20,18 @@ var messageBuffer = {
         this.messageBufferMap.set('heart_control', []) // placeholder for heart control
     },
 
-    addNewMessage: function(message, webSocket) {
+    addNewMessage: function(message, webSocket, rawData, jsonMessage) {
         var messageType = ''
-        if (message.type === 'pose_landmark') {
+        if (message.type() === MessageType.Pose) {
             messageType = 'pose_landmark'
-        } else if (message.type === 'imu') {
-            messageType = 'imu'
-        } else if (message.type === 'application_control' 
-                   || message.type === 'application_client' 
-                   || message.type === 'sensor_client') {
+        } else if (message.type() === MessageType.ApplicationControl
+                   || message.type() === MessageType.ApplicationClient
+                   || message.type() === MessageType.SensorClient) {
             messageType = 'control'
-        } else if (message.type === 'sensor_frame' || message.type === 'sensor_control') {
-            messageType = message.sensor_type
+        } else if (message.type() === MessageType.SensorFrame) {
+            messageType = message.sensorFrame().sensorType()
+        } else if (message.type() === MessageType.SensorControl) {
+            messageType = message.sensorControl().sensorType()
         }
 
         if (messageType) {
@@ -51,7 +52,7 @@ var messageBuffer = {
                 console.log('drop earliest frame!!!')
                 this.messageBufferMap.get(messageType).shift()
             }
-            this.messageBufferMap.get(messageType).push({'message': message, 'webSocket': webSocket})
+            this.messageBufferMap.get(messageType).push({'message': message, 'webSocket': webSocket, 'rawData': rawData, 'jsonMessage': jsonMessage})
            // console.log('add new message:'+message.type+"|"+this.messageBufferMap.get(messageType).length)
         }
     },

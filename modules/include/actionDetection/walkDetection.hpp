@@ -4,8 +4,10 @@
 #include <chrono> 
 #include <math.h>
 #include "actionData_generated.h"
+#include "midwareComponent/midwareComponent.hpp"
+
 namespace actionwalk {
-    class walk {
+    class walk: public Midware::MidwareComponent {
         private:
             float current_lfoot = 0;
             float current_rfoot = 0;
@@ -45,15 +47,17 @@ namespace actionwalk {
             float frameShiftFilterCount2 = 0;
             float fpmStopCount3 = 0;
             float test;
+
+            flatbuffers::Offset<actionData::Walk> flatbuffersOffset;
         public:
             walk();
             ~ walk();
-            void process(const PoseData::Pose* data);
+            bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
+            void writeToFlatbuffers(actionData::ActionBuilder&);
             void calculate_current_frame(const PoseData::Pose* data);
             void calculate_current_mean();
             void calculate_current_left();
             void calculate_current_right();
-            flatbuffers::Offset<actionData::Walk> writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder);
             // void shiftDirectionStepPerMinutes();
             // void calculateWindow();
             int militime();
@@ -62,27 +66,37 @@ namespace actionwalk {
             float calVecAngle(const PoseData::Pose* data, int num1, int num2, int num3, int config);
             float distanceFinder(const PoseData::Pose* data, int num1, int num2);
     };
-    walk::walk() {}
+    walk::walk(): MidwareComponent("walk") {}
     walk::~walk() {}
-    void walk::process(const PoseData::Pose* data) {
-        calculate_current_frame(data);
-        calculate_current_mean();
-        calculate_current_left();
-        calculate_current_right();
-        calculate_step_length();
-        checkCurrentStepRate();
+
+    bool walk::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
+        if (data->type() == Input::MessageType::MessageType_Pose) {
+            const PoseData::Pose* pose = data->pose();
+            calculate_current_frame(pose);
+            calculate_current_mean();
+            calculate_current_left();
+            calculate_current_right();
+            calculate_step_length();
+            checkCurrentStepRate();
+
+            flatbuffersOffset = actionData::CreateWalk(builder, 
+                                                        current_left,
+                                                        current_right,
+                                                        step_rate,
+                                                        step_rate2,
+                                                        current_lhip_mean,
+                                                        current_rhip_mean,
+                                                        step_length,
+                                                        step_length2);
+        }
+
+        return true;
     }
-    flatbuffers::Offset<actionData::Walk> walk::writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder) {
-        return actionData::CreateWalk(resultBuilder, 
-            current_left,
-            current_right,
-            step_rate,
-            step_rate2,
-            current_lhip_mean,
-            current_rhip_mean,
-            step_length,
-            step_length2);
+
+    void walk::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {
+        actionBuilder.add_walk(flatbuffersOffset);
     }
+
     void walk::calculate_current_frame(const PoseData::Pose* data) {
         current_rfoot = data->keypoints()->Get(28)->y() + data->keypoints()->Get(30)->y() + data->keypoints()->Get(32)->y()
                         + data->keypoints()->Get(28)->x() + data->keypoints()->Get(30)->x() + data->keypoints()->Get(32)->x();

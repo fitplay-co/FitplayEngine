@@ -4,11 +4,12 @@
 #include <math.h>
 #include "glm/glm.hpp"
 #include "actionData_generated.h"
+#include "midwareComponent/midwareComponent.hpp"
 
 using namespace glm;
 
 namespace ground {
-    class groundLocation {
+    class groundLocation: public Midware::MidwareComponent {
         private:
             float tracing = 0;
             float z_down = 0;
@@ -28,63 +29,81 @@ namespace ground {
             float f_dy = 900;
             float legLength = 0;
             float whichLeg = 0; //用来识别以左右哪只脚的y为准，0代表左脚，1代表右脚
+            float ground_data[5];
+            flatbuffers::Offset<actionData::Ground> flatbuffersOffset;
+            
         public:
             groundLocation();
             ~groundLocation();
-            void process(float ground_data[], const PoseData::Pose* data, const bool reset, const bool rgbdEnable);
+            bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
+            void writeToFlatbuffers(actionData::ActionBuilder&);
             float distance_finder_z_filtered(const PoseData::Pose* data, int num1, int num2);
             void distance_finder_leg(const PoseData::Pose* data);
     };
 
-    groundLocation::groundLocation() {}
+    groundLocation::groundLocation(): MidwareComponent("ground_location") {}
     groundLocation::~groundLocation() {}
 
-    void groundLocation::process(float ground_data[], const PoseData::Pose* data, const bool reset, const bool rgbdEnable) {
-        if (reset) {
-            startX = pre_x;
-            startY = pre_y;
-            startZ = pre_z;
-        }
-        mat3 cameraParam = mat3(f_dx, 0, centerPointX,
+    bool groundLocation::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
+        if (data->type() == Input::MessageType::MessageType_Pose) {
+            const PoseData::Pose* pose = data->pose();
+            mat3 cameraParam = mat3(f_dx, 0, centerPointX,
                                 0, f_dy, centerPointY,
                                 0, 0, 1);
-        mat3 cameraInverse = inverse(cameraParam);
+            mat3 cameraInverse = inverse(cameraParam);
 
-        if (rgbdEnable) {
-            z_down = (data->keypoints()->Get(24)->z() + data->keypoints()->Get(23)->z())/2;
-        }
-        else {
-            z_down = distance_finder_z_filtered(data, 23, 24)*2.6;
-        }
+            if (pose->rgbdEnabled()) {
+                z_down = (pose->keypoints()->Get(24)->z() + pose->keypoints()->Get(23)->z())/2;
+            }
+            else {
+                z_down = distance_finder_z_filtered(pose, 23, 24)*2.6;
+            }
 
-        vec3 arr33 = vec3(data->keypoints()->Get(24)->x()*widthScale*z_down, (1-data->keypoints()->Get(24)->y())*heightScale*z_down, z_down);
-        vec3 arr_3down = vec3((data->keypoints()->Get(23)->x()+data->keypoints()->Get(24)->x())*widthScale*z_down*0.5, (1-data->keypoints()->Get(23)->y())*heightScale*z_down, z_down);
-        vec3 res_down = cameraInverse * arr_3down;
-        vec3 resDown = cameraInverse * arr33;
-        distance_finder_leg(data);
-        res_down[1] = (res_down[1] + resDown[1])/2;
-        if(tracing == 0){
-            startX = res_down[0];
-            startY = res_down[1];
-            startZ = z_down;
-            tracing = 1;
+            vec3 arr33 = vec3(pose->keypoints()->Get(24)->x()*widthScale*z_down, (1-pose->keypoints()->Get(24)->y())*heightScale*z_down, z_down);
+            vec3 arr_3down = vec3((pose->keypoints()->Get(23)->x()+pose->keypoints()->Get(24)->x())*widthScale*z_down*0.5, (1-pose->keypoints()->Get(23)->y())*heightScale*z_down, z_down);
+            vec3 res_down = cameraInverse * arr_3down;
+            vec3 resDown = cameraInverse * arr33;
+            distance_finder_leg(pose);
+            res_down[1] = (res_down[1] + resDown[1])/2;
+            if(tracing == 0){
+                startX = res_down[0];
+                startY = res_down[1];
+                startZ = z_down;
+                tracing = 1;
+                pre_x = res_down[0];
+                pre_y = res_down[1];
+                pre_z = z_down;
+            }
+            res_down[0] = res_down[0]*0.1+pre_x*0.9;
+            res_down[1] = res_down[1]*0.1+pre_y*0.9;
+            z_down = z_down*0.1+pre_z*0.9;
+
+            ground_data[0] = res_down[0] - startX;
+            ground_data[1] = res_down[1] - startY + legLength;
+            ground_data[2] = z_down - startZ;
+            ground_data[3] = legLength;
+            ground_data[4] = tracing;
+
             pre_x = res_down[0];
             pre_y = res_down[1];
             pre_z = z_down;
+
+            flatbuffersOffset = actionData::CreateGround(builder, ground_data[0], ground_data[1], ground_data[2], ground_data[3], ground_data[4]);
+            return true;
+        } else if (data->type() == Input::MessageType::MessageType_ApplicationControl) {
+            const ApplicationControl::Control* control = data->control();
+            if (control->action()->str() == "reset") {
+                startX = pre_x;
+                startY = pre_y;
+                startZ = pre_z;
+            }
         }
-        res_down[0] = res_down[0]*0.1+pre_x*0.9;
-        res_down[1] = res_down[1]*0.1+pre_y*0.9;
-        z_down = z_down*0.1+pre_z*0.9;
+        
+        return false;
+    }
 
-        ground_data[0] = res_down[0] - startX;
-        ground_data[1] = res_down[1] - startY + legLength;
-        ground_data[2] = z_down - startZ;
-        ground_data[3] = legLength;
-        ground_data[4] = tracing;
-
-        pre_x = res_down[0];
-        pre_y = res_down[1];
-        pre_z = z_down;
+    void groundLocation::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {
+        actionBuilder.add_ground(flatbuffersOffset);
     }
 
     float groundLocation::distance_finder_z_filtered(const PoseData::Pose* data, int num1, int num2) {
