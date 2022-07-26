@@ -31,12 +31,16 @@ namespace actionwalk {
             float currentRight = 0;
             float stepRateLeft = 0;
             float stepRateRight = 0;
-            float stepRate = 0;
             float stepLenLeft = 0;
             float stepLenRight = 0;
             float leftProgress = 0;
             float rightProgress = 0;
             float turn = 0;
+
+            // velocity data
+            // version 2
+            float stepRate = 0;
+            float stepLen = 0;
             float velocity = 0;
 
             // progress info
@@ -227,14 +231,14 @@ namespace actionwalk {
             if(frameData[rightFoot] - meanData[rightFoot] < -0.01) {
                 if(currentRight != 1) {
                     if(frameShiftFilterCount2 > 3 && (currentRight == 0 || currentRight == -1)) {
-                        // if(timeData2[tlock] == 1){
-                        //     timeData2[t2] = militime();
-                        //     timeData2[tlock] = 0;
-                        // }
-                        // else {
-                        //     timeData2[tlock] = 1;
-                        //     timeData2[t1] = militime();
-                        // }
+                        if(timeData2[tlock] == 1){
+                            timeData2[t2] = militime();
+                            timeData2[tlock] = 0;
+                        }
+                        else {
+                            timeData2[tlock] = 1;
+                            timeData2[t1] = militime();
+                        }
                         currentRight = 1;
                         timeData[tStartRight] = militime();
                     }
@@ -266,8 +270,14 @@ namespace actionwalk {
         float maxSL = meanData[height] * 1.2;
         float leftFlexion = (180 - meanData[leftHip]) > 90 ? 90 : (180 - meanData[leftHip]);
         float rightFlexion = (180 - meanData[rightHip]) > 90 ? 90 : (180 - meanData[rightHip]);
-        if(preLeft == 1 && currentLeft == -1) stepLenLeft = (maxSL / pow(90,(float)1/3)) * pow(leftFlexion,(float)1/3);
-        if(preRight == 1 && currentRight == -1) stepLenRight = (maxSL / pow(90,(float)1/3)) * pow(rightFlexion,(float)1/3);
+        if(preLeft == 1 && currentLeft == -1) {
+            stepLenLeft = (maxSL / pow(90,(float)1/3)) * pow(leftFlexion,(float)1/3);
+            stepLen = stepLenLeft;
+        }
+        if(preRight == 1 && currentRight == -1) {
+            stepLenRight = (maxSL / pow(90,(float)1/3)) * pow(rightFlexion,(float)1/3);
+            stepLen = stepLenRight;
+        }
         // if(currentLeft == 0 || currentLeft == 2) { stepLenLeft = 0; }
         // if(currentRight == 0 || currentRight == 2) { stepLenRight = 0; }
     }
@@ -294,11 +304,11 @@ namespace actionwalk {
         stepRate = stepRateLeft;
 
         if(timeData2[t1]!=0&&timeData2[t2]!=0){
-            stepRate = 2 / (float(abs(timeData2[t1] - timeData2[t2]))/1000);
+            stepRate = 1 / (float(abs(timeData2[t1] - timeData2[t2]))/1000);
         }
         // stepRate = preStepRate * 0.8 + stepRate * 0.2;
-        // velocity = velocity * 0.8 + (stepRate * stepLenLeft) * 0.2;
-        velocity = stepRate * stepLenLeft;
+        velocity = velocity * 0.8 + (stepRate * stepLen) * 0.2;
+        // velocity = stepRate * stepLenLeft;
     }
 
     void walk::calculateProgress() {
