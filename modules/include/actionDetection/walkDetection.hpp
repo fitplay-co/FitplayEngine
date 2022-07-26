@@ -1,45 +1,50 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <map>
 #include <chrono> 
 #include <math.h>
 #include "actionData_generated.h"
 #include "midwareComponent/midwareComponent.hpp"
+#include "euroFilter.hpp"
+#include "walkData.hpp"
 
 namespace actionwalk {
     class walk: public Midware::MidwareComponent {
         private:
-            float current_lfoot = 0;
-            float current_rfoot = 0;
-            float current_lhip = 0;
-            float current_rhip = 0;
-            float current_lhip_mean = 0;
-            float current_rhip_mean = 0;
-            float current_lfoot_mean = 0;
-            float current_rfoot_mean = 0;
-            float current_lfoot_height = 0;
-            float current_rfoot_height = 0;
-            float current_thigh = 0;
-            float current_thigh_mean = 0;
-            float current_leg_mean = 0;
-            float current_height_mean = 0;
-            float current_left = 0;
-            float current_right = 0;
-            float amp_threshold = 0.01;
-            // float fpm = 0;
-            // std::list<long long> times;
-            // float stepCount = 0;
-            // bool tLock = false;
-            int tStart = 0;
-            int tStart2 = 0;
-            int tEnd = 0;
-            int tEnd2 = 0;
-            float tWindow = 0;
-            float tWindow2 = 0;
-            float step_rate = 0;
-            float step_rate2 = 0;
-            float step_length = 0;
-            float step_length2 = 0;
+            // calculated data
+            map<int, float> frameData;
+            map<int, float> meanData;
+            map<int, float> timeData;
+            map<int, int> timeData2;
+
+            // for one euro filter
+            float frameCount = 0;
+            double frequency = 60, mincutoff = 0.85, beta = 1.2, dcutoff = 1.0;
+            detection::OneEuroFilter *leftFootFilter;
+            detection::OneEuroFilter *rightFootFilter;
+
+            // output data
+            float currentLeft = 0;
+            float currentRight = 0;
+            float stepRateLeft = 0;
+            float stepRateRight = 0;
+            float stepRate = 0;
+            float stepLenLeft = 0;
+            float stepLenRight = 0;
+            float leftProgress = 0;
+            float rightProgress = 0;
+            float turn = 0;
+
+            // progress info
+            float preLeft = 0;
+            float preRight = 0;
+            float maxLeft = 30;
+            float maxRight = 30;
+            float lenLeft = 0;
+            float lenRight = 0;
+            float frameLeft = 0;
+            float frameRight = 0;
 
             float fpmStopCount = 0;
             float frameShiftFilterCount = 0;
@@ -54,40 +59,51 @@ namespace actionwalk {
             ~ walk();
             bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
             void writeToFlatbuffers(actionData::ActionBuilder&);
-            void calculate_current_frame(const PoseData::Pose* data);
-            void calculate_current_mean();
-            void calculate_current_left();
-            void calculate_current_right();
+            void calculateFrame(const PoseData::Pose* data);
+            void calculateMean();
+            void calculateLeft();
+            void calculateRight();
+            void calculateStepLen();
+            void checkStepRate();
+            void calculateProgress();
+            void calculateTurn(const PoseData::Pose* data);
             // void shiftDirectionStepPerMinutes();
             // void calculateWindow();
             int militime();
-            void calculate_step_length();
-            void checkCurrentStepRate();
             float calVecAngle(const PoseData::Pose* data, int num1, int num2, int num3, int config);
             float distanceFinder(const PoseData::Pose* data, int num1, int num2);
     };
-    walk::walk(): MidwareComponent("walk") {}
+    walk::walk(): MidwareComponent("walk") {
+        leftFootFilter = new detection::OneEuroFilter(frequency, mincutoff, beta, dcutoff);
+        rightFootFilter = new detection::OneEuroFilter(frequency, mincutoff, beta, dcutoff);
+        timeData2[tlock] = 0;
+    }
     walk::~walk() {}
 
     bool walk::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
         if (data->type() == Input::MessageType::MessageType_Pose) {
             const PoseData::Pose* pose = data->pose();
-            calculate_current_frame(pose);
-            calculate_current_mean();
-            calculate_current_left();
-            calculate_current_right();
-            calculate_step_length();
-            checkCurrentStepRate();
+            calculateFrame(pose);
+            calculateMean();
+            calculateLeft();
+            calculateRight();
+            calculateStepLen();
+            checkStepRate();
+            calculateProgress();
+            calculateTurn(pose);
 
             flatbuffersOffset = actionData::CreateWalk(builder, 
-                                                        current_left,
-                                                        current_right,
-                                                        step_rate,
-                                                        step_rate2,
-                                                        current_lhip_mean,
-                                                        current_rhip_mean,
-                                                        step_length,
-                                                        step_length2);
+                                                        currentLeft,
+                                                        currentRight,
+                                                        stepRateLeft,
+                                                        stepRateRight,
+                                                        meanData[leftHip],
+                                                        meanData[rightHip],
+                                                        stepLenLeft,
+                                                        stepLenRight,
+                                                        leftProgress,
+                                                        rightProgress,
+                                                        turn);
         }
 
         return true;
@@ -97,201 +113,287 @@ namespace actionwalk {
         actionBuilder.add_walk(flatbuffersOffset);
     }
 
-    void walk::calculate_current_frame(const PoseData::Pose* data) {
-        current_rfoot = data->keypoints()->Get(28)->y() + data->keypoints()->Get(30)->y() + data->keypoints()->Get(32)->y()
-                        + data->keypoints()->Get(28)->x() + data->keypoints()->Get(30)->x() + data->keypoints()->Get(32)->x();
-        current_lfoot = data->keypoints()->Get(27)->y() + data->keypoints()->Get(29)->y() + data->keypoints()->Get(31)->y()
-                        + data->keypoints()->Get(27)->x() + data->keypoints()->Get(29)->x() + data->keypoints()->Get(31)->x();
-        current_lfoot_height = data->keypoints3D()->Get(31)->y();
-        current_rfoot_height = data->keypoints3D()->Get(32)->y();
-        current_rhip = calVecAngle(data, 12, 24, 26, 1);
-        current_lhip = calVecAngle(data, 11, 23, 25, 1);
-        float left_height = data->keypoints3D()->Get(23)->y() - data->keypoints3D()->Get(25)->y();
-        float right_height = data->keypoints3D()->Get(24)->y() - data->keypoints3D()->Get(26)->y();
-        current_thigh = std::max(left_height, right_height);
+    void walk::calculateFrame(const PoseData::Pose* data) {
+
+        frameData[preLeftFoot] = frameData[leftFoot];
+        frameData[preRightFoot] = frameData[rightFoot];
+        frameData[rightFoot] = data->keypoints()->Get(28)->y() + data->keypoints()->Get(32)->y();
+        frameData[leftFoot] = data->keypoints()->Get(27)->y() + data->keypoints()->Get(31)->y();
+        frameData[rightHip] = calVecAngle(data, 12, 24, 26, 1);
+        frameData[leftHip] = calVecAngle(data, 11, 23, 25, 1);
+        float leftThighHeight = data->keypoints3D()->Get(23)->y() - data->keypoints3D()->Get(25)->y();
+        float rightThighHeight = data->keypoints3D()->Get(24)->y() - data->keypoints3D()->Get(26)->y();
+        frameData[thigh] = std::max(leftThighHeight, rightThighHeight);
+        frameData[leftLeg] = data->keypoints3D()->Get(27)->y() - data->keypoints3D()->Get(23)->y();
+        frameData[rightLeg] = data->keypoints3D()->Get(28)->y() - data->keypoints3D()->Get(24)->y();
     }
-    void walk::calculate_current_mean() {
-        current_lfoot_mean = current_lfoot_mean * 0.85 + current_lfoot * 0.15;
-        current_rfoot_mean = current_rfoot_mean * 0.85 + current_rfoot * 0.15;
-        current_lhip_mean = current_lhip_mean * 0.8 + current_lhip * 0.2;
-        current_rhip_mean = current_rhip_mean * 0.8 + current_rhip * 0.2;
-        current_thigh_mean = (current_thigh_mean * 0.9 + current_thigh * 0.1) * 0.79 + 0.15;
-        current_leg_mean = current_thigh_mean * 2.004;
-        current_height_mean = current_thigh_mean / 0.245;
+
+    void walk::calculateMean() {
+        double timestamp = frameCount/frequency;
+        frameCount = frameCount + 1;
+        double leftFootFiltered = leftFootFilter->filter(frameData[leftFoot], timestamp);
+        double rightFootFiltered = rightFootFilter->filter(frameData[rightFoot], timestamp);
+        meanData[leftFoot] = meanData[currentLeftFoot];
+        meanData[currentLeftFoot] = float(leftFootFiltered);
+        meanData[rightFoot] = meanData[currentRightFoot];
+        meanData[currentRightFoot] = float(rightFootFiltered);
+        // meanData[leftFoot] = meanData[leftFoot] * 0.85 + frameData[leftFoot] * 0.15;
+        // meanData[rightFoot] = meanData[rightFoot] * 0.85 + frameData[rightFoot] * 0.15;
+        meanData[leftHip] = meanData[leftHip] * 0.8 + frameData[leftHip] * 0.2;
+        meanData[rightHip] = meanData[rightHip] * 0.8 + frameData[rightHip] * 0.2;
+        meanData[thigh] = (meanData[thigh] * 0.9 + frameData[thigh] * 0.1) * 0.79 + 0.15;
+        meanData[leg] = meanData[thigh] * 2.004;
+        meanData[height] = meanData[thigh] / 0.245;
     }
-    void walk::calculate_current_left() {
+
+    void walk::calculateLeft() {
+        preLeft = currentLeft;
         // for left leg
-        // threshold to be tested
-        if(current_lfoot - current_lfoot_mean > amp_threshold) {
-            if(current_left != -1) {
-                if(frameShiftFilterCount > 3 && current_left == 1) {
-                    current_left = -1;
-                    tEnd = militime();
-                    tWindow = float((tEnd - tStart))/1000;
-                    // calculateWindow();
-                }
-                else {
-                    frameShiftFilterCount = frameShiftFilterCount + 1;
-                }
-            }
-            else {
-                frameShiftFilterCount = 0;
-            }
-        }
-        if(current_lfoot - current_lfoot_mean < -amp_threshold) {
-            if(current_left != 1) {
-                if(frameShiftFilterCount > 3) {
-                    current_left = 1;
-                    tStart = militime();
-                    // calculateWindow();
-                    // shiftDirectionStepPerMinutes();
-                }
-                else {
-                    frameShiftFilterCount = frameShiftFilterCount + 1;
-                }
-            }
-            else {
-                frameShiftFilterCount = 0;
-            }
-        }
-        if(abs(current_lfoot - current_lfoot_mean) < amp_threshold) {
-            if(current_left != 0) {
-                if(frameShiftFilterCount > 6) {
-                    current_left = 0;
-                }
-                else {
-                    frameShiftFilterCount = frameShiftFilterCount + 1;
-                }
-            }
-            else {
-                frameShiftFilterCount = 0;
-            }
-        }
-        if(current_left != 0) {
-            if(abs(current_lfoot - current_lfoot_mean) < amp_threshold) {
-                fpmStopCount = fpmStopCount + 1;
-                if(fpmStopCount > 15) {
-                    current_left = 0;
-                }
-            }
-            else {
-                fpmStopCount = 0;
-            }
-        }
-    }
-    void walk::calculate_current_right() {
-        // for right leg
-        // threshold to be tested
-        if(current_rfoot - current_rfoot_mean > amp_threshold) {
-            if(current_right != -1) {
-                if(frameShiftFilterCount2 > 3 && current_right == 1) {
-                    current_right = -1;
-                    tEnd2 = militime();
-                    tWindow2 = float((tEnd2 - tStart2))/1000;
-                }
-                else {
-                    frameShiftFilterCount2 = frameShiftFilterCount2 + 1;
-                }
-            }
-            else {
-                frameShiftFilterCount2 = 0;
-            }
-        }
-        if(current_rfoot - current_rfoot_mean < -amp_threshold) {
-            if(current_right != 1) {
-                if(frameShiftFilterCount2 > 3) {
-                    current_right = 1;
-                    tStart2 = militime();
-                    // calculateWindow();
-                    // shiftDirectionStepPerMinutes();
-                }
-                else {
-                    frameShiftFilterCount2 = frameShiftFilterCount2 + 1;
-                }
-            }
-            else {
-                frameShiftFilterCount2 = 0;
-            }
-        }
-        if(abs(current_rfoot - current_rfoot_mean) < amp_threshold) {
-            if(current_right != 0) {
-                if(frameShiftFilterCount2 > 6) {
-                    current_right = 0;
-                }
-                else {
-                    frameShiftFilterCount2 = frameShiftFilterCount2 + 1;
-                }
-            }
-            else {
-                frameShiftFilterCount2 = 0;
-            }
-        }
-        if(current_right != 0) {
-            if(abs(current_rfoot - current_rfoot_mean) < amp_threshold) {
-                fpmStopCount2 = fpmStopCount2 + 1;
-                if(fpmStopCount2 > 15) {
-                    current_right = 0;
-                }
-            }
-            else {
-                fpmStopCount2 = 0;
-            }
-        }
-    }
-    void walk::calculate_step_length() {
-        float maxSL = current_height_mean * 1.2;
-        float leftFlexion = (180 - current_lhip_mean) > 90 ? 90 : (180 - current_lhip_mean);
-        float rightFlexion = (180 - current_rhip_mean) > 90 ? 90 : (180 - current_rhip_mean);
-        step_length = (maxSL / pow(90,(1/3))) * pow(leftFlexion,(1/3));
-        step_length2 = (maxSL / pow(90,(1/3))) * pow(rightFlexion,(1/3));
-    }
-    void walk::checkCurrentStepRate() {
-        if(current_left == 0 && current_right == 0) {
-            fpmStopCount3 = fpmStopCount3 + 1;
-            if(fpmStopCount3 > 15) {
-                tWindow = 0;
-                tWindow2 = 0;
+        if(currentLeft == 2) {
+            if(frameData[rightLeg] - frameData[leftLeg] < 0.1) {
+                currentLeft = 0;
             }
         }
         else {
-            fpmStopCount3 = 0;
+            // leg down
+            if(frameData[leftFoot] - meanData[leftFoot] > 0.01) {
+                if(currentLeft != -1) {
+                    if(frameShiftFilterCount > 3 && currentLeft == 1) {
+                        currentLeft = -1;
+                        timeData[tEndLeft] = militime();
+                        timeData[tWindowLeft] = float((timeData[tEndLeft] - timeData[tStartLeft]))/1000;
+                    }
+                    else { frameShiftFilterCount = frameShiftFilterCount + 1; }
+                }
+                else { frameShiftFilterCount = 0; }
+            }
+            // leg up
+            if(frameData[leftFoot] - meanData[leftFoot] < -0.01) {
+                if(currentLeft != 1) {
+                    if(frameShiftFilterCount > 3 && (currentLeft == 0 || currentLeft == -1)) {
+                        if(timeData2[tlock] == 1){
+                            timeData2[t2] = militime();
+                            timeData2[tlock] = 0;
+                        }
+                        else {
+                            timeData2[tlock] = 1;
+                            timeData2[t1] = militime();
+                        }
+                        currentLeft = 1;
+                        timeData[tStartLeft] = militime();
+                    }
+                    else { frameShiftFilterCount = frameShiftFilterCount + 1; }
+                }
+                else { frameShiftFilterCount = 0; }
+            }
+            // leg still
+            if((-0.01 < (frameData[leftFoot] - meanData[leftFoot])) && ((frameData[leftFoot] - meanData[leftFoot]) < 0.01)) {
+                if(currentLeft != 0 && currentLeft != 2) {
+                    if(frameShiftFilterCount > 6) {
+                        // threshold to be tested
+                        if(frameData[rightLeg] - frameData[leftLeg] > 0.1 && currentLeft == 1) {
+                            currentLeft = 2;
+                        }
+                        else {
+                            preLeft = currentLeft; 
+                            currentLeft = 0;
+                        }
+                    }
+                    else { frameShiftFilterCount = frameShiftFilterCount + 1; }
+                }
+                else { frameShiftFilterCount = 0; }
+            }
         }
-        if (tWindow != 0) step_rate = 0.6 / tWindow; 
-        else step_rate = 0;
-        if (tWindow2 != 0) step_rate2 = 0.6 / tWindow2;
-        else step_rate2 = 0;
     }
-    // void walk::shiftDirectionStepPerMinutes() {
-    //     long long now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    //     while (times.size() > 0 && times.front() <= now - 1000) {
-    //         times.pop_front();
-    //     }
-    //     times.push_back(now);
-    //     stepCount = times.size();
-    //     if(stepCount < 2) step_rate = 0;
-    //     fpm = times.size() * 60;
-    // }
+
+    void walk::calculateRight() {
+        preRight = currentRight;
+        // for right leg
+        if(currentRight == 2) {
+            if(frameData[leftLeg] - frameData[rightLeg] < 0.1) {
+                currentRight = 0;
+            }
+        }
+        else {
+            // leg down
+            if(frameData[rightFoot] - meanData[rightFoot] > 0.01) {
+                if(currentRight != -1) {
+                    if(frameShiftFilterCount2 > 3 && currentRight == 1) {
+                        currentRight = -1;
+                        timeData[tEndRight] = militime();
+                        timeData[tWindowRight] = float((timeData[tEndRight] - timeData[tStartRight]))/1000;
+                    }
+                    else { frameShiftFilterCount2 = frameShiftFilterCount2 + 1; }
+                }
+                else { frameShiftFilterCount2 = 0; }
+            }
+            // leg up
+            if(frameData[rightFoot] - meanData[rightFoot] < -0.01) {
+                if(currentRight != 1) {
+                    if(frameShiftFilterCount2 > 3 && (currentRight == 0 || currentRight == -1)) {
+                        // if(timeData2[tlock] == 1){
+                        //     timeData2[t2] = militime();
+                        //     timeData2[tlock] = 0;
+                        // }
+                        // else {
+                        //     timeData2[tlock] = 1;
+                        //     timeData2[t1] = militime();
+                        // }
+                        currentRight = 1;
+                        timeData[tStartRight] = militime();
+                    }
+                    else { frameShiftFilterCount2 = frameShiftFilterCount2 + 1; }
+                }
+                else { frameShiftFilterCount2 = 0; }
+            }
+            // leg still
+            if((-0.01 < (frameData[rightFoot] - meanData[rightFoot])) && ((frameData[rightFoot] - meanData[rightFoot]) < 0.01)) {
+                if(currentRight != 0 && currentRight != 2) {
+                    if(frameShiftFilterCount2 > 6) {
+                        // threshold to be tested
+                        if(frameData[leftLeg] - frameData[rightLeg] > 0.1 && currentRight == 1) {
+                            currentRight = 2;
+                        }
+                        else {
+                            preRight = currentRight;
+                            currentRight = 0; 
+                        }
+                    }
+                    else { frameShiftFilterCount2 = frameShiftFilterCount2 + 1; }
+                }
+                else { frameShiftFilterCount2 = 0; }
+            }
+        }
+    }
+
+    void walk::calculateStepLen() {
+        float maxSL = meanData[height] * 1.2;
+        float leftFlexion = (180 - meanData[leftHip]) > 90 ? 90 : (180 - meanData[leftHip]);
+        float rightFlexion = (180 - meanData[rightHip]) > 90 ? 90 : (180 - meanData[rightHip]);
+        stepLenLeft = (maxSL / pow(90,(float)1/3)) * pow(leftFlexion,(float)1/3);
+        stepLenRight = (maxSL / pow(90,(float)1/3)) * pow(rightFlexion,(float)1/3);
+        if(currentLeft == 0 || currentLeft == 2) { stepLenLeft = 0; }
+        if(currentRight == 0 || currentRight == 2) { stepLenRight = 0; }
+    }
+
+    void walk::checkStepRate() {
+        if((currentLeft == 0 || currentLeft == 2) && (currentRight == 0 || currentRight == 2)) {
+            fpmStopCount3 = fpmStopCount3 + 1;
+            if(fpmStopCount3 > 15) {
+                timeData2[t1] = 0;
+                timeData2[t2] = 0;
+                timeData2[tlock] = 0;
+                stepRate = 0;
+                timeData[tWindowLeft] = 0;
+                timeData[tWindowRight] = 0;
+            }
+        }
+        else { fpmStopCount3 = 0; }
+        if (timeData[tWindowLeft] != 0) stepRateLeft = 0.6 / timeData[tWindowLeft]; 
+        else { stepRateLeft = 0; }
+        if (timeData[tWindowRight] != 0) stepRateRight = 0.6 / timeData[tWindowRight];
+        else { stepRateRight = 0; }
+
+        if(timeData2[t1]!=0&&timeData2[t2]!=0){
+            stepRate = 2 / (float(abs(timeData2[t1] - timeData2[t2]))/1000);
+        }
+    }
+
+    void walk::calculateProgress() {
+        // left progress
+        if(preLeft == 0 && currentLeft == 0) { 
+            float increment = - (frameData[leftFoot] - frameData[preLeftFoot]);
+            lenLeft = lenLeft + increment;
+            leftProgress = lenLeft / maxLeft * 0.5;
+            leftProgress = leftProgress < 0.05 ? 0 : leftProgress;
+        }
+        if(frameLeft == 0) {
+            if(currentLeft == 1) {
+                float increment = - (frameData[leftFoot] - frameData[preLeftFoot]);
+                if(increment < 0) {
+                    maxLeft = lenLeft;
+                    lenLeft = 0;
+                    frameLeft = -1;
+                    leftProgress = 0.5;
+                }
+                else {
+                    lenLeft = lenLeft + increment;
+                    leftProgress = lenLeft / maxLeft * 0.5;
+                    leftProgress = leftProgress > 0.5 ? 0.5 : leftProgress;
+                }
+            }
+        }
+        if(frameLeft == -1){
+            float increment = (frameData[leftFoot] - frameData[preLeftFoot]);
+            lenLeft = lenLeft + increment;
+            leftProgress = lenLeft / maxLeft * 0.5 + 0.5;
+            leftProgress = leftProgress > 1 ? 1 : leftProgress;
+        }
+        if(preLeft == -1 && currentLeft != preLeft) {
+            frameLeft = 0;
+            lenLeft = 0;
+            leftProgress = 1;
+        }
+
+        // right progress
+        if(preRight == 0 && currentRight == 0) { 
+            float increment = - (frameData[rightFoot] - frameData[preRightFoot]);
+            lenRight = lenRight + increment;
+            rightProgress = lenRight / maxRight * 0.5;
+            rightProgress = rightProgress < 0.05 ? 0 : rightProgress;
+        }
+        if(frameRight == 0) {
+            if(currentRight == 1) {
+                float increment = - (frameData[rightFoot] - frameData[preRightFoot]);
+                if(increment < 0) {
+                    maxRight = lenRight;
+                    lenRight = 0;
+                    frameRight = -1;
+                    rightProgress = 0.5;
+                }
+                else {
+                    lenRight = lenRight + increment;
+                    rightProgress = lenRight / maxRight * 0.5;
+                    rightProgress = rightProgress > 0.5 ? 0.5 : rightProgress;
+                }
+            }
+        }
+        if(frameRight == -1){
+            float increment = (frameData[rightFoot] - frameData[preRightFoot]);
+            lenRight = lenRight + increment;
+            rightProgress = lenRight / maxRight * 0.5 + 0.5;
+            rightProgress = rightProgress > 1 ? 1 : rightProgress;
+        }
+        if(preRight == -1 && currentRight != preRight) {
+            frameRight = 0;
+            lenRight = 0;
+            rightProgress = 1;
+        }
+
+    }
+
+    void walk::calculateTurn(const PoseData::Pose* data) {
+        float a[2] = {data->keypoints3D()->Get(11)->x() - data->keypoints3D()->Get(12)->x()
+                    ,data->keypoints3D()->Get(11)->z() - data->keypoints3D()->Get(12)->z()};
+        // float b[2] = {data->keypoints3D()->Get(23)->x() - data->keypoints3D()->Get(24)->x()
+        //             ,data->keypoints3D()->Get(23)->z() - data->keypoints3D()->Get(24)->z()};
+        float b[2] = {1,0};
+        float ab,a1,b1,cosr;
+        ab = a[0]*b[0]+a[1]*b[1];
+        a1 = sqrt(a[0]*a[0]+a[1]*a[1]);
+        b1 = sqrt(b[0]*b[0]+b[1]*b[1]);
+        cosr = ab/a1/b1;
+        turn = acos(cosr)*180/acos(-1);
+        if(data->keypoints3D()->Get(12)->z() < data->keypoints3D()->Get(11)->z()) turn = - turn;
+    }
+
     int walk::militime() {
         auto now = chrono::high_resolution_clock::now();
         auto timeMillis = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
         int mili = (int)timeMillis;
         return mili;
     }
-    // void walk::calculateWindow() {
-    //     auto now = chrono::high_resolution_clock::now();
-    //     auto timeMillis = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
-    //     int mili = (int)timeMillis;
-    //     if(!tLock) {
-    //         tStart = mili;
-    //         tLock = true;
-    //     }
-    //     else {
-    //         tLock = false;
-    //         tEnd = mili;
-    //         float tWindow = float((tEnd - tStart))/1000;
-    //         step_rate = 0.7/tWindow;
-    //     }
-    // }
+
     float walk::calVecAngle(const PoseData::Pose* data, int num1, int num2, int num3, int config) {
         float vec[3][3];
         int angle_points[3] = {num1, num2, num3};
@@ -315,6 +417,7 @@ namespace actionwalk {
         float angle = acos(cosAngle)*360/2/acos(-1);
         return angle;
     }
+
     float walk::distanceFinder(const PoseData::Pose* data, int num1, int num2) {
         float vec[2][3];
         int dis_points[2] = {num1, num2};

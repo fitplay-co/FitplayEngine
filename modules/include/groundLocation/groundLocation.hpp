@@ -74,9 +74,9 @@ namespace ground {
                 pre_y = res_down[1];
                 pre_z = z_down;
             }
-            res_down[0] = res_down[0]*0.1+pre_x*0.9;
-            res_down[1] = res_down[1]*0.1+pre_y*0.9;
-            z_down = z_down*0.1+pre_z*0.9;
+            res_down[0] = res_down[0]*0.5+pre_x*0.5;
+            res_down[1] = res_down[1]*0.5+pre_y*0.5;
+            z_down = z_down*0.5+pre_z*0.5;
 
             ground_data[0] = res_down[0] - startX;
             ground_data[1] = res_down[1] - startY + legLength;
