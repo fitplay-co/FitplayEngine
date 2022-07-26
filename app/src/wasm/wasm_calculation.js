@@ -116,11 +116,12 @@ var wasm_processor = {
                 "squat" : actionTemp.squat().status()
             }
         }
+        // console.log(pose.action_detection.walk.leftLeg)
         pose.monitor = {
-            "m1" : pose.action_detection.walk.rightLeg,
-            "m1Name" : "left_2step",
-            "m2" : pose.action_detection.walk.leftFrequency,
-            "m2Name" : "left_1step_0.35"
+            "m1" : pose.action_detection.walk.leftLeg,
+            "m1Name" : "velocity",
+            "m2" : pose.action_detection.walk.rightLeg,
+            "m2Name" : "step_rate"
         }
         // pose.monitor = {
         //     "m1" : pose.keypoints[23].y,
