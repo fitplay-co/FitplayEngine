@@ -340,7 +340,7 @@ namespace actionwalk {
                 }
             }
         }
-        if(frameLeft == -1){
+        if(frameLeft == -1) {
             float increment = (frameData[leftFoot] - frameData[preLeftFoot]);
             lenLeft = lenLeft + increment;
             leftProgress = lenLeft / maxLeft * 0.5 + 0.5;
@@ -375,7 +375,7 @@ namespace actionwalk {
                 }
             }
         }
-        if(frameRight == -1){
+        if(frameRight == -1) {
             float increment = (frameData[rightFoot] - frameData[preRightFoot]);
             lenRight = lenRight + increment;
             rightProgress = lenRight / maxRight * 0.5 + 0.5;

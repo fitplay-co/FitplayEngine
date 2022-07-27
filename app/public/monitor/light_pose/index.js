@@ -65,17 +65,21 @@ function ws_send(data){
     ws.send(data);
   }
 }
+
 var num1 = new Array(100).fill(0);
 var num2 = new Array(100).fill(0);
+var num3 = new Array(100).fill(0);
 // var arr = new Array(100).fill(0);
 var arr = []
 for(let i = 1,len=100;i<=len;i++){arr.push(i)}
 var count = 0
+
 var myChart1 = echarts.init(document.getElementById('chart1'));
 var myChart2 = echarts.init(document.getElementById('chart2'));
+var myChart3 = echarts.init(document.getElementById('chart3'));
 myChart1.setOption({
     title: {
-        text: 'Monitor',
+        text: 'Keypoint Monitor',
         subtext: 'M1'
     },
     xAxis: {
@@ -111,16 +115,59 @@ myChart2.setOption({
       type: "line"
     }]
 });
+myChart3.setOption({
+  title: {
+      text: 'Monitor',
+      subtext: 'M3'
+  },
+  xAxis: {
+    type: "category",
+    name: "time",
+    data: arr
+  },
+  yAxis: {
+    type: "value"
+  },
+  series: [{
+    symbol: "none",
+    data: num2,
+    type: "line"
+  }]
+});
+
 function addData(inputData){
+    var select1 = document.getElementById('keypoints').options[document.getElementById('keypoints').selectedIndex];
+    var select_type1 = document.getElementById('keypoints_type').options[document.getElementById('keypoints_type').selectedIndex];
+    var select_data1 = document.getElementById('keypoints_data').options[document.getElementById('keypoints_data').selectedIndex];
+    var value_type1 = select_type1.value;
+    var value_data1 = select_data1.value;
+    var value1 = select1.value;
+    var text1 = select1.text;
     let jsonObj=JSON.parse(inputData);
-    console.log(jsonObj.monitor)
-    num1.push(jsonObj.monitor.m1)
+    // console.log(jsonObj)
+    var m1 = 0;
+    if (value_data1 == 1 && value_type1 == 1) m1 = jsonObj.pose_landmark.keypoints[value1].x
+    if (value_data1 == 2 && value_type1 == 1) m1 = jsonObj.pose_landmark.keypoints[value1].y
+    if (value_data1 == 3 && value_type1 == 1) m1 = jsonObj.pose_landmark.keypoints[value1].z
+
+    if (value_data1 == 1 && value_type1 == 2) m1 = jsonObj.pose_landmark.keypoints3D[value1].x
+    if (value_data1 == 2 && value_type1 == 2) m1 = jsonObj.pose_landmark.keypoints3D[value1].y
+    if (value_data1 == 3 && value_type1 == 2) m1 = jsonObj.pose_landmark.keypoints3D[value1].z
+    console.log("m1 = " + m1)
+    num1.push(m1)
     num1.shift()
-    num2.push(jsonObj.monitor.m2)
+    num2.push(jsonObj.monitor.m1)
+    console.log("m2 = " + jsonObj.monitor.m1)
     num2.shift()
+    num3.push(jsonObj.monitor.m2)
+    console.log("m3 = " + jsonObj.monitor.m2)
+    num3.shift()
     myChart1.setOption({
         title: {
-          subtext: jsonObj.monitor.m1Name
+          subtext: text1
+        },
+        yAxis: {
+          type: "value"
         },
         series: [{
           data: num1
@@ -128,10 +175,24 @@ function addData(inputData){
     });
     myChart2.setOption({
         title: {
-          subtext: jsonObj.monitor.m2Name
+          subtext: jsonObj.monitor.m1Name
+        },
+        yAxis: {
+          type: "value"
         },
         series: [{
           data: num2
         }]
     });
+    myChart3.setOption({
+      title: {
+        subtext: jsonObj.monitor.m2Name
+      },
+      yAxis: {
+        type: "value"
+      },
+      series: [{
+        data: num3
+      }]
+  });
 }
