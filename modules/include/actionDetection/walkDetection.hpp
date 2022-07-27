@@ -100,8 +100,8 @@ namespace actionwalk {
 
     flat walk::writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder) {
         return actionData::CreateWalk(resultBuilder, 
-            velocity,
-            stepRate,
+            currentLeft,
+            currentRight,
             stepRateLeft,
             stepRateRight,
             meanData[leftHip],
@@ -110,7 +110,10 @@ namespace actionwalk {
             stepLenRight,
             leftProgress,
             rightProgress,
-            turn);
+            turn,
+            stepRate,
+            stepLen,
+            velocity);
     }
 
     void walk::calculateFrame(const PoseData::Pose* data) {
@@ -285,7 +288,7 @@ namespace actionwalk {
     void walk::checkStepRate() {
         if((currentLeft == 0 || currentLeft == 2) && (currentRight == 0 || currentRight == 2)) {
             fpmStopCount3 = fpmStopCount3 + 1;
-            if(fpmStopCount3 > 20) {
+            if(fpmStopCount3 > 15) {
                 timeData2[t1] = 0;
                 timeData2[t2] = 0;
                 timeData2[tlock] = 0;
