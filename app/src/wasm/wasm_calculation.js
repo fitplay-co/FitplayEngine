@@ -41,7 +41,10 @@ var wasm_processor = {
                     "rightStepLength" : actionTemp.walk().rightStepLength(),
                     "leftProgress" : actionTemp.walk().leftProgress(),
                     "rightProgress" : actionTemp.walk().rightProgress(),
-                    "turn" : actionTemp.walk().turn()
+                    "turn" : actionTemp.walk().turn(),
+                    "stepRate" : actionTemp.walk().stepRate(),
+                    "stepLen" : actionTemp.walk().stepLen(),
+                    "velocity" : actionTemp.walk().velocity()
                 }
                 pose.action_detection.jump = {
                     "takeOff" : actionTemp.jump().takeOff(),
