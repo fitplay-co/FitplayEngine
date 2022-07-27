@@ -104,7 +104,10 @@ var wasm_processor = {
                 "rightStepLength" : actionTemp.walk().rightStepLength(),
                 "leftProgress" : actionTemp.walk().leftProgress(),
                 "rightProgress" : actionTemp.walk().rightProgress(),
-                "turn" : actionTemp.walk().turn()
+                "turn" : actionTemp.walk().turn(),
+                "stepRate" : actionTemp.walk().stepRate(),
+                "stepLen" : actionTemp.walk().stepLen(),
+                "velocity" : actionTemp.walk().velocity()
             }
             pose.action_detection.jump = {
                 "takeOff" : actionTemp.jump().takeOff(),
@@ -116,11 +119,12 @@ var wasm_processor = {
                 "squat" : actionTemp.squat().status()
             }
         }
+        // console.log(pose.action_detection.walk.leftLeg)
         pose.monitor = {
-            "m1" : pose.action_detection.walk.leftFrequency,
-            "m1Name" : "v2",
-            "m2" : pose.action_detection.walk.rightFrequency,
-            "m2Name" : "v1"
+            "m1" : pose.action_detection.walk.leftLeg,
+            "m1Name" : "velocity",
+            "m2" : pose.action_detection.walk.rightLeg,
+            "m2Name" : "step_rate"
         }
         // pose.monitor = {
         //     "m1" : pose.keypoints[23].y,
