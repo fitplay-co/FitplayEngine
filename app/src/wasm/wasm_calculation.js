@@ -58,10 +58,10 @@ var wasm_processor = {
             }
             if (pose.action_detection) {
                 pose.monitor = {
-                    "m1" : pose.action_detection.jump.takeOff,
-                    "m1Name" : "footUp",
-                    "m2" : pose.action_detection.jump.offGround,
-                    "m2Name" : "timestamp"
+                    "m1" : pose.action_detection.walk.stepRate,
+                    "m1Name" : "step_rate",
+                    "m2" : pose.action_detection.walk.velocity,
+                    "m2Name" : "velocity"
                 }
             }
             
