@@ -309,11 +309,10 @@ namespace actionwalk {
         if(timeData2[t1]!=0&&timeData2[t2]!=0){
             stepRate = 1 / (float(abs(timeData2[t1] - timeData2[t2]))/1000);
         }
-        // stepRate = preStepRate * 0.8 + stepRate * 0.2;
-        velocity = velocity * 0.8 + (stepRate * stepLen) * 0.2;
-        if(velocity > 10) velocity = 10;
-        if(velocity < 0.01) velocity = 0;
-        // velocity = stepRate * stepLenLeft;
+        // velocity = velocity * 0.8 + (stepRate * stepLen) * 0.2;
+        // if(velocity > 10) velocity = 10;
+        // if(velocity < 0.01) velocity = 0;
+        velocity = stepRate * stepLenLeft;
     }
 
     void walk::calculateProgress() {

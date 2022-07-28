@@ -121,10 +121,10 @@ var wasm_processor = {
         }
         // console.log(pose.action_detection.walk.leftLeg)
         pose.monitor = {
-            "m1" : pose.action_detection.walk.leftLeg,
-            "m1Name" : "left_leg",
-            "m2" : pose.action_detection.walk.rightLeg,
-            "m2Name" : "right_leg"
+            "m1" : pose.action_detection.walk.stepRate,
+            "m1Name" : "step_rate",
+            "m2" : pose.action_detection.walk.velocity,
+            "m2Name" : "velocity"
         }
         // pose.monitor = {
         //     "m1" : pose.keypoints[23].y,
