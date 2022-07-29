@@ -4,9 +4,10 @@
 #include <chrono> 
 #include <math.h>
 #include "actionData_generated.h"
+#include "midwareComponent/midwareComponent.hpp"
 
 namespace actionsquat {
-    class squat {
+    class squat: public Midware::MidwareComponent {
         private:
             float relativeHipDistance = 0;
             float preRelativeHipDistance = 0;
@@ -19,21 +20,35 @@ namespace actionsquat {
             float squat_status = 0;
             float legLength = 0;
             float preLegLength = 0;
+            flatbuffers::Offset<actionData::Squat> flatbuffersOffset;
         public:
             squat();
             ~squat();
-            void process(float squat_data[], const PoseData::Pose* data);
+            bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
+            void writeToFlatbuffers(actionData::ActionBuilder&);
             void calculate_relativeHip_distance(const PoseData::Pose* data);
             void calculate_squat_status();
     };
 
-    squat::squat() {}
+    squat::squat(): MidwareComponent("squat") {}
     squat::~squat() {}
-    void squat::process(float squat_data[], const PoseData::Pose* data) {
-        calculate_relativeHip_distance(data);
-        calculate_squat_status();
-        squat_data[0] = squat_status;
+
+    bool squat::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
+        if (data->type() == Input::MessageType::MessageType_Pose) {
+            const PoseData::Pose* pose = data->pose();
+            calculate_relativeHip_distance(pose);
+            calculate_squat_status();
+
+            flatbuffersOffset = actionData::CreateSquat(builder, squat_status);
+        }
+        
+        return true;
     }
+
+    void squat::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {
+        actionBuilder.add_squat(flatbuffersOffset);
+    }
+
     void squat::calculate_relativeHip_distance(const PoseData::Pose* data) {
         if (firstTime == 0){
             preHipYLeft = data->keypoints()->Get(23)->y();

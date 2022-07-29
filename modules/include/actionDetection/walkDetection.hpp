@@ -5,14 +5,12 @@
 #include <chrono> 
 #include <math.h>
 #include "actionData_generated.h"
+#include "midwareComponent/midwareComponent.hpp"
 #include "euroFilter.hpp"
 #include "walkData.hpp"
 
 namespace actionwalk {
-
-    typedef flatbuffers::Offset<actionData::Walk> flat;
-
-    class walk {
+    class walk: public Midware::MidwareComponent {
         private:
             // calculated data
             map<int, float> frameData;
@@ -58,12 +56,14 @@ namespace actionwalk {
             float fpmStopCount2 = 0;
             float frameShiftFilterCount2 = 0;
             float fpmStopCount3 = 0;
-            float threshold = 0.05;
+            float test;
 
+            flatbuffers::Offset<actionData::Walk> flatbuffersOffset;
         public:
             walk();
             ~ walk();
-            void process(const PoseData::Pose* data);
+            bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
+            void writeToFlatbuffers(actionData::ActionBuilder&);
             void calculateFrame(const PoseData::Pose* data);
             void calculateMean();
             void calculateLeft();
@@ -72,48 +72,53 @@ namespace actionwalk {
             void checkStepRate();
             void calculateProgress();
             void calculateTurn(const PoseData::Pose* data);
-            flat writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder);
+            // void shiftDirectionStepPerMinutes();
+            // void calculateWindow();
             int militime();
             float calVecAngle(const PoseData::Pose* data, int num1, int num2, int num3, int config);
             float distanceFinder(const PoseData::Pose* data, int num1, int num2);
     };
-
-    walk::walk() {
+    walk::walk(): MidwareComponent("walk") {
         leftFootFilter = new detection::OneEuroFilter(frequency, mincutoff, beta, dcutoff);
         rightFootFilter = new detection::OneEuroFilter(frequency, mincutoff, beta, dcutoff);
         timeData2[tlock] = 0;
     }
-
     walk::~walk() {}
 
-    void walk::process(const PoseData::Pose* data) {
-        calculateFrame(data);
-        calculateMean();
-        calculateLeft();
-        calculateRight();
-        calculateStepLen();
-        checkStepRate();
-        calculateProgress();
-        calculateTurn(data);
+    bool walk::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
+        if (data->type() == Input::MessageType::MessageType_Pose) {
+            const PoseData::Pose* pose = data->pose();
+            calculateFrame(pose);
+            calculateMean();
+            calculateLeft();
+            calculateRight();
+            calculateStepLen();
+            checkStepRate();
+            calculateProgress();
+            calculateTurn(pose);
 
+            flatbuffersOffset = actionData::CreateWalk(builder, 
+                                                        currentLeft,
+                                                        currentRight,
+                                                        stepRateLeft,
+                                                        stepRateRight,
+                                                        meanData[leftHip],
+                                                        meanData[rightHip],
+                                                        stepLenLeft,
+                                                        stepLenRight,
+                                                        leftProgress,
+                                                        rightProgress,
+                                                        turn,
+                                                        stepRate,
+                                                        stepLen,
+                                                        velocity);
+        }
+
+        return true;
     }
 
-    flat walk::writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder) {
-        return actionData::CreateWalk(resultBuilder, 
-            currentLeft,
-            currentRight,
-            stepRateLeft,
-            stepRateRight,
-            meanData[leftHip],
-            meanData[rightHip],
-            stepLenLeft,
-            stepLenRight,
-            leftProgress,
-            rightProgress,
-            turn,
-            stepRate,
-            stepLen,
-            velocity);
+    void walk::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {
+        actionBuilder.add_walk(flatbuffersOffset);
     }
 
     void walk::calculateFrame(const PoseData::Pose* data) {

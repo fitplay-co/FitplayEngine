@@ -4,11 +4,12 @@
 #include <math.h>
 #include "glm/glm.hpp"
 #include "actionData_generated.h"
+#include "midwareComponent/midwareComponent.hpp"
 
 using namespace glm;
 
 namespace gaze {
-    class gazeTracking {
+    class gazeTracking: public Midware::MidwareComponent {
         private:
             float z = 0;
             float widthScale = 640;
@@ -20,33 +21,46 @@ namespace gaze {
             float centerPointY = 240;
             float f_dx = 500; //  f/dx
             float f_dy = 900;
+            flatbuffers::Offset<actionData::Gaze> flatbuffersOffset;
         public:
             gazeTracking();
             ~gazeTracking();
-            void process(float gaze_data[],const  PoseData::Pose* data);
+            bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
+            void writeToFlatbuffers(actionData::ActionBuilder&);
             float distance_finder_z_filtered(const PoseData::Pose* data, int num1, int num2);
     };
 
-    gazeTracking::gazeTracking() {}
+    gazeTracking::gazeTracking(): MidwareComponent("gaze_tracking") {}
     gazeTracking::~gazeTracking() {}
 
-    void gazeTracking::process(float gaze_data[], const PoseData::Pose* data) {
-        mat3 cameraParam = mat3(f_dx, 0, centerPointX,
+    bool gazeTracking::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
+        if (data->type() == Input::MessageType::MessageType_Pose) {
+            const PoseData::Pose* pose = data->pose();
+            mat3 cameraParam = mat3(f_dx, 0, centerPointX,
                                 0, f_dy, centerPointY,
                                 0, 0, 1);
-        z = distance_finder_z_filtered(data, 2, 5);
-        mat3 cameraInverse = inverse(cameraParam);
-        vec3 arr_3 =  vec3 (data->keypoints()->Get(0)->x()*widthScale*z, (1-data->keypoints()->Get(0)->y())*heightScale*z, z);
-        vec3 res = cameraInverse * arr_3;
-        float res_x = res[0]*0.1+pre_x*0.9;
-        float res_y = res[1]*0.1+pre_y*0.9;
-        z = z*0.1+pre_z*0.9;
-        gaze_data[0] = res_x;
-        gaze_data[1] = res_y;
-        gaze_data[2] = z;
-        pre_x = res_x;
-        pre_y = res_y;
-        pre_z = z;
+            z = distance_finder_z_filtered(pose, 2, 5);
+            mat3 cameraInverse = inverse(cameraParam);
+            vec3 arr_3 =  vec3 (pose->keypoints()->Get(0)->x()*widthScale*z, (1-pose->keypoints()->Get(0)->y())*heightScale*z, z);
+            vec3 res = cameraInverse * arr_3;
+            float res_x = res[0]*0.1+pre_x*0.9;
+            float res_y = res[1]*0.1+pre_y*0.9;
+            z = z*0.1+pre_z*0.9;
+        
+            pre_x = res_x;
+            pre_y = res_y;
+            pre_z = z;
+
+            flatbuffersOffset = actionData::CreateGaze(builder, res_x, res_y, z);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    void gazeTracking::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {
+        actionBuilder.add_gaze(flatbuffersOffset);
     }
 
     float gazeTracking::distance_finder_z_filtered(const PoseData::Pose* data, int num1, int num2) {
