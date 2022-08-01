@@ -15,5 +15,8 @@ namespace actionjump {
     static constexpr int start = 12;
     static constexpr int tStartLeft = 13;
     static constexpr int tStartRight = 14;
+    static constexpr int trunkCenter = 15;
+    static constexpr int trunkCenterMean = 16;
+    static constexpr int lastTrunkCenterMean = 17;
 
 }

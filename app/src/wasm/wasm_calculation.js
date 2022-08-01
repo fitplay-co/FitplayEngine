@@ -47,9 +47,7 @@ var wasm_processor = {
                     "velocity" : actionTemp.walk().velocity()
                 }
                 pose.action_detection.jump = {
-                    "takeOff" : actionTemp.jump().takeOff(),
-                    "offGround" : actionTemp.jump().offGround(),
-                    "height" : actionTemp.jump().height(),
+                    "onTheGround" : actionTemp.jump().onTheGround(),
                     "velocity" : actionTemp.jump().velocity()
                 }
                 pose.action_detection.squat = {
@@ -58,10 +56,10 @@ var wasm_processor = {
             }
             if (pose.action_detection) {
                 pose.monitor = {
-                    "m1" : pose.action_detection.walk.stepRate,
-                    "m1Name" : "step_rate",
-                    "m2" : pose.action_detection.walk.velocity,
-                    "m2Name" : "velocity"
+                    "m1" : pose.action_detection.jump.onTheGround,
+                    "m1Name" : "on_the_ground",
+                    "m2" : pose.action_detection.jump.velocity,
+                    "m2Name" : "trunk_center_velocity"
                 }
             }
             

@@ -16,6 +16,11 @@ namespace actionjump {
             map<int, float> frameData;
             map<int, float> timeData;
 
+            float jumpHeight = 0;
+            float onTheGround = 0;
+            float trunkVelocity = 0;
+            float incrementCount = 0;
+
             float footOff = 0;
             float kneeOff = 0;
             float height = 0;
@@ -33,6 +38,7 @@ namespace actionjump {
             bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
             void writeToFlatbuffers(actionData::ActionBuilder&);
             void calculateCurrent(const PoseData::Pose* data);
+            void calculateTrunk();
             void calculateFoot();
             void calculateKnee();
             void calculateAnkle();
@@ -48,15 +54,14 @@ namespace actionjump {
         if (data->type() == Input::MessageType::MessageType_Pose) {
             const PoseData::Pose* pose = data->pose();
             calculateCurrent(pose);
+            calculateTrunk();
             calculateFoot();
             calculateKnee();
             checkTimestamp();
 
-            flatbuffersOffset = actionData::CreateJump(builder, 
-                                                        kneeOff,
-                                                        footOff,
-                                                        height,
-                                                        velocity);
+            flatbuffersOffset = actionData::CreateJump(builder,
+                                                        onTheGround,
+                                                        trunkVelocity);
         }
 
         return true;
@@ -67,6 +72,9 @@ namespace actionjump {
     }
 
     void jump::calculateCurrent(const PoseData::Pose* data) {
+        frameData[trunkCenter] = (data->keypoints()->Get(11)->y() + data->keypoints()->Get(12)->y() + data->keypoints()->Get(23)->y() + data->keypoints()->Get(24)->y())/4;
+        frameData[lastTrunkCenterMean] = frameData[trunkCenterMean];
+        frameData[trunkCenterMean] = frameData[trunkCenter] * 0.2 + frameData[trunkCenterMean] * 0.8;
         frameData[currentLeftKnee] = data->keypoints()->Get(25)->y();
         frameData[currentLeftKneeMean] = frameData[currentLeftKnee] * 0.1 + frameData[currentLeftKneeMean] * 0.9;
         frameData[currentRightKnee] = data->keypoints()->Get(26)->y();
@@ -78,6 +86,32 @@ namespace actionjump {
 
         frameData[currentHip] = (data->keypoints()->Get(23)->y() + data->keypoints()->Get(24)->y())/2;
         frameData[currentHipMean] = frameData[currentHip] * 0.1 + frameData[currentHipMean] * 0.9;
+    }
+
+    void jump::calculateTrunk() {
+        float increment = - (frameData[trunkCenterMean] - frameData[lastTrunkCenterMean]);
+        if(onTheGround == 0) {
+            if(increment > 0) {
+                jumpHeight = jumpHeight + increment;
+                if(incrementCount > 5 && jumpHeight > 0.1) {
+                    onTheGround = 1;
+                    trunkVelocity = increment;
+                }
+                else {
+                    incrementCount = incrementCount + 1;
+                }
+            }
+            else {
+                incrementCount = 0;
+                jumpHeight = 0;
+            }
+        }
+        if(onTheGround == 1) {
+            if(increment < 0) {
+                onTheGround = 0;
+            }
+        }
+
     }
 
     void jump::calculateFoot() {
