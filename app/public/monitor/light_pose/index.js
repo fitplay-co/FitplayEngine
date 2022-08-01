@@ -147,7 +147,7 @@ myChart3.setOption({
 });
 myChart4.setOption({
   title: {
-      text: 'Monitor',
+      text: 'API Monitor',
       subtext: 'M4'
   },
   xAxis: {
