@@ -59,11 +59,20 @@ function ws_init(){
     "action" : "subscribe" 
   }
 
+  var generalDetectionSubscribe = {
+    "type" : "application_control",
+    "feature_id" : "general_detection",
+    "action" : "subscribe" 
+  }
+
   setTimeout(() => {
     ws_send(JSON.stringify(appClientMessage))
 }, 1000);
   setTimeout(() => {
     ws_send(JSON.stringify(actionDetectionSubscribe))
+}, 1000);
+  setTimeout(() => {
+    ws_send(JSON.stringify(generalDetectionSubscribe))
 }, 1000);
 }
 

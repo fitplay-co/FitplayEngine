@@ -93,6 +93,7 @@ namespace actionjump {
         if(onTheGround == 0) {
             if(increment > 0) {
                 jumpHeight = jumpHeight + increment;
+                // threshold to be tested
                 if(incrementCount > 5 && jumpHeight > 0.1) {
                     onTheGround = 1;
                     trunkVelocity = increment;

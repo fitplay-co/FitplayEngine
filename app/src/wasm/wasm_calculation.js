@@ -26,6 +26,12 @@ var wasm_processor = {
         if (actionData.length > 0) {
             var actionBuf = new flatbuffers.ByteBuffer(actionData)
             var actionTemp = action.getRootAsAction(actionBuf)
+            if (actionTemp.general()) {
+                // console.log(actionTemp.general().confidence())
+                pose.general_detection = {
+                    "confidence" : actionTemp.general().confidence()
+                }
+            }
             if (actionTemp.walk() || actionTemp.jump() || actionTemp.squat()) {
                 pose.action_detection = {
                     "version" : "0.2.0"
@@ -54,12 +60,12 @@ var wasm_processor = {
                     "squat" : actionTemp.squat().status()
                 }
             }
-            if (pose.action_detection) {
+            if (pose.action_detection && pose.general_detection) {
                 pose.monitor = {
                     "m1" : pose.action_detection.jump.onTheGround,
                     "m1Name" : "on_the_ground",
-                    "m2" : pose.action_detection.jump.velocity,
-                    "m2Name" : "trunk_center_velocity"
+                    "m2" : pose.general_detection.confidence,
+                    "m2Name" : "confidence"
                 }
             }
             

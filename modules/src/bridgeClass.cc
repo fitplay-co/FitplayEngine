@@ -8,6 +8,7 @@
 #include "actionData_generated.h"
 #include "featureConfig_generated.h"
 #include "inputMessage_generated.h"
+#include "generalDetection/generalCalculator.hpp"
 #include "actionDetection/actionDetectionComponent.hpp"
 #include "gazeTracking/gazeTracking.hpp"
 #include "groundLocation/groundLocation.hpp"
@@ -24,6 +25,7 @@ public:
     midwareManager.registerMidwareComponent(&gazeInstance);
     midwareManager.registerMidwareComponent(&actionDetectionInstance);
     midwareManager.registerMidwareComponent(&fittingInstance);
+    midwareManager.registerMidwareComponent(&generalInstance);
   }
 
   void release() {
@@ -59,6 +61,7 @@ public:
 
 private:
   fitplay::fittingComponent fittingInstance;
+  generalDetection::generalCalculator generalInstance;
   actionDetection::actionDetectionComponent actionDetectionInstance;
   gaze::gazeTracking gazeInstance;
   ground::groundLocation groundInstance;
