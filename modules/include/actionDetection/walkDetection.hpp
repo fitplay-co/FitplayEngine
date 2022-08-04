@@ -13,10 +13,11 @@ namespace actionwalk {
     class walk: public Midware::MidwareComponent {
         private:
             // calculated data
-            map<int, float> frameData;
-            map<int, float> meanData;
-            map<int, float> timeData;
-            map<int, int> timeData2;
+            vector<float> *frameData;
+            vector<float> *meanData;
+            vector<float> *progressData;
+            vector<float> *timeData;
+            vector<int> *timeData2;
 
             // for one euro filter
             float frameCount = 0;
@@ -24,39 +25,28 @@ namespace actionwalk {
             detection::OneEuroFilter *leftFootFilter;
             detection::OneEuroFilter *rightFootFilter;
 
-            // output data
-            float currentLeft = 0;
-            float currentRight = 0;
-            float stepRateLeft = 0;
-            float stepRateRight = 0;
-            float stepLenLeft = 0;
-            float stepLenRight = 0;
-            float leftProgress = 0;
-            float rightProgress = 0;
-            float turn = 0;
-
+            // output API data
+            float currentLeftStatus = 0;
+            float currentRightStatus = 0;
+            float currentLeftStepRate = 0;
+            float currentRightStepRate = 0;
+            float currentLeftStepLength = 0;
+            float currentRightStepLength = 0;
+            float currentLeftProgress = 0;
+            float currentRightProgress = 0;
+            float currentTurnAng = 0;
             // velocity data
             // version 2
-            float stepRate = 0;
-            float stepLen = 0;
-            float velocity = 0;
+            float currentStepRate = 0;
+            float currentStepLength = 0;
+            float currentVelocity = 0;
 
-            // progress info
-            float preLeft = 0;
-            float preRight = 0;
-            float maxLeft = 30;
-            float maxRight = 30;
-            float lenLeft = 0;
-            float lenRight = 0;
-            float frameLeft = 0;
-            float frameRight = 0;
-
-            float fpmStopCount = 0;
             float frameShiftFilterCount = 0;
-            float fpmStopCount2 = 0;
             float frameShiftFilterCount2 = 0;
-            float fpmStopCount3 = 0;
-            float test;
+            float frameShiftFilterCount3 = 0;
+            float frameShiftFilterCount4 = 0;
+            float frameShiftFilterCount5 = 0;
+            float fpmStopCount = 0;
 
             flatbuffers::Offset<actionData::Walk> flatbuffersOffset;
         public:
@@ -68,52 +58,59 @@ namespace actionwalk {
             void calculateMean();
             void calculateLeft();
             void calculateRight();
-            void calculateStepLen();
-            void checkStepRate();
+            void calculateStepLength();
+            void calculateStepRate();
             void calculateProgress();
             void calculateTurn(const PoseData::Pose* data);
-            // void shiftDirectionStepPerMinutes();
-            // void calculateWindow();
             int militime();
             float calVecAngle(const PoseData::Pose* data, int num1, int num2, int num3, int config);
             float distanceFinder(const PoseData::Pose* data, int num1, int num2);
     };
+
     walk::walk(): MidwareComponent("walk") {
+        frameData = new vector<float>(10, 0);
+        meanData = new vector<float>(10, 0);
+        progressData = new vector<float>(10, 0);
+        progressData->at(maxLeftDistance) = 30;
+        progressData->at(maxRightDistance) = 30;
+        timeData = new vector<float>(10, 0);
+        timeData2 = new vector<int>(10, 0);
         leftFootFilter = new detection::OneEuroFilter(frequency, mincutoff, beta, dcutoff);
         rightFootFilter = new detection::OneEuroFilter(frequency, mincutoff, beta, dcutoff);
-        timeData2[tlock] = 0;
+        timeData2->at(timeLock) = 0;
     }
+
     walk::~walk() {}
 
     bool walk::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
         if (data->type() == Input::MessageType::MessageType_Pose) {
             const PoseData::Pose* pose = data->pose();
+
             calculateFrame(pose);
             calculateMean();
             calculateLeft();
             calculateRight();
-            calculateStepLen();
-            checkStepRate();
+            calculateStepLength();
+            calculateStepRate();
             calculateProgress();
             calculateTurn(pose);
 
             flatbuffersOffset = actionData::CreateWalk(builder, 
-                                                        currentLeft,
-                                                        currentRight,
-                                                        stepRateLeft,
-                                                        stepRateRight,
-                                                        meanData[leftHip],
-                                                        meanData[rightHip],
-                                                        stepLenLeft,
-                                                        stepLenRight,
-                                                        leftProgress,
-                                                        rightProgress,
-                                                        turn,
-                                                        stepRate,
-                                                        stepLen,
-                                                        velocity);
+                                                        currentLeftStatus,
+                                                        currentRightStatus,
+                                                        frameData->at(currentLeftFoot) - frameData->at(preLeftFoot),
+                                                        progressData->at(realLeftStatus),
+                                                        meanData->at(currentLeftHipAngMean),
+                                                        meanData->at(currentRightHipAngMean),
+                                                        currentLeftStepLength,
+                                                        currentRightStepLength,
+                                                        currentLeftProgress,
+                                                        currentRightProgress,
+                                                        currentTurnAng,
+                                                        currentStepRate,
+                                                        currentStepLength,
+                                                        currentVelocity);
         }
-
         return true;
     }
 
@@ -122,89 +119,92 @@ namespace actionwalk {
     }
 
     void walk::calculateFrame(const PoseData::Pose* data) {
-
-        frameData[preLeftFoot] = frameData[leftFoot];
-        frameData[preRightFoot] = frameData[rightFoot];
-        frameData[rightFoot] = data->keypoints()->Get(28)->y() + data->keypoints()->Get(32)->y();
-        frameData[leftFoot] = data->keypoints()->Get(27)->y() + data->keypoints()->Get(31)->y();
-        frameData[rightHip] = calVecAngle(data, 12, 24, 26, 1);
-        frameData[leftHip] = calVecAngle(data, 11, 23, 25, 1);
+        frameData->at(preLeftFoot) = frameData->at(currentLeftFoot);
+        frameData->at(preRightFoot) = frameData->at(currentRightFoot);
+        frameData->at(currentLeftFoot) = data->keypoints()->Get(27)->y() + data->keypoints()->Get(31)->y();
+        frameData->at(currentRightFoot) = data->keypoints()->Get(28)->y() + data->keypoints()->Get(32)->y();
+        frameData->at(currentLeftHipAng) = calVecAngle(data, 11, 23, 25, 1);
+        frameData->at(currentRightHipAng) = calVecAngle(data, 12, 24, 26, 1);
         float leftThighHeight = data->keypoints3D()->Get(23)->y() - data->keypoints3D()->Get(25)->y();
         float rightThighHeight = data->keypoints3D()->Get(24)->y() - data->keypoints3D()->Get(26)->y();
-        frameData[thigh] = std::max(leftThighHeight, rightThighHeight);
-        frameData[leftLeg] = data->keypoints3D()->Get(27)->y() - data->keypoints3D()->Get(23)->y();
-        frameData[rightLeg] = data->keypoints3D()->Get(28)->y() - data->keypoints3D()->Get(24)->y();
+        frameData->at(currentThighHeight) = std::max(leftThighHeight, rightThighHeight);
+        frameData->at(currentLeftLegHeight) = data->keypoints3D()->Get(27)->y() - data->keypoints3D()->Get(23)->y();
+        frameData->at(currentRightLegHeight) = data->keypoints3D()->Get(28)->y() - data->keypoints3D()->Get(24)->y();
     }
 
     void walk::calculateMean() {
+        // euro filter
         double timestamp = frameCount/frequency;
         frameCount = frameCount + 1;
-        double leftFootFiltered = leftFootFilter->filter(frameData[leftFoot], timestamp);
-        double rightFootFiltered = rightFootFilter->filter(frameData[rightFoot], timestamp);
-        meanData[leftFoot] = meanData[currentLeftFoot];
-        meanData[currentLeftFoot] = float(leftFootFiltered);
-        meanData[rightFoot] = meanData[currentRightFoot];
-        meanData[currentRightFoot] = float(rightFootFiltered);
-        // meanData[leftFoot] = meanData[leftFoot] * 0.85 + frameData[leftFoot] * 0.15;
-        // meanData[rightFoot] = meanData[rightFoot] * 0.85 + frameData[rightFoot] * 0.15;
-        meanData[leftHip] = meanData[leftHip] * 0.8 + frameData[leftHip] * 0.2;
-        meanData[rightHip] = meanData[rightHip] * 0.8 + frameData[rightHip] * 0.2;
-        meanData[thigh] = (meanData[thigh] * 0.9 + frameData[thigh] * 0.1) * 0.79 + 0.15;
-        meanData[leg] = meanData[thigh] * 2.004;
-        meanData[height] = meanData[thigh] / 0.245;
+        double leftFootFiltered = leftFootFilter->filter(double(frameData->at(currentLeftFoot)), timestamp);
+        double rightFootFiltered = rightFootFilter->filter(frameData->at(currentRightFoot), timestamp);
+        meanData->at(preLeftFootMean) = meanData->at(currentLeftFootMean);
+        meanData->at(currentLeftFootMean) = float(leftFootFiltered);
+        meanData->at(preRightFootMean) = meanData->at(currentRightFootMean);
+        meanData->at(currentRightFootMean) = float(rightFootFiltered);
+
+        // low pass filter
+        // meanData->at(currentLeftFootMean) = meanData->at(currentLeftFootMean) * 0.85 + frameData->at(currentLeftFoot) * 0.15;
+        // meanData->at(currentRightFootMean) = meanData->at(currentRightFootMean) * 0.85 + frameData->at(currentRightFoot) * 0.15;
+        meanData->at(currentLeftHipAngMean) = meanData->at(currentLeftHipAngMean) * 0.8 + frameData->at(currentLeftHipAng) * 0.2;
+        meanData->at(currentRightHipAngMean) = meanData->at(currentRightHipAngMean) * 0.8 + frameData->at(currentRightHipAng) * 0.2;
+        meanData->at(currentThighHeightMean) = (meanData->at(currentThighHeightMean) * 0.9 + frameData->at(currentThighHeight) * 0.1) * 0.79 + 0.15;
+        meanData->at(currentLegHeightMean) = meanData->at(currentThighHeightMean) * 2.004;
+        meanData->at(currentHeightMean) = meanData->at(currentThighHeightMean) / 0.245;
     }
 
     void walk::calculateLeft() {
-        preLeft = currentLeft;
+        progressData->at(preLeftStatus) = currentLeftStatus;
         // for left leg
-        if(currentLeft == 2) {
-            if(frameData[rightLeg] - frameData[leftLeg] < 0.1) {
-                currentLeft = 0;
+        // check leg length for leg hanging case
+        if(currentLeftStatus == 2) {
+            if(frameData->at(currentRightLegHeight) - frameData->at(currentLeftLegHeight) < 0.1) {
+                currentLeftStatus = 0;
             }
         }
         else {
-            // leg down
-            if(frameData[leftFoot] - meanData[leftFoot] > 0.01) {
-                if(currentLeft != -1) {
-                    if(frameShiftFilterCount > 3 && currentLeft == 1) {
-                        currentLeft = -1;
-                        timeData[tEndLeft] = militime();
-                        timeData[tWindowLeft] = float((timeData[tEndLeft] - timeData[tStartLeft]))/1000;
+            // foot reaches its peak and going down
+            if(frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean) > 0.01) {
+                if(currentLeftStatus != -1) {
+                    if(frameShiftFilterCount > 3 && currentLeftStatus == 1) {
+                        currentLeftStatus = -1;
+                        timeData->at(timeLeftDown) = militime();
+                        timeData->at(timeLeftWindow) = float((timeData->at(timeLeftDown) - timeData->at(timeLeftUp)))/1000;
                     }
                     else { frameShiftFilterCount = frameShiftFilterCount + 1; }
                 }
                 else { frameShiftFilterCount = 0; }
             }
-            // leg up
-            if(frameData[leftFoot] - meanData[leftFoot] < -0.01) {
-                if(currentLeft != 1) {
-                    if(frameShiftFilterCount > 3 && (currentLeft == 0 || currentLeft == -1)) {
-                        if(timeData2[tlock] == 1){
-                            timeData2[t2] = militime();
-                            timeData2[tlock] = 0;
+            // foot going up
+            if(frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean) < -0.01) {
+                if(currentLeftStatus != 1) {
+                    if(frameShiftFilterCount > 3 && (currentLeftStatus == 0 || currentLeftStatus == -1)) {
+                        if(timeData2->at(timeLock) == 1){
+                            timeData2->at(timeBeta) = militime();
+                            timeData2->at(timeLock) = 0;
                         }
                         else {
-                            timeData2[tlock] = 1;
-                            timeData2[t1] = militime();
+                            timeData2->at(timeLock) = 1;
+                            timeData2->at(timeAlpha) = militime();
                         }
-                        currentLeft = 1;
-                        timeData[tStartLeft] = militime();
+                        currentLeftStatus = 1;
+                        timeData->at(timeLeftUp) = militime();
                     }
                     else { frameShiftFilterCount = frameShiftFilterCount + 1; }
                 }
                 else { frameShiftFilterCount = 0; }
             }
             // leg still
-            if((-0.01 < (frameData[leftFoot] - meanData[leftFoot])) && ((frameData[leftFoot] - meanData[leftFoot]) < 0.01)) {
-                if(currentLeft != 0 && currentLeft != 2) {
+            if((-0.01 < (frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean))) && ((frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean) < 0.01))) {
+                if(currentLeftStatus != 0 && currentLeftStatus != 2) {
                     if(frameShiftFilterCount > 6) {
                         // threshold to be tested
-                        if(frameData[rightLeg] - frameData[leftLeg] > 0.1 && currentLeft == 1) {
-                            currentLeft = 2;
+                        if(frameData->at(currentRightLegHeight) - frameData->at(currentLeftLegHeight) > 0.1 && currentLeftStatus == 1) {
+                            currentLeftStatus = 2;
                         }
                         else {
-                            preLeft = currentLeft; 
-                            currentLeft = 0;
+                            progressData->at(preLeftStatus) = currentLeftStatus; 
+                            currentLeftStatus = 0;
                         }
                     }
                     else { frameShiftFilterCount = frameShiftFilterCount + 1; }
@@ -215,56 +215,57 @@ namespace actionwalk {
     }
 
     void walk::calculateRight() {
-        preRight = currentRight;
+        progressData->at(preRightStatus) = currentRightStatus;
         // for right leg
-        if(currentRight == 2) {
-            if(frameData[leftLeg] - frameData[rightLeg] < 0.1) {
-                currentRight = 0;
+        // check leg length for leg hanging case
+        if(currentRightStatus == 2) {
+            if(frameData->at(currentLeftLegHeight) - frameData->at(currentRightLegHeight) < 0.1) {
+                currentRightStatus = 0;
             }
         }
         else {
-            // leg down
-            if(frameData[rightFoot] - meanData[rightFoot] > 0.01) {
-                if(currentRight != -1) {
-                    if(frameShiftFilterCount2 > 3 && currentRight == 1) {
-                        currentRight = -1;
-                        timeData[tEndRight] = militime();
-                        timeData[tWindowRight] = float((timeData[tEndRight] - timeData[tStartRight]))/1000;
+            // foot reaches its peak and going down
+            if(frameData->at(currentRightFoot) - meanData->at(preRightFootMean) > 0.01) {
+                if(currentRightStatus != -1) {
+                    if(frameShiftFilterCount2 > 3 && currentRightStatus == 1) {
+                        currentRightStatus = -1;
+                        timeData->at(timeRightDown) = militime();
+                        timeData->at(timeRightWindow) = float((timeData->at(timeRightDown) - timeData->at(timeRightUp)))/1000;
                     }
                     else { frameShiftFilterCount2 = frameShiftFilterCount2 + 1; }
                 }
                 else { frameShiftFilterCount2 = 0; }
             }
-            // leg up
-            if(frameData[rightFoot] - meanData[rightFoot] < -0.01) {
-                if(currentRight != 1) {
-                    if(frameShiftFilterCount2 > 3 && (currentRight == 0 || currentRight == -1)) {
-                        if(timeData2[tlock] == 1){
-                            timeData2[t2] = militime();
-                            timeData2[tlock] = 0;
+            // foot going up
+            if(frameData->at(currentRightFoot) - meanData->at(preRightFootMean) < -0.01) {
+                if(currentRightStatus != 1) {
+                    if(frameShiftFilterCount2 > 3 && (currentRightStatus == 0 || currentRightStatus == -1)) {
+                        if(timeData2->at(timeLock) == 1){
+                            timeData2->at(timeBeta) = militime();
+                            timeData2->at(timeLock) = 0;
                         }
                         else {
-                            timeData2[tlock] = 1;
-                            timeData2[t1] = militime();
+                            timeData2->at(timeLock) = 1;
+                            timeData2->at(timeAlpha) = militime();
                         }
-                        currentRight = 1;
-                        timeData[tStartRight] = militime();
+                        currentRightStatus = 1;
+                        timeData->at(timeRightUp) = militime();
                     }
                     else { frameShiftFilterCount2 = frameShiftFilterCount2 + 1; }
                 }
                 else { frameShiftFilterCount2 = 0; }
             }
             // leg still
-            if((-0.01 < (frameData[rightFoot] - meanData[rightFoot])) && ((frameData[rightFoot] - meanData[rightFoot]) < 0.01)) {
-                if(currentRight != 0 && currentRight != 2) {
+            if((-0.01 < (frameData->at(currentRightFoot) - meanData->at(preRightFootMean))) && ((frameData->at(currentRightFoot) - meanData->at(preRightFootMean) < 0.01))) {
+                if(currentRightStatus != 0 && currentRightStatus != 2) {
                     if(frameShiftFilterCount2 > 6) {
                         // threshold to be tested
-                        if(frameData[leftLeg] - frameData[rightLeg] > 0.1 && currentRight == 1) {
-                            currentRight = 2;
+                        if(frameData->at(currentLeftLegHeight) - frameData->at(currentRightLegHeight) > 0.1 && currentLeftStatus == 1) {
+                            currentRightStatus = 2;
                         }
                         else {
-                            preRight = currentRight;
-                            currentRight = 0; 
+                            progressData->at(preRightStatus) = currentRightStatus; 
+                            currentRightStatus = 0;
                         }
                     }
                     else { frameShiftFilterCount2 = frameShiftFilterCount2 + 1; }
@@ -274,124 +275,185 @@ namespace actionwalk {
         }
     }
 
-    void walk::calculateStepLen() {
-        float maxSL = meanData[height] * 1.2;
-        float leftFlexion = (180 - meanData[leftHip]) > 90 ? 90 : (180 - meanData[leftHip]);
-        float rightFlexion = (180 - meanData[rightHip]) > 90 ? 90 : (180 - meanData[rightHip]);
-        if(preLeft == 1 && currentLeft == -1) {
-            stepLenLeft = (maxSL / pow(90,(float)1/3)) * pow(leftFlexion,(float)1/3);
-            stepLen = stepLenLeft;
+    void walk::calculateStepLength() {
+        float maxSL = meanData->at(currentHeightMean) * 1.2;
+        float leftFlexion = (180 - meanData->at(currentLeftHipAngMean)) > 90 ? 90 : (180 - meanData->at(currentLeftHipAngMean));
+        float rightFlexion = (180 - meanData->at(currentRightHipAngMean)) > 90 ? 90 : (180 - meanData->at(currentRightHipAngMean));
+        if(progressData->at(preLeftStatus) == 1 && currentLeftStatus == -1) {
+            currentLeftStepLength = (maxSL / pow(90,(float)1/3)) * pow(leftFlexion,(float)1/3);
+            currentStepLength = currentLeftStepLength;
         }
-        if(preRight == 1 && currentRight == -1) {
-            stepLenRight = (maxSL / pow(90,(float)1/3)) * pow(rightFlexion,(float)1/3);
-            stepLen = stepLenRight;
+        if(progressData->at(preRightStatus) == 1 && currentRightStatus == -1) {
+            currentRightStepLength = (maxSL / pow(90,(float)1/3)) * pow(rightFlexion,(float)1/3);
+            currentStepLength = currentRightStepLength;
         }
-        // if(currentLeft == 0 || currentLeft == 2) { stepLenLeft = 0; }
-        // if(currentRight == 0 || currentRight == 2) { stepLenRight = 0; }
+        // if(currentLeftStatus == 0 || currentLeftStatus == 2) { currentLeftStepLength = 0; }
+        // if(currentRightStatus == 0 || currentRightStatus == 2) { currentRightStepLength = 0; }
     }
 
-    void walk::checkStepRate() {
-        if((currentLeft == 0 || currentLeft == 2) && (currentRight == 0 || currentRight == 2)) {
-            fpmStopCount3 = fpmStopCount3 + 1;
-            if(fpmStopCount3 > 15) {
-                timeData2[t1] = 0;
-                timeData2[t2] = 0;
-                timeData2[tlock] = 0;
-                stepRate = 0;
-                timeData[tWindowLeft] = 0;
-                timeData[tWindowRight] = 0;
+    void walk::calculateStepRate() {
+        if((currentLeftStatus == 0 || currentLeftStatus == 2) && (currentRightStatus == 0 || currentRightStatus == 2)) {
+            fpmStopCount = fpmStopCount + 1;
+            if(fpmStopCount > 15) {
+                timeData2->at(timeAlpha) = 0;
+                timeData2->at(timeBeta) = 0;
+                timeData2->at(timeLock) = 0;
+                currentStepRate = 0;
+                timeData->at(timeLeftWindow) = 0;
+                timeData->at(timeRightWindow) = 0;
             }
         }
-        else { fpmStopCount3 = 0; }
-        if (timeData[tWindowLeft] != 0) stepRateLeft = 0.35 / timeData[tWindowLeft]; 
-        else { stepRateLeft = 0; }
-        if (timeData[tWindowRight] != 0) stepRateRight = 0.35 / timeData[tWindowRight];
-        else { stepRateRight = 0; }
+        else { fpmStopCount = 0; }
+        if (timeData->at(timeLeftWindow) != 0) currentLeftStepRate = 0.35 / timeData->at(timeLeftWindow); 
+        else { currentLeftStepRate = 0; }
+        if (timeData->at(timeRightWindow) != 0) currentRightStepRate = 0.35 / timeData->at(timeRightWindow);
+        else { currentRightStepRate = 0; }
 
-        float preStepRate = stepRate;
-        stepRate = stepRateLeft > stepRateRight ? stepRateLeft : stepRateRight;
+        float preStepRate = currentStepRate;
+        currentStepRate = currentLeftStepRate > currentRightStepRate ? currentLeftStepRate : currentRightStepRate;
 
-        if(timeData2[t1]!=0&&timeData2[t2]!=0){
-            stepRate = 1 / (float(abs(timeData2[t1] - timeData2[t2]))/1000);
+        if(timeData2->at(timeAlpha)!=0&&timeData2->at(timeBeta)!=0){
+            currentStepRate = 1 / (float(abs(timeData2->at(timeAlpha) - timeData2->at(timeBeta)))/1000);
         }
-        // velocity = velocity * 0.8 + (stepRate * stepLen) * 0.2;
-        // if(velocity > 10) velocity = 10;
-        // if(velocity < 0.01) velocity = 0;
-        velocity = stepRate * stepLenLeft;
+        // currentVelocity = currentVelocity * 0.8 + (currentStepRate * currentStepLength) * 0.2;
+        // if(currentVelocity > 10) currentVelocity = 10;
+        // if(currentVelocity < 0.01) currentVelocity = 0;
+        currentVelocity = currentStepRate * currentStepLength;
     }
 
     void walk::calculateProgress() {
         // left progress
-        if(preLeft == 0 && currentLeft == 0) { 
-            float increment = - (frameData[leftFoot] - frameData[preLeftFoot]);
-            lenLeft = lenLeft + increment;
-            leftProgress = lenLeft / maxLeft * 0.5;
-            leftProgress = leftProgress < 0.05 ? 0 : leftProgress;
-        }
-        if(frameLeft == 0) {
-            if(currentLeft == 1) {
-                float increment = - (frameData[leftFoot] - frameData[preLeftFoot]);
-                if(increment < 0) {
-                    maxLeft = lenLeft;
-                    lenLeft = 0;
-                    frameLeft = -1;
-                    leftProgress = 0.5;
+        if(progressData->at(preLeftStatus) == 0 && currentLeftStatus == 0) { 
+            float increment = - (frameData->at(currentLeftFoot) - frameData->at(preLeftFoot));
+            progressData->at(totalLeftDistance) = progressData->at(totalLeftDistance) + increment;
+            currentLeftProgress = progressData->at(totalLeftDistance) / progressData->at(maxLeftDistance) * 0.5;
+            currentLeftProgress = currentLeftProgress < 0.05 ? 0 : currentLeftProgress;
+            // calculate realtime status
+            if(currentLeftProgress > 0) {
+                if(frameShiftFilterCount3 > 3){
+                    progressData->at(realLeftStatus) = 1;
                 }
-                else {
-                    lenLeft = lenLeft + increment;
-                    leftProgress = lenLeft / maxLeft * 0.5;
-                    leftProgress = leftProgress > 0.5 ? 0.5 : leftProgress;
+                else{
+                    frameShiftFilterCount3++;
                 }
             }
         }
-        if(frameLeft == -1) {
-            float increment = (frameData[leftFoot] - frameData[preLeftFoot]);
-            lenLeft = lenLeft + increment;
-            leftProgress = lenLeft / maxLeft * 0.5 + 0.5;
-            leftProgress = leftProgress > 1 ? 1 : leftProgress;
-        }
-        if(preLeft == -1 && currentLeft != preLeft) {
-            frameLeft = 0;
-            lenLeft = 0;
-            leftProgress = 1;
-        }
-
-        // right progress
-        if(preRight == 0 && currentRight == 0) { 
-            float increment = - (frameData[rightFoot] - frameData[preRightFoot]);
-            lenRight = lenRight + increment;
-            rightProgress = lenRight / maxRight * 0.5;
-            rightProgress = rightProgress < 0.05 ? 0 : rightProgress;
-        }
-        if(frameRight == 0) {
-            if(currentRight == 1) {
-                float increment = - (frameData[rightFoot] - frameData[preRightFoot]);
+        if(progressData->at(currentProgressLeftStatus) == 0) {
+            if(currentLeftStatus == 1) {
+                float increment = - (frameData->at(currentLeftFoot) - frameData->at(preLeftFoot));
                 if(increment < 0) {
-                    maxRight = lenRight;
-                    lenRight = 0;
-                    frameRight = -1;
-                    rightProgress = 0.5;
+                    progressData->at(maxLeftDistance) = progressData->at(totalLeftDistance);
+                    progressData->at(totalLeftDistance) = 0;
+                    progressData->at(currentProgressLeftStatus) = -1;
+                    currentLeftProgress = 0.5;
+                    progressData->at(realLeftStatus) = -1;
                 }
                 else {
-                    lenRight = lenRight + increment;
-                    rightProgress = lenRight / maxRight * 0.5;
-                    rightProgress = rightProgress > 0.5 ? 0.5 : rightProgress;
+                    progressData->at(totalLeftDistance) = progressData->at(totalLeftDistance) + increment;
+                    currentLeftProgress = progressData->at(totalLeftDistance) / progressData->at(maxLeftDistance) * 0.5;
+                    currentLeftProgress = currentLeftProgress > 0.5 ? 0.5 : currentLeftProgress;
                 }
             }
         }
-        if(frameRight == -1) {
-            float increment = (frameData[rightFoot] - frameData[preRightFoot]);
-            lenRight = lenRight + increment;
-            rightProgress = lenRight / maxRight * 0.5 + 0.5;
-            rightProgress = rightProgress > 1 ? 1 : rightProgress;
+        if(progressData->at(currentProgressLeftStatus) == -1) {
+            float increment = (frameData->at(currentLeftFoot) - frameData->at(preLeftFoot));
+            progressData->at(totalLeftDistance) = progressData->at(totalLeftDistance) + increment;
+            currentLeftProgress = progressData->at(totalLeftDistance) / progressData->at(maxLeftDistance) * 0.5 + 0.5;
+            currentLeftProgress = currentLeftProgress > 1 ? 1 : currentLeftProgress;
+            if(currentLeftProgress > 0.8) {
+                if(frameShiftFilterCount4 > 3){
+                    progressData->at(realLeftStatus) = 0;
+                }
+                else{
+                    frameShiftFilterCount4++;
+                }
+            }
         }
-        if(preRight == -1 && currentRight != preRight) {
-            frameRight = 0;
-            lenRight = 0;
-            rightProgress = 1;
+        if(progressData->at(preLeftStatus) == -1 && currentLeftStatus != progressData->at(preLeftStatus)) {
+            progressData->at(currentProgressLeftStatus) = 0;
+            progressData->at(totalLeftDistance) = 0;
+            currentLeftProgress = 1;
         }
-
     }
+
+    // void walk::calculateProgress() {
+    //     // left progress
+
+    //     // 通过延迟识别方案确定未起步
+    //     if(progressData->at(preLeftStatus) == 0 && currentLeftStatus == 0) { 
+    //         // 计算增量与积量
+    //         float increment = - (frameData->at(currentLeftFoot) - frameData->at(preLeftFoot));
+    //         progressData->at(totalLeftDistance) = progressData->at(totalLeftDistance) + increment;
+    //         // 计算progress
+    //         currentLeftProgress = progressData->at(totalLeftDistance) / progressData->at(maxLeftDistance) * 0.5;
+    //         currentLeftProgress = currentLeftProgress < 0.1 ? 0 : currentLeftProgress;
+    //         // currentLeftProgress = progressData->at(totalLeftDistance);
+    //     }
+    //     // 
+    //     if(progressData->at(currentProgressLeftStatus) == 0) {
+    //         if(currentLeftStatus == 1) {
+    //             float increment = - (frameData->at(currentLeftFoot) - frameData->at(preLeftFoot));
+    //             if(increment < 0) {
+    //                 progressData->at(maxLeftDistance) = progressData->at(totalLeftDistance);
+    //                 progressData->at(totalLeftDistance) = 0;
+    //                 progressData->at(currentProgressLeftStatus) = -1;
+    //                 currentLeftProgress = 0.5;
+    //             }
+    //             else {
+    //                 progressData->at(totalLeftDistance) = progressData->at(totalLeftDistance) + increment;
+    //                 currentLeftProgress = progressData->at(totalLeftDistance) / progressData->at(maxLeftDistance) * 0.5;
+    //                 currentLeftProgress = currentLeftProgress > 0.5 ? 0.5 : currentLeftProgress;
+    //             }
+    //         }
+    //     }
+    //     if(progressData->at(currentProgressLeftStatus) == -1) {
+    //         float increment = (frameData->at(currentLeftFoot) - frameData->at(preLeftFoot));
+    //         progressData->at(totalLeftDistance) = progressData->at(totalLeftDistance) + increment;
+    //         currentLeftProgress = progressData->at(totalLeftDistance) / progressData->at(maxLeftDistance) * 0.5 + 0.5;
+    //         currentLeftProgress = currentLeftProgress > 1 ? 1 : currentLeftProgress;
+    //     }
+    //     if(progressData->at(preLeftStatus) == -1 && currentLeftStatus != progressData->at(preLeftStatus)) {
+    //         progressData->at(currentProgressLeftStatus) = 0;
+    //         progressData->at(totalLeftDistance) = 0;
+    //         currentLeftProgress = 1;
+    //     }
+
+    //     // right progress
+    //     if(progressData->at(preRightStatus) == 0 && currentRightStatus == 0) { 
+    //         float increment = - (frameData->at(currentRightFoot) - frameData->at(preRightFoot));
+    //         progressData->at(totalRightDistance) = progressData->at(totalRightDistance) + increment;
+    //         currentRightProgress = progressData->at(totalRightDistance) / progressData->at(maxRightDistance) * 0.5;
+    //         currentRightProgress = currentRightProgress < 0.05 ? 0 : currentRightProgress;
+    //     }
+    //     if(progressData->at(currentProgressLeftStatus) == 0) {
+    //         if(currentRightStatus == 1) {
+    //             float increment = - (frameData->at(currentRightFoot) - frameData->at(preRightFoot));
+    //             if(increment < 0) {
+    //                 progressData->at(maxRightDistance) = progressData->at(totalRightDistance);
+    //                 progressData->at(totalRightDistance) = 0;
+    //                 progressData->at(currentProgressLeftStatus) = -1;
+    //                 currentRightProgress = 0.5;
+    //             }
+    //             else {
+    //                 progressData->at(totalRightDistance) = progressData->at(totalRightDistance) + increment;
+    //                 currentRightProgress = progressData->at(totalRightDistance) / progressData->at(maxRightDistance) * 0.5;
+    //                 currentRightProgress = currentRightProgress > 0.5 ? 0.5 : currentRightProgress;
+    //             }
+    //         }
+    //     }
+    //     if(progressData->at(currentProgressLeftStatus) == -1) {
+    //         float increment = (frameData->at(currentRightFoot) - frameData->at(preRightFoot));
+    //         progressData->at(totalRightDistance) = progressData->at(totalRightDistance) + increment;
+    //         currentRightProgress = progressData->at(totalRightDistance) / progressData->at(maxRightDistance) * 0.5 + 0.5;
+    //         currentRightProgress = currentRightProgress > 1 ? 1 : currentRightProgress;
+    //     }
+    //     if(progressData->at(preRightStatus) == -1 && currentRightStatus != progressData->at(preRightStatus)) {
+    //         progressData->at(currentProgressLeftStatus) = 0;
+    //         progressData->at(totalRightDistance) = 0;
+    //         currentRightProgress = 1;
+    //     }
+
+    // }
 
     void walk::calculateTurn(const PoseData::Pose* data) {
         float a[2] = {data->keypoints3D()->Get(11)->x() - data->keypoints3D()->Get(12)->x()
@@ -404,8 +466,8 @@ namespace actionwalk {
         a1 = sqrt(a[0]*a[0]+a[1]*a[1]);
         b1 = sqrt(b[0]*b[0]+b[1]*b[1]);
         cosr = ab/a1/b1;
-        turn = acos(cosr)*180/acos(-1);
-        if(data->keypoints3D()->Get(12)->z() < data->keypoints3D()->Get(11)->z()) turn = - turn;
+        currentTurnAng = acos(cosr)*180/acos(-1);
+        if(data->keypoints3D()->Get(12)->z() < data->keypoints3D()->Get(11)->z()) currentTurnAng = - currentTurnAng;
     }
 
     int walk::militime() {
