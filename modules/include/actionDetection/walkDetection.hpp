@@ -330,7 +330,7 @@ namespace actionwalk {
             currentLeftProgress = currentLeftProgress < 0.05 ? 0 : currentLeftProgress;
             // calculate realtime status
             if(currentLeftProgress > 0) {
-                if(frameShiftFilterCount3 > 3){
+                if(frameShiftFilterCount3 > 2){
                     progressData->at(realLeftStatus) = 1;
                 }
                 else{
@@ -351,6 +351,7 @@ namespace actionwalk {
                 else {
                     progressData->at(totalLeftDistance) = progressData->at(totalLeftDistance) + increment;
                     currentLeftProgress = progressData->at(totalLeftDistance) / progressData->at(maxLeftDistance) * 0.5;
+                    progressData->at(realLeftStatus) = 1;
                     currentLeftProgress = currentLeftProgress > 0.5 ? 0.5 : currentLeftProgress;
                 }
             }
@@ -363,12 +364,21 @@ namespace actionwalk {
             if(currentLeftProgress > 0.8) {
                 if(frameShiftFilterCount4 > 3){
                     progressData->at(realLeftStatus) = 0;
+                    // progressData->at(currentProgressLeftStatus) = 2;
+                    // progressData->at(totalLeftDistance) = 0;
                 }
                 else{
                     frameShiftFilterCount4++;
                 }
             }
         }
+        // if(progressData->at(currentProgressLeftStatus) == 2) {
+        //     if(abs(frameData->at(currentLeftFoot) - frameData->at(preLeftFoot)) < 0.01) {
+        //         progressData->at(currentProgressLeftStatus) = 0;
+        //         progressData->at(totalLeftDistance) = 0;
+        //         currentLeftProgress = 1;
+        //     }
+        // }
         if(progressData->at(preLeftStatus) == -1 && currentLeftStatus != progressData->at(preLeftStatus)) {
             progressData->at(currentProgressLeftStatus) = 0;
             progressData->at(totalLeftDistance) = 0;
