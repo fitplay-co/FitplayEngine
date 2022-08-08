@@ -242,6 +242,12 @@ function addData(inputData){
       case "velocity" :
         m4 = jsonObj.action_detection.walk.velocity;
         break; 
+      case "realtimeLeftLeg" :
+        m4 = jsonObj.action_detection.walk.realtimeLeftLeg;
+        break; 
+      case "realtimeRightLeg" :
+        m4 = jsonObj.action_detection.walk.realtimeRightLeg;
+        break; 
     }
 
     num1.push(m1)

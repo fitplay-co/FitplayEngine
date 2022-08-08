@@ -50,7 +50,9 @@ var wasm_processor = {
                     "turn" : actionTemp.walk().turn(),
                     "stepRate" : actionTemp.walk().stepRate(),
                     "stepLen" : actionTemp.walk().stepLen(),
-                    "velocity" : actionTemp.walk().velocity()
+                    "velocity" : actionTemp.walk().velocity(),
+                    "realtimeLeftLeg" : actionTemp.walk().realtimeLeftLeg(),
+                    "realtimeRightLeg" : actionTemp.walk().realtimeRightLeg()
                 }
                 pose.action_detection.jump = {
                     "onTheGround" : actionTemp.jump().onTheGround(),
@@ -62,7 +64,7 @@ var wasm_processor = {
             }
             if (pose.action_detection && pose.general_detection) {
                 pose.monitor = {
-                    "m1" : pose.action_detection.walk.rightLeg,
+                    "m1" : pose.action_detection.walk.realtimeLeftLeg,
                     "m1Name" : "real_left_leg",
                     "m2" : pose.action_detection.walk.leftLeg,
                     "m2Name" : "left_leg"
