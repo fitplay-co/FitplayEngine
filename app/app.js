@@ -90,6 +90,8 @@ var messageLoop = coroutine(function*() {
             pose.timeProfiling.serverReceive = messageTime
             pose.timeProfiling.processingTime = processingTime
 
+            pose.sensor_type = "camera"
+
             //调整pose结构适配api格式
             pose.type = "application_frame"
             pose.pose_landmark = {
