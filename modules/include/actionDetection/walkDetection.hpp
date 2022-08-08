@@ -46,7 +46,12 @@ namespace actionwalk {
             float frameShiftFilterCount3 = 0;
             float frameShiftFilterCount4 = 0;
             float frameShiftFilterCount5 = 0;
+            float frameShiftFilterCount6 = 0;
+            float frameShiftFilterCount7 = 0;
+            float frameShiftFilterCount8 = 0;
             float fpmStopCount = 0;
+
+            float currentRealTimeLeftStatus = 0;
 
             flatbuffers::Offset<actionData::Walk> flatbuffersOffset;
         public:
@@ -61,6 +66,7 @@ namespace actionwalk {
             void calculateStepLength();
             void calculateStepRate();
             void calculateProgress();
+            void calculateRealTime();
             void calculateTurn(const PoseData::Pose* data);
             int militime();
             float calVecAngle(const PoseData::Pose* data, int num1, int num2, int num3, int config);
@@ -94,13 +100,15 @@ namespace actionwalk {
             calculateStepRate();
             calculateProgress();
             calculateTurn(pose);
+            calculateRealTime();
 
             flatbuffersOffset = actionData::CreateWalk(builder, 
-                                                        currentLeftStatus,
-                                                        currentRightStatus,
+                                                        currentRealTimeLeftStatus,
+                                                        progressData->at(totalLeftDistance),
+                                                        progressData->at(maxLeftDistance),
+                                                        progressData->at(currentProgressLeftStatus),
                                                         frameData->at(currentLeftFoot) - frameData->at(preLeftFoot),
-                                                        progressData->at(realLeftStatus),
-                                                        meanData->at(currentLeftHipAngMean),
+                                                        frameData->at(currentLeftFoot),
                                                         meanData->at(currentRightHipAngMean),
                                                         currentLeftStepLength,
                                                         currentRightStepLength,
@@ -108,7 +116,6 @@ namespace actionwalk {
                                                         currentRightProgress,
                                                         currentTurnAng,
                                                         currentStepRate,
-                                                        currentStepLength,
                                                         currentVelocity);
         }
         return true;
@@ -323,6 +330,13 @@ namespace actionwalk {
 
     void walk::calculateProgress() {
         // left progress
+        // if(progressData->at(currentProgressLeftStatus) == 2) {
+        //     if(frameData->at(currentLeftFoot) - frameData->at(preLeftFoot) < 0.001) {
+        //         progressData->at(currentProgressLeftStatus) = 0;
+        //         progressData->at(totalLeftDistance) = 0;
+        //         currentLeftProgress = 1;
+        //     }
+        // }
         if(progressData->at(preLeftStatus) == 0 && currentLeftStatus == 0) { 
             float increment = - (frameData->at(currentLeftFoot) - frameData->at(preLeftFoot));
             progressData->at(totalLeftDistance) = progressData->at(totalLeftDistance) + increment;
@@ -362,7 +376,7 @@ namespace actionwalk {
             currentLeftProgress = progressData->at(totalLeftDistance) / progressData->at(maxLeftDistance) * 0.5 + 0.5;
             currentLeftProgress = currentLeftProgress > 1 ? 1 : currentLeftProgress;
             if(currentLeftProgress > 0.8) {
-                if(frameShiftFilterCount4 > 3){
+                if(frameShiftFilterCount4 > 5){
                     progressData->at(realLeftStatus) = 0;
                     // progressData->at(currentProgressLeftStatus) = 2;
                     // progressData->at(totalLeftDistance) = 0;
@@ -372,13 +386,6 @@ namespace actionwalk {
                 }
             }
         }
-        // if(progressData->at(currentProgressLeftStatus) == 2) {
-        //     if(abs(frameData->at(currentLeftFoot) - frameData->at(preLeftFoot)) < 0.01) {
-        //         progressData->at(currentProgressLeftStatus) = 0;
-        //         progressData->at(totalLeftDistance) = 0;
-        //         currentLeftProgress = 1;
-        //     }
-        // }
         if(progressData->at(preLeftStatus) == -1 && currentLeftStatus != progressData->at(preLeftStatus)) {
             progressData->at(currentProgressLeftStatus) = 0;
             progressData->at(totalLeftDistance) = 0;
@@ -386,84 +393,48 @@ namespace actionwalk {
         }
     }
 
-    // void walk::calculateProgress() {
-    //     // left progress
-
-    //     // 通过延迟识别方案确定未起步
-    //     if(progressData->at(preLeftStatus) == 0 && currentLeftStatus == 0) { 
-    //         // 计算增量与积量
-    //         float increment = - (frameData->at(currentLeftFoot) - frameData->at(preLeftFoot));
-    //         progressData->at(totalLeftDistance) = progressData->at(totalLeftDistance) + increment;
-    //         // 计算progress
-    //         currentLeftProgress = progressData->at(totalLeftDistance) / progressData->at(maxLeftDistance) * 0.5;
-    //         currentLeftProgress = currentLeftProgress < 0.1 ? 0 : currentLeftProgress;
-    //         // currentLeftProgress = progressData->at(totalLeftDistance);
-    //     }
-    //     // 
-    //     if(progressData->at(currentProgressLeftStatus) == 0) {
-    //         if(currentLeftStatus == 1) {
-    //             float increment = - (frameData->at(currentLeftFoot) - frameData->at(preLeftFoot));
-    //             if(increment < 0) {
-    //                 progressData->at(maxLeftDistance) = progressData->at(totalLeftDistance);
-    //                 progressData->at(totalLeftDistance) = 0;
-    //                 progressData->at(currentProgressLeftStatus) = -1;
-    //                 currentLeftProgress = 0.5;
-    //             }
-    //             else {
-    //                 progressData->at(totalLeftDistance) = progressData->at(totalLeftDistance) + increment;
-    //                 currentLeftProgress = progressData->at(totalLeftDistance) / progressData->at(maxLeftDistance) * 0.5;
-    //                 currentLeftProgress = currentLeftProgress > 0.5 ? 0.5 : currentLeftProgress;
-    //             }
-    //         }
-    //     }
-    //     if(progressData->at(currentProgressLeftStatus) == -1) {
-    //         float increment = (frameData->at(currentLeftFoot) - frameData->at(preLeftFoot));
-    //         progressData->at(totalLeftDistance) = progressData->at(totalLeftDistance) + increment;
-    //         currentLeftProgress = progressData->at(totalLeftDistance) / progressData->at(maxLeftDistance) * 0.5 + 0.5;
-    //         currentLeftProgress = currentLeftProgress > 1 ? 1 : currentLeftProgress;
-    //     }
-    //     if(progressData->at(preLeftStatus) == -1 && currentLeftStatus != progressData->at(preLeftStatus)) {
-    //         progressData->at(currentProgressLeftStatus) = 0;
-    //         progressData->at(totalLeftDistance) = 0;
-    //         currentLeftProgress = 1;
-    //     }
-
-    //     // right progress
-    //     if(progressData->at(preRightStatus) == 0 && currentRightStatus == 0) { 
-    //         float increment = - (frameData->at(currentRightFoot) - frameData->at(preRightFoot));
-    //         progressData->at(totalRightDistance) = progressData->at(totalRightDistance) + increment;
-    //         currentRightProgress = progressData->at(totalRightDistance) / progressData->at(maxRightDistance) * 0.5;
-    //         currentRightProgress = currentRightProgress < 0.05 ? 0 : currentRightProgress;
-    //     }
-    //     if(progressData->at(currentProgressLeftStatus) == 0) {
-    //         if(currentRightStatus == 1) {
-    //             float increment = - (frameData->at(currentRightFoot) - frameData->at(preRightFoot));
-    //             if(increment < 0) {
-    //                 progressData->at(maxRightDistance) = progressData->at(totalRightDistance);
-    //                 progressData->at(totalRightDistance) = 0;
-    //                 progressData->at(currentProgressLeftStatus) = -1;
-    //                 currentRightProgress = 0.5;
-    //             }
-    //             else {
-    //                 progressData->at(totalRightDistance) = progressData->at(totalRightDistance) + increment;
-    //                 currentRightProgress = progressData->at(totalRightDistance) / progressData->at(maxRightDistance) * 0.5;
-    //                 currentRightProgress = currentRightProgress > 0.5 ? 0.5 : currentRightProgress;
-    //             }
-    //         }
-    //     }
-    //     if(progressData->at(currentProgressLeftStatus) == -1) {
-    //         float increment = (frameData->at(currentRightFoot) - frameData->at(preRightFoot));
-    //         progressData->at(totalRightDistance) = progressData->at(totalRightDistance) + increment;
-    //         currentRightProgress = progressData->at(totalRightDistance) / progressData->at(maxRightDistance) * 0.5 + 0.5;
-    //         currentRightProgress = currentRightProgress > 1 ? 1 : currentRightProgress;
-    //     }
-    //     if(progressData->at(preRightStatus) == -1 && currentRightStatus != progressData->at(preRightStatus)) {
-    //         progressData->at(currentProgressLeftStatus) = 0;
-    //         progressData->at(totalRightDistance) = 0;
-    //         currentRightProgress = 1;
-    //     }
-
-    // }
+    void walk::calculateRealTime() {
+        float increment = - (frameData->at(currentLeftFoot) - frameData->at(preLeftFoot));
+        if(currentRealTimeLeftStatus == 0) {
+            if(increment > 0.006) {
+                if(frameShiftFilterCount5 > 5) {
+                    currentRealTimeLeftStatus = 1;
+                }
+                else {
+                    frameShiftFilterCount5++;
+                }
+            }
+        }
+        else if(currentRealTimeLeftStatus == 1) {
+            if(increment < - 0) currentRealTimeLeftStatus = -1;
+            // if(increment < - 0) {
+            //     if(frameShiftFilterCount6 > 3) {
+            //         currentRealTimeLeftStatus = -1;
+            //     }
+            //     else {
+            //         frameShiftFilterCount6++;
+            //     }
+            // }
+        }
+        else if(currentRealTimeLeftStatus == -1) {
+            if(abs(increment) <  0.001) {
+                if(frameShiftFilterCount7 > 7) {
+                    currentRealTimeLeftStatus = 0;
+                }
+                else {
+                    frameShiftFilterCount7++;
+                }
+            }
+        }
+        // if(abs(increment) <  0.001) {
+        //     if(frameShiftFilterCount8 > 10) {
+        //         currentRealTimeLeftStatus = 0;
+        //     }
+        //     else {
+        //         frameShiftFilterCount8++;
+        //     }
+        // }
+    }
 
     void walk::calculateTurn(const PoseData::Pose* data) {
         float a[2] = {data->keypoints3D()->Get(11)->x() - data->keypoints3D()->Get(12)->x()

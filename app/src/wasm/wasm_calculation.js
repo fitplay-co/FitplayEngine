@@ -62,7 +62,7 @@ var wasm_processor = {
             }
             if (pose.action_detection && pose.general_detection) {
                 pose.monitor = {
-                    "m1" : pose.action_detection.walk.rightFrequency,
+                    "m1" : pose.action_detection.walk.rightLeg,
                     "m1Name" : "real_left_leg",
                     "m2" : pose.action_detection.walk.leftLeg,
                     "m2Name" : "left_leg"
