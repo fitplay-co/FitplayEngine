@@ -52,6 +52,9 @@ namespace actionwalk {
             float fpmStopCount = 0;
 
             float currentRealTimeLeftStatus = 0;
+            float realTimeLeftInit = 0;
+            float currentRealTimeRightStatus = 0;
+            float realTimeRightInit = 0;
 
             flatbuffers::Offset<actionData::Walk> flatbuffersOffset;
         public:
@@ -66,7 +69,8 @@ namespace actionwalk {
             void calculateStepLength();
             void calculateStepRate();
             void calculateProgress();
-            void calculateRealTime();
+            void calculateRealTimeLeft();
+            void calculateRealTimeRight();
             void calculateTurn(const PoseData::Pose* data);
             int militime();
             float calVecAngle(const PoseData::Pose* data, int num1, int num2, int num3, int config);
@@ -100,15 +104,15 @@ namespace actionwalk {
             calculateStepRate();
             calculateProgress();
             calculateTurn(pose);
-            calculateRealTime();
+            calculateRealTimeLeft();
+            calculateRealTimeRight();
 
             flatbuffersOffset = actionData::CreateWalk(builder, 
-                                                        currentRealTimeLeftStatus,
-                                                        progressData->at(totalLeftDistance),
-                                                        progressData->at(maxLeftDistance),
-                                                        progressData->at(currentProgressLeftStatus),
-                                                        frameData->at(currentLeftFoot) - frameData->at(preLeftFoot),
-                                                        frameData->at(currentLeftFoot),
+                                                        currentLeftStatus,
+                                                        currentRightStatus,
+                                                        currentLeftStepRate,
+                                                        currentRightStepRate,
+                                                        meanData->at(currentLeftHipAngMean),
                                                         meanData->at(currentRightHipAngMean),
                                                         currentLeftStepLength,
                                                         currentRightStepLength,
@@ -116,7 +120,10 @@ namespace actionwalk {
                                                         currentRightProgress,
                                                         currentTurnAng,
                                                         currentStepRate,
-                                                        currentVelocity);
+                                                        currentStepLength,
+                                                        currentVelocity,
+                                                        currentRealTimeLeftStatus,
+                                                        currentRealTimeRightStatus);
         }
         return true;
     }
@@ -393,37 +400,39 @@ namespace actionwalk {
         }
     }
 
-    void walk::calculateRealTime() {
+    void walk::calculateRealTimeLeft() {
         float increment = - (frameData->at(currentLeftFoot) - frameData->at(preLeftFoot));
         if(currentRealTimeLeftStatus == 0) {
-            if(increment > 0.006) {
-                if(frameShiftFilterCount5 > 5) {
+            if(increment > 0.005) { realTimeLeftInit = 1; }
+            if(realTimeLeftInit == 1 && increment > 0.001) {
+                if(frameShiftFilterCount5 > 2) {
                     currentRealTimeLeftStatus = 1;
                 }
                 else {
                     frameShiftFilterCount5++;
                 }
             }
+            else {
+                frameShiftFilterCount5 = 0;
+            }
         }
         else if(currentRealTimeLeftStatus == 1) {
-            if(increment < - 0) currentRealTimeLeftStatus = -1;
-            // if(increment < - 0) {
-            //     if(frameShiftFilterCount6 > 3) {
-            //         currentRealTimeLeftStatus = -1;
-            //     }
-            //     else {
-            //         frameShiftFilterCount6++;
-            //     }
-            // }
+            frameShiftFilterCount5 = 0;
+            frameShiftFilterCount7 = 0;
+            realTimeLeftInit = 0;
+            if(increment < - 0.002) currentRealTimeLeftStatus = -1;
         }
         else if(currentRealTimeLeftStatus == -1) {
-            if(abs(increment) <  0.001) {
-                if(frameShiftFilterCount7 > 7) {
+            if(increment > -0.003) {
+                if(frameShiftFilterCount7 > 3) {
                     currentRealTimeLeftStatus = 0;
                 }
                 else {
                     frameShiftFilterCount7++;
                 }
+            }
+            else {
+                frameShiftFilterCount7 = 0;
             }
         }
         // if(abs(increment) <  0.001) {
@@ -434,6 +443,43 @@ namespace actionwalk {
         //         frameShiftFilterCount8++;
         //     }
         // }
+    }
+
+    void walk::calculateRealTimeRight() {
+        float increment = - (frameData->at(currentRightFoot) - frameData->at(preRightFoot));
+        if(currentRealTimeRightStatus == 0) {
+            if(increment > 0.005) { realTimeRightInit = 1; }
+            if(realTimeRightInit == 1 && increment > 0.001) {
+                if(frameShiftFilterCount6 > 2) {
+                    currentRealTimeRightStatus = 1;
+                }
+                else {
+                    frameShiftFilterCount6++;
+                }
+            }
+            else {
+                frameShiftFilterCount6 = 0;
+            }
+        }
+        else if(currentRealTimeRightStatus == 1) {
+            frameShiftFilterCount6 = 0;
+            frameShiftFilterCount8 = 0;
+            realTimeRightInit = 0;
+            if(increment < - 0.002) currentRealTimeRightStatus = -1;
+        }
+        else if(currentRealTimeRightStatus == -1) {
+            if(increment > -0.003) {
+                if(frameShiftFilterCount8 > 3) {
+                    currentRealTimeRightStatus = 0;
+                }
+                else {
+                    frameShiftFilterCount8++;
+                }
+            }
+            else {
+                frameShiftFilterCount8 = 0;
+            }
+        }
     }
 
     void walk::calculateTurn(const PoseData::Pose* data) {

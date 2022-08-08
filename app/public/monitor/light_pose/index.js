@@ -149,7 +149,7 @@ myChart3.setOption({
     type: "value"
   },
   series: [{
-    symbol: "none",
+    // symbol: "none",
     data: num3,
     type: "line"
   }]
@@ -168,7 +168,7 @@ myChart4.setOption({
     type: "value"
   },
   series: [{
-    symbol: "none",
+    // symbol: "none",
     data: num4,
     type: "line"
   }]
