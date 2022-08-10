@@ -419,14 +419,14 @@ namespace actionwalk {
                 frameShiftFilterCount5 = 0;
             }
         }
-        else if(currentRealTimeLeftStatus == 1 || currentRealTimeLeftStatus == 2) {
+        else if(currentRealTimeLeftStatus == 1) {
             frameShiftFilterCount5 = 0;
             frameShiftFilterCount7 = 0;
             realTimeLeftInit = 0;
             if(increment < - 0.002) currentRealTimeLeftStatus = -1;
             else if(abs(increment) < 0.002) {
                 if(frameShiftFilterCount9 > 5) {
-                    if(frameData->at(currentRightLegHeight) - frameData->at(currentLeftLegHeight) < 0.1) currentRealTimeLeftStatus = 0;
+                    if(frameData->at(currentRightLegHeight) - frameData->at(currentLeftLegHeight) < 0.1) currentRealTimeLeftStatus = -1;
                     else currentRealTimeLeftStatus = 2;
                 }
                 else {
@@ -449,6 +449,9 @@ namespace actionwalk {
             else {
                 frameShiftFilterCount7 = 0;
             }
+        }
+        else if(currentRealTimeLeftStatus == 2) {
+            if(frameData->at(currentRightLegHeight) - frameData->at(currentLeftLegHeight) < 0.1) currentRealTimeLeftStatus = -1;
         }
         // if(abs(increment) <  0.001) {
         //     if(frameShiftFilterCount8 > 10) {
