@@ -49,6 +49,7 @@ namespace actionwalk {
             float frameShiftFilterCount6 = 0;
             float frameShiftFilterCount7 = 0;
             float frameShiftFilterCount8 = 0;
+            float frameShiftFilterCount9 = 0;
             float fpmStopCount = 0;
 
             float currentRealTimeLeftStatus = 0;
@@ -78,7 +79,7 @@ namespace actionwalk {
     };
 
     walk::walk(): MidwareComponent("walk") {
-        frameData = new vector<float>(10, 0);
+        frameData = new vector<float>(11, 0);
         meanData = new vector<float>(10, 0);
         progressData = new vector<float>(10, 0);
         progressData->at(maxLeftDistance) = 30;
@@ -144,6 +145,8 @@ namespace actionwalk {
         frameData->at(currentThighHeight) = std::max(leftThighHeight, rightThighHeight);
         frameData->at(currentLeftLegHeight) = data->keypoints3D()->Get(27)->y() - data->keypoints3D()->Get(23)->y();
         frameData->at(currentRightLegHeight) = data->keypoints3D()->Get(28)->y() - data->keypoints3D()->Get(24)->y();
+        frameData->at(currentLeftConfidence) = ((data->keypoints()->Get(27)->score() > 0.8) && (data->keypoints()->Get(31)->score() > 0.8)) ? 1 : 0;
+        frameData->at(currentRightConfidence) = ((data->keypoints()->Get(28)->score() > 0.8) && (data->keypoints()->Get(32)->score() > 0.8)) ? 1 : 0;
     }
 
     void walk::calculateMean() {
@@ -416,11 +419,23 @@ namespace actionwalk {
                 frameShiftFilterCount5 = 0;
             }
         }
-        else if(currentRealTimeLeftStatus == 1) {
+        else if(currentRealTimeLeftStatus == 1 || currentRealTimeLeftStatus == 2) {
             frameShiftFilterCount5 = 0;
             frameShiftFilterCount7 = 0;
             realTimeLeftInit = 0;
             if(increment < - 0.002) currentRealTimeLeftStatus = -1;
+            else if(abs(increment) < 0.002) {
+                if(frameShiftFilterCount9 > 5) {
+                    if(frameData->at(currentRightLegHeight) - frameData->at(currentLeftLegHeight) < 0.1) currentRealTimeLeftStatus = 0;
+                    else currentRealTimeLeftStatus = 2;
+                }
+                else {
+                    frameShiftFilterCount9++;
+                }
+            }
+            else {
+                frameShiftFilterCount9 = 0;
+            }
         }
         else if(currentRealTimeLeftStatus == -1) {
             if(increment > -0.003) {

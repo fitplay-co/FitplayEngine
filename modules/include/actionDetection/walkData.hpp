@@ -10,6 +10,8 @@ namespace actionwalk {
     static constexpr int currentThighHeight = 6;
     static constexpr int currentLeftLegHeight = 7;
     static constexpr int currentRightLegHeight = 8;
+    static constexpr int currentLeftConfidence = 9;
+    static constexpr int currentRightConfidence = 10;
 
     // mean data
     static constexpr int preLeftFootMean = 0;
