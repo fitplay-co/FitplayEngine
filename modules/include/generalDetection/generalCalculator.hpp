@@ -47,11 +47,11 @@ namespace generalDetection {
         float trustCount = 0;
         int arrLen = sizeof(generalKeypoints) / sizeof(generalKeypoints[0]);
         for(int i = 0; i < arrLen; i++) {
-            if(data->keypoints()->Get(generalKeypoints[i])->score() > 0.85) {
+            if(data->keypoints()->Get(generalKeypoints[i])->score() > 0.7) {
                 trustCount++;
             };
         }
-        if(trustCount > 16) confidence = 1;
+        if(trustCount > 8) confidence = 1;
     }
 }
 
