@@ -50,6 +50,7 @@ namespace actionwalk {
             float frameShiftFilterCount7 = 0;
             float frameShiftFilterCount8 = 0;
             float frameShiftFilterCount9 = 0;
+            float frameShiftFilterCount10 = 0;
             float fpmStopCount = 0;
 
             float currentRealTimeLeftStatus = 0;
@@ -405,6 +406,7 @@ namespace actionwalk {
 
     void walk::calculateRealTimeLeft() {
         float increment = - (frameData->at(currentLeftFoot) - frameData->at(preLeftFoot));
+        if(currentLeftStatus == 2) currentRealTimeLeftStatus = 2;
         if(currentRealTimeLeftStatus == 0) {
             if(increment > 0.005) { realTimeLeftInit = 1; }
             if(realTimeLeftInit == 1 && increment > 0.001) {
@@ -453,18 +455,11 @@ namespace actionwalk {
         else if(currentRealTimeLeftStatus == 2) {
             if(frameData->at(currentRightLegHeight) - frameData->at(currentLeftLegHeight) < 0.1) currentRealTimeLeftStatus = -1;
         }
-        // if(abs(increment) <  0.001) {
-        //     if(frameShiftFilterCount8 > 10) {
-        //         currentRealTimeLeftStatus = 0;
-        //     }
-        //     else {
-        //         frameShiftFilterCount8++;
-        //     }
-        // }
     }
 
     void walk::calculateRealTimeRight() {
         float increment = - (frameData->at(currentRightFoot) - frameData->at(preRightFoot));
+        if(currentRightStatus == 2) currentRealTimeRightStatus = 2;
         if(currentRealTimeRightStatus == 0) {
             if(increment > 0.005) { realTimeRightInit = 1; }
             if(realTimeRightInit == 1 && increment > 0.001) {
@@ -484,6 +479,18 @@ namespace actionwalk {
             frameShiftFilterCount8 = 0;
             realTimeRightInit = 0;
             if(increment < - 0.002) currentRealTimeRightStatus = -1;
+            else if(abs(increment) < 0.002) {
+                if(frameShiftFilterCount10 > 5) {
+                    if(frameData->at(currentLeftLegHeight) - frameData->at(currentRightLegHeight) < 0.1) currentRealTimeRightStatus = -1;
+                    else currentRealTimeRightStatus = 2;
+                }
+                else {
+                    frameShiftFilterCount10++;
+                }
+            }
+            else {
+                frameShiftFilterCount10 = 0;
+            }
         }
         else if(currentRealTimeRightStatus == -1) {
             if(increment > -0.003) {
@@ -497,6 +504,9 @@ namespace actionwalk {
             else {
                 frameShiftFilterCount8 = 0;
             }
+        }
+        else if(currentRealTimeRightStatus == 2) {
+            if(frameData->at(currentLeftLegHeight) - frameData->at(currentRightLegHeight) < 0.1) currentRealTimeRightStatus = -1;
         }
     }
 
