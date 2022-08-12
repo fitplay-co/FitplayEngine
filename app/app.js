@@ -304,7 +304,8 @@ function jsonMessageToFlatbuffers(message) {
         var controlDataOffset
         if (message.data) {
             ControlData.startControlData(builder)
-            ControlData.addFps(builder, message.data.fps)
+            if(message.data.height) ControlData.addHeight(builder, message.data.height)
+            if(message.data.fps) ControlData.addFps(builder, message.data.fps)
             controlDataOffset = ControlData.endControlData(builder)
         }
         Control.startControl(builder)

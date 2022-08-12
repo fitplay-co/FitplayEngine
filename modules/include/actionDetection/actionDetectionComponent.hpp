@@ -29,6 +29,12 @@ namespace actionDetection {
             squatInstance.process(data, builder);
             return true;
         }
+        if (data->type() == Input::MessageType::MessageType_ApplicationControl) {
+            const ApplicationControl::Control* control = data->control(); 
+            if (control->featureId()->str() == "action_detection") {
+                walkInstance.process(data, builder);
+            }
+        }
         
         return false;
     }

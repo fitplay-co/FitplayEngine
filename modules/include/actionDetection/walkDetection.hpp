@@ -41,6 +41,8 @@ namespace actionwalk {
             float currentStepLength = 0;
             float currentVelocity = 0;
 
+            float configHeight = 0;
+
             float frameShiftFilterCount = 0;
             float frameShiftFilterCount2 = 0;
             float frameShiftFilterCount3 = 0;
@@ -97,7 +99,6 @@ namespace actionwalk {
     bool walk::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
         if (data->type() == Input::MessageType::MessageType_Pose) {
             const PoseData::Pose* pose = data->pose();
-
             calculateFrame(pose);
             calculateMean();
             calculateLeft();
@@ -126,6 +127,12 @@ namespace actionwalk {
                                                         currentVelocity,
                                                         currentRealTimeLeftStatus,
                                                         currentRealTimeRightStatus);
+        }
+        else if(data->type() == Input::MessageType::MessageType_ApplicationControl) {
+            const ApplicationControl::Control* control = data->control();
+            if (control->action()->str() == "set_player") {
+                configHeight = control->data()->height();
+            }
         }
         return true;
     }

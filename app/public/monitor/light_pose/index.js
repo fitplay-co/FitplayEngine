@@ -65,6 +65,15 @@ function ws_init(){
     "action" : "subscribe" 
   }
 
+  var heightControl = {
+    "type" : "application_control",
+    "feature_id" : "action_detection",
+    "action" : "set_player",
+    "data": {
+        "height": 178
+    }
+}
+
   setTimeout(() => {
     ws_send(JSON.stringify(appClientMessage))
 }, 1000);
@@ -73,6 +82,9 @@ function ws_init(){
 }, 1000);
   setTimeout(() => {
     ws_send(JSON.stringify(generalDetectionSubscribe))
+}, 1000);
+  setTimeout(() => {
+    ws_send(JSON.stringify(heightControl))
 }, 1000);
 }
 
