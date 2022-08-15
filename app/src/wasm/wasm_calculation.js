@@ -51,6 +51,7 @@ var wasm_processor = {
                     "stepRate" : actionTemp.walk().stepRate(),
                     "stepLen" : actionTemp.walk().stepLen(),
                     "velocity" : actionTemp.walk().velocity(),
+                    "velocityThreshold" : actionTemp.walk().velocityThreshold(),
                     "realtimeLeftLeg" : actionTemp.walk().realtimeLeftLeg(),
                     "realtimeRightLeg" : actionTemp.walk().realtimeRightLeg()
                 }

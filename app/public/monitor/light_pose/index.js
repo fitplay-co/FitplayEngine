@@ -83,9 +83,9 @@ function ws_init(){
   setTimeout(() => {
     ws_send(JSON.stringify(generalDetectionSubscribe))
 }, 1000);
-  setTimeout(() => {
-    ws_send(JSON.stringify(heightControl))
-}, 1000);
+//   setTimeout(() => {
+//     ws_send(JSON.stringify(heightControl))
+// }, 1000);
 }
 
 function ws_send(data){
@@ -254,6 +254,9 @@ function addData(inputData){
       case "velocity" :
         m4 = jsonObj.action_detection.walk.velocity;
         break; 
+      case "velocityThreshold" :
+        m4 = jsonObj.action_detection.walk.velocityThreshold;
+        break;
       case "realtimeLeftLeg" :
         m4 = jsonObj.action_detection.walk.realtimeLeftLeg;
         break; 

@@ -18,6 +18,7 @@ namespace actionwalk {
             vector<float> *progressData;
             vector<float> *timeData;
             vector<int> *timeData2;
+            vector<int> *frameShiftFilterCount;
 
             // for one euro filter
             float frameCount = 0;
@@ -35,6 +36,7 @@ namespace actionwalk {
             float currentLeftProgress = 0;
             float currentRightProgress = 0;
             float currentTurnAng = 0;
+            float currentVelocityThreshold = 0;
             // velocity data
             // version 2
             float currentStepRate = 0;
@@ -42,17 +44,6 @@ namespace actionwalk {
             float currentVelocity = 0;
 
             float configHeight = 0;
-
-            float frameShiftFilterCount = 0;
-            float frameShiftFilterCount2 = 0;
-            float frameShiftFilterCount3 = 0;
-            float frameShiftFilterCount4 = 0;
-            float frameShiftFilterCount5 = 0;
-            float frameShiftFilterCount6 = 0;
-            float frameShiftFilterCount7 = 0;
-            float frameShiftFilterCount8 = 0;
-            float frameShiftFilterCount9 = 0;
-            float frameShiftFilterCount10 = 0;
             float fpmStopCount = 0;
 
             float currentRealTimeLeftStatus = 0;
@@ -89,6 +80,7 @@ namespace actionwalk {
         progressData->at(maxRightDistance) = 30;
         timeData = new vector<float>(10, 0);
         timeData2 = new vector<int>(10, 0);
+        frameShiftFilterCount = new vector<int>(10, 0);
         leftFootFilter = new detection::OneEuroFilter(frequency, mincutoff, beta, dcutoff);
         rightFootFilter = new detection::OneEuroFilter(frequency, mincutoff, beta, dcutoff);
         timeData2->at(timeLock) = 0;
@@ -125,13 +117,14 @@ namespace actionwalk {
                                                         currentStepRate,
                                                         currentStepLength,
                                                         currentVelocity,
+                                                        currentVelocityThreshold,
                                                         currentRealTimeLeftStatus,
                                                         currentRealTimeRightStatus);
         }
         else if(data->type() == Input::MessageType::MessageType_ApplicationControl) {
             const ApplicationControl::Control* control = data->control();
             if (control->action()->str() == "set_player") {
-                configHeight = control->data()->height();
+                configHeight = control->data()->height() * 0.01;
             }
         }
         return true;
@@ -191,19 +184,19 @@ namespace actionwalk {
             // foot reaches its peak and going down
             if(frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean) > 0.01) {
                 if(currentLeftStatus != -1) {
-                    if(frameShiftFilterCount > 3 && currentLeftStatus == 1) {
+                    if(frameShiftFilterCount->at(0) > 3 && currentLeftStatus == 1) {
                         currentLeftStatus = -1;
                         timeData->at(timeLeftDown) = militime();
                         timeData->at(timeLeftWindow) = float((timeData->at(timeLeftDown) - timeData->at(timeLeftUp)))/1000;
                     }
-                    else { frameShiftFilterCount = frameShiftFilterCount + 1; }
+                    else { frameShiftFilterCount->at(0) = frameShiftFilterCount->at(0) + 1; }
                 }
-                else { frameShiftFilterCount = 0; }
+                else { frameShiftFilterCount->at(0) = 0; }
             }
             // foot going up
             if(frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean) < -0.01) {
                 if(currentLeftStatus != 1) {
-                    if(frameShiftFilterCount > 3 && (currentLeftStatus == 0 || currentLeftStatus == -1)) {
+                    if(frameShiftFilterCount->at(0) > 3 && (currentLeftStatus == 0 || currentLeftStatus == -1)) {
                         if(timeData2->at(timeLock) == 1){
                             timeData2->at(timeBeta) = militime();
                             timeData2->at(timeLock) = 0;
@@ -215,14 +208,14 @@ namespace actionwalk {
                         currentLeftStatus = 1;
                         timeData->at(timeLeftUp) = militime();
                     }
-                    else { frameShiftFilterCount = frameShiftFilterCount + 1; }
+                    else { frameShiftFilterCount->at(0) = frameShiftFilterCount->at(0) + 1; }
                 }
-                else { frameShiftFilterCount = 0; }
+                else { frameShiftFilterCount->at(0) = 0; }
             }
             // leg still
             if((-0.01 < (frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean))) && ((frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean) < 0.01))) {
                 if(currentLeftStatus != 0 && currentLeftStatus != 2) {
-                    if(frameShiftFilterCount > 6) {
+                    if(frameShiftFilterCount->at(0) > 6) {
                         // threshold to be tested
                         if(frameData->at(currentRightLegHeight) - frameData->at(currentLeftLegHeight) > 0.1 && currentLeftStatus == 1) {
                             currentLeftStatus = 2;
@@ -232,9 +225,9 @@ namespace actionwalk {
                             currentLeftStatus = 0;
                         }
                     }
-                    else { frameShiftFilterCount = frameShiftFilterCount + 1; }
+                    else { frameShiftFilterCount->at(0) = frameShiftFilterCount->at(0) + 1; }
                 }
-                else { frameShiftFilterCount = 0; }
+                else { frameShiftFilterCount->at(0) = 0; }
             }
         }
     }
@@ -252,19 +245,19 @@ namespace actionwalk {
             // foot reaches its peak and going down
             if(frameData->at(currentRightFoot) - meanData->at(preRightFootMean) > 0.01) {
                 if(currentRightStatus != -1) {
-                    if(frameShiftFilterCount2 > 3 && currentRightStatus == 1) {
+                    if(frameShiftFilterCount->at(1) > 3 && currentRightStatus == 1) {
                         currentRightStatus = -1;
                         timeData->at(timeRightDown) = militime();
                         timeData->at(timeRightWindow) = float((timeData->at(timeRightDown) - timeData->at(timeRightUp)))/1000;
                     }
-                    else { frameShiftFilterCount2 = frameShiftFilterCount2 + 1; }
+                    else { frameShiftFilterCount->at(1) = frameShiftFilterCount->at(1) + 1; }
                 }
-                else { frameShiftFilterCount2 = 0; }
+                else { frameShiftFilterCount->at(1) = 0; }
             }
             // foot going up
             if(frameData->at(currentRightFoot) - meanData->at(preRightFootMean) < -0.01) {
                 if(currentRightStatus != 1) {
-                    if(frameShiftFilterCount2 > 3 && (currentRightStatus == 0 || currentRightStatus == -1)) {
+                    if(frameShiftFilterCount->at(1) > 3 && (currentRightStatus == 0 || currentRightStatus == -1)) {
                         if(timeData2->at(timeLock) == 1){
                             timeData2->at(timeBeta) = militime();
                             timeData2->at(timeLock) = 0;
@@ -276,14 +269,14 @@ namespace actionwalk {
                         currentRightStatus = 1;
                         timeData->at(timeRightUp) = militime();
                     }
-                    else { frameShiftFilterCount2 = frameShiftFilterCount2 + 1; }
+                    else { frameShiftFilterCount->at(1) = frameShiftFilterCount->at(1) + 1; }
                 }
-                else { frameShiftFilterCount2 = 0; }
+                else { frameShiftFilterCount->at(1) = 0; }
             }
             // leg still
             if((-0.01 < (frameData->at(currentRightFoot) - meanData->at(preRightFootMean))) && ((frameData->at(currentRightFoot) - meanData->at(preRightFootMean) < 0.01))) {
                 if(currentRightStatus != 0 && currentRightStatus != 2) {
-                    if(frameShiftFilterCount2 > 6) {
+                    if(frameShiftFilterCount->at(1) > 6) {
                         // threshold to be tested
                         if(frameData->at(currentLeftLegHeight) - frameData->at(currentRightLegHeight) > 0.1 && currentLeftStatus == 1) {
                             currentRightStatus = 2;
@@ -293,23 +286,25 @@ namespace actionwalk {
                             currentRightStatus = 0;
                         }
                     }
-                    else { frameShiftFilterCount2 = frameShiftFilterCount2 + 1; }
+                    else { frameShiftFilterCount->at(1) = frameShiftFilterCount->at(1) + 1; }
                 }
-                else { frameShiftFilterCount2 = 0; }
+                else { frameShiftFilterCount->at(1) = 0; }
             }
         }
     }
 
     void walk::calculateStepLength() {
-        float maxSL = meanData->at(currentHeightMean) * 1.2;
+        float maxSL = (configHeight==0)? meanData->at(currentHeightMean) * 1.2 : configHeight * 1.2;
         float leftFlexion = (180 - meanData->at(currentLeftHipAngMean)) > 90 ? 90 : (180 - meanData->at(currentLeftHipAngMean));
         float rightFlexion = (180 - meanData->at(currentRightHipAngMean)) > 90 ? 90 : (180 - meanData->at(currentRightHipAngMean));
         if(progressData->at(preLeftStatus) == 1 && currentLeftStatus == -1) {
             currentLeftStepLength = (maxSL / pow(90,(float)1/3)) * pow(leftFlexion,(float)1/3);
+            currentLeftStepLength = maxSL * sin(leftFlexion * acos(-1) / 180);
             currentStepLength = currentLeftStepLength;
         }
         if(progressData->at(preRightStatus) == 1 && currentRightStatus == -1) {
             currentRightStepLength = (maxSL / pow(90,(float)1/3)) * pow(rightFlexion,(float)1/3);
+            currentRightStepLength = maxSL * sin(rightFlexion * acos(-1) / 180);
             currentStepLength = currentRightStepLength;
         }
         // if(currentLeftStatus == 0 || currentLeftStatus == 2) { currentLeftStepLength = 0; }
@@ -344,6 +339,7 @@ namespace actionwalk {
         // if(currentVelocity > 10) currentVelocity = 10;
         // if(currentVelocity < 0.01) currentVelocity = 0;
         currentVelocity = currentStepRate * currentStepLength;
+        currentVelocityThreshold = (configHeight==0)? sqrt(2.401 * meanData->at(currentHeightMean)) : sqrt(2.401 * configHeight);
     }
 
     void walk::calculateProgress() {
@@ -362,11 +358,11 @@ namespace actionwalk {
             currentLeftProgress = currentLeftProgress < 0.05 ? 0 : currentLeftProgress;
             // calculate realtime status
             if(currentLeftProgress > 0) {
-                if(frameShiftFilterCount3 > 2){
+                if(frameShiftFilterCount->at(2) > 2){
                     progressData->at(realLeftStatus) = 1;
                 }
                 else{
-                    frameShiftFilterCount3++;
+                    frameShiftFilterCount->at(2)++;
                 }
             }
         }
@@ -394,13 +390,13 @@ namespace actionwalk {
             currentLeftProgress = progressData->at(totalLeftDistance) / progressData->at(maxLeftDistance) * 0.5 + 0.5;
             currentLeftProgress = currentLeftProgress > 1 ? 1 : currentLeftProgress;
             if(currentLeftProgress > 0.8) {
-                if(frameShiftFilterCount4 > 5){
+                if(frameShiftFilterCount->at(3) > 5){
                     progressData->at(realLeftStatus) = 0;
                     // progressData->at(currentProgressLeftStatus) = 2;
                     // progressData->at(totalLeftDistance) = 0;
                 }
                 else{
-                    frameShiftFilterCount4++;
+                    frameShiftFilterCount->at(3)++;
                 }
             }
         }
@@ -417,46 +413,46 @@ namespace actionwalk {
         if(currentRealTimeLeftStatus == 0) {
             if(increment > 0.005) { realTimeLeftInit = 1; }
             if(realTimeLeftInit == 1 && increment > 0.001) {
-                if(frameShiftFilterCount5 > 2) {
+                if(frameShiftFilterCount->at(4) > 2) {
                     currentRealTimeLeftStatus = 1;
                 }
                 else {
-                    frameShiftFilterCount5++;
+                    frameShiftFilterCount->at(4)++;
                 }
             }
             else {
-                frameShiftFilterCount5 = 0;
+                frameShiftFilterCount->at(4) = 0;
             }
         }
         else if(currentRealTimeLeftStatus == 1) {
-            frameShiftFilterCount5 = 0;
-            frameShiftFilterCount7 = 0;
+            frameShiftFilterCount->at(4) = 0;
+            frameShiftFilterCount->at(6) = 0;
             realTimeLeftInit = 0;
             if(increment < - 0.002) currentRealTimeLeftStatus = -1;
             else if(abs(increment) < 0.002) {
-                if(frameShiftFilterCount9 > 5) {
+                if(frameShiftFilterCount->at(8) > 5) {
                     if(frameData->at(currentRightLegHeight) - frameData->at(currentLeftLegHeight) < 0.1) currentRealTimeLeftStatus = -1;
                     else currentRealTimeLeftStatus = 2;
                 }
                 else {
-                    frameShiftFilterCount9++;
+                    frameShiftFilterCount->at(8)++;
                 }
             }
             else {
-                frameShiftFilterCount9 = 0;
+                frameShiftFilterCount->at(8) = 0;
             }
         }
         else if(currentRealTimeLeftStatus == -1) {
             if(increment > -0.003) {
-                if(frameShiftFilterCount7 > 3) {
+                if(frameShiftFilterCount->at(6) > 3) {
                     currentRealTimeLeftStatus = 0;
                 }
                 else {
-                    frameShiftFilterCount7++;
+                    frameShiftFilterCount->at(6)++;
                 }
             }
             else {
-                frameShiftFilterCount7 = 0;
+                frameShiftFilterCount->at(6) = 0;
             }
         }
         else if(currentRealTimeLeftStatus == 2) {
@@ -470,46 +466,46 @@ namespace actionwalk {
         if(currentRealTimeRightStatus == 0) {
             if(increment > 0.005) { realTimeRightInit = 1; }
             if(realTimeRightInit == 1 && increment > 0.001) {
-                if(frameShiftFilterCount6 > 2) {
+                if(frameShiftFilterCount->at(5) > 2) {
                     currentRealTimeRightStatus = 1;
                 }
                 else {
-                    frameShiftFilterCount6++;
+                    frameShiftFilterCount->at(5)++;
                 }
             }
             else {
-                frameShiftFilterCount6 = 0;
+                frameShiftFilterCount->at(5) = 0;
             }
         }
         else if(currentRealTimeRightStatus == 1) {
-            frameShiftFilterCount6 = 0;
-            frameShiftFilterCount8 = 0;
+            frameShiftFilterCount->at(5) = 0;
+            frameShiftFilterCount->at(7) = 0;
             realTimeRightInit = 0;
             if(increment < - 0.002) currentRealTimeRightStatus = -1;
             else if(abs(increment) < 0.002) {
-                if(frameShiftFilterCount10 > 5) {
+                if(frameShiftFilterCount->at(9) > 5) {
                     if(frameData->at(currentLeftLegHeight) - frameData->at(currentRightLegHeight) < 0.1) currentRealTimeRightStatus = -1;
                     else currentRealTimeRightStatus = 2;
                 }
                 else {
-                    frameShiftFilterCount10++;
+                    frameShiftFilterCount->at(9)++;
                 }
             }
             else {
-                frameShiftFilterCount10 = 0;
+                frameShiftFilterCount->at(9) = 0;
             }
         }
         else if(currentRealTimeRightStatus == -1) {
             if(increment > -0.003) {
-                if(frameShiftFilterCount8 > 3) {
+                if(frameShiftFilterCount->at(7) > 3) {
                     currentRealTimeRightStatus = 0;
                 }
                 else {
-                    frameShiftFilterCount8++;
+                    frameShiftFilterCount->at(7)++;
                 }
             }
             else {
-                frameShiftFilterCount8 = 0;
+                frameShiftFilterCount->at(7) = 0;
             }
         }
         else if(currentRealTimeRightStatus == 2) {
