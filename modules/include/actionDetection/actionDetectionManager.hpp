@@ -39,7 +39,7 @@ namespace actionDetection {
             float temp2 = calculatorInstance.getSubscribeDistance()->at(0);
             float temp3 = calculatorInstance.getFeatureVelocity()->at(0);
             flatbuffersOffset = actionData::CreateStand(builder,
-                                                            temp);
+                                                            temp3);
             return true;
         }
         return false;

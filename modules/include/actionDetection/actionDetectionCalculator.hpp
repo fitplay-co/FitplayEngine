@@ -185,8 +185,8 @@ namespace actionDetection {
 
     // provide customization for feature target
     void actionDetectionCalculator::calculateFeatureTarget(const PoseData::Pose* data) {
-        featureVelocityTargetList->at(0) = data->keypoints()->Get(12)->x();
-        for(int i = 1; i < featureVelocityDataList->size(); i++) {
+        featureVelocityTargetList->at(0) = data->keypoints()->Get(12)->y();
+        for(int i = 0; i < featureVelocityDataList->size(); i++) {
             featureVelocityDataList->at(i).currentTarget = featureVelocityTargetList->at(featureVelocityList->at(i).target);
         }
     }
