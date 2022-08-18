@@ -1,5 +1,6 @@
 #include "midwareComponent/midwareComponent.hpp"
 #include "actionData_generated.h"
+#include "actionDetectionManager.hpp"
 #include "actionDetection/walkDetection.hpp"
 #include "actionDetection/jumpDetection.hpp"
 #include "actionDetection/squatDetection.hpp"
@@ -11,6 +12,7 @@ namespace actionDetection {
             actionwalk::walk walkInstance;
             actionjump::jump jumpInstance;
             actionsquat::squat squatInstance;
+            actionDetectionManager managerInstance;
         
         public:
             actionDetectionComponent();
@@ -24,6 +26,7 @@ namespace actionDetection {
 
     bool actionDetectionComponent::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
         if (data->type() == Input::MessageType::MessageType_Pose) {
+            managerInstance.process(data, builder);
             walkInstance.process(data, builder);
             jumpInstance.process(data, builder);
             squatInstance.process(data, builder);
@@ -40,6 +43,7 @@ namespace actionDetection {
     }
 
     void actionDetectionComponent::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {
+        managerInstance.writeToFlatbuffers(actionBuilder);
         walkInstance.writeToFlatbuffers(actionBuilder);
         jumpInstance.writeToFlatbuffers(actionBuilder);
         squatInstance.writeToFlatbuffers(actionBuilder);
