@@ -28,7 +28,7 @@ namespace actionDetection {
             if(init == false) {
                 struct subscribeAngle test = { 12,24,26,1 };
                 struct subscribeDistance test2 = { 11,12,3 };
-                struct featureVelocity test3 = { 0,1,0.01,-0.01};
+                struct featureVelocity test3 = { 0,1,0.01,-0.01 };
                 int temp = calculatorInstance.addSubscribeAngle(&test);
                 int temp2 = calculatorInstance.addSubscribeDistance(&test2);
                 int temp3 = calculatorInstance.addFeatureVelocity(&test3);
