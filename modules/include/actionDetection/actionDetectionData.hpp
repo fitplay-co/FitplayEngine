@@ -24,6 +24,9 @@ namespace actionDetection {
         int filterType;
         float threshold1;
         float threshold2;
+        float shiftCount1;
+        float shiftCount2;
+        float stopCount;
     };
 
     struct featureVelocityData {

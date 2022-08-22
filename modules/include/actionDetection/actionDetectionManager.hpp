@@ -3,14 +3,20 @@
 
 #include "actionManager/testManager.hpp"
 #include "actionDetectionCalculator.hpp"
+#include "walkDetection.hpp"
 
 namespace actionDetection {
 
     class actionDetectionManager {
         private:
             testManager testInstance;
+            // 0 : stand
+            // 1 : travel
+            float mode = 0;
             actionDetectionCalculator calculatorInstance;
             flatbuffers::Offset<actionData::Stand> flatbuffersOffset;
+
+            actionwalk::walk walkInstance;
             bool init = false;
 
         public:
@@ -28,25 +34,54 @@ namespace actionDetection {
             if(init == false) {
                 struct subscribeAngle test = { 12,24,26,1 };
                 struct subscribeDistance test2 = { 11,12,3 };
-                struct featureVelocity test3 = { 0,1,0.01,-0.01 };
+                struct featureVelocity test3 = { 0,1,0.01,-0.01,3,3,5 };
+                struct featureVelocity leftFootConstraint = { 1,1,0.04,-0.04,3,3,5 };
+                struct featureVelocity rightFootConstraint = { 2,1,0.04,-0.04,3,3,5 };
                 int temp = calculatorInstance.addSubscribeAngle(&test);
                 int temp2 = calculatorInstance.addSubscribeDistance(&test2);
                 int temp3 = calculatorInstance.addFeatureVelocity(&test3);
+                int temp4 = calculatorInstance.addFeatureVelocity(&leftFootConstraint);
+                int temp5 = calculatorInstance.addFeatureVelocity(&rightFootConstraint);
                 init = true;
             }
+            walkInstance.process(data, builder);
             calculatorInstance.process(data);
             float temp = calculatorInstance.getSubscribeAngle()->at(0);
             float temp2 = calculatorInstance.getSubscribeDistance()->at(0);
-            float temp3 = calculatorInstance.getFeatureVelocity()->at(0);
+            float leftFootConstraint = calculatorInstance.getFeatureVelocity()->at(1);
+            float rightFootConstraint = calculatorInstance.getFeatureVelocity()->at(2);
+            float currentLeftStatus = walkInstance.getCurrentLeftStatus();
+            float currentRightStatus = walkInstance.getCurrentRightStatus();
+            if(mode == 0) {
+                if(leftFootConstraint == 0 && rightFootConstraint == 0) {
+                    if(currentLeftStatus != 0 || currentRightStatus != 0) {
+                        mode = 1;
+                    }
+                }
+            }
+            else if(mode == 1) {
+                if(currentLeftStatus == 0 && currentRightStatus == 0) {
+                    mode = 0;
+                }
+            }
             flatbuffersOffset = actionData::CreateStand(builder,
-                                                            temp3);
+                                                            mode);
             return true;
+        }
+        if (data->type() == Input::MessageType::MessageType_ApplicationControl) {
+            const ApplicationControl::Control* control = data->control(); 
+            if (control->featureId()->str() == "action_detection") {
+                if (control->action()->str() == "set_player") {
+                    walkInstance.setPlayer(control->data()->height());
+                }
+            }
         }
         return false;
     }
 
     void actionDetectionManager::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {
         actionBuilder.add_stand(flatbuffersOffset);
+        walkInstance.writeToFlatbuffers(actionBuilder);
     }
 
 }

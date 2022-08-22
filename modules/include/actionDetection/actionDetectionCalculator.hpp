@@ -81,18 +81,23 @@ namespace actionDetection {
         calculateFeatureTarget(data);
         for(int i = 0; i < featureVelocityList->size(); i++) {
 
-            float currentTarget = featureVelocityDataList->at(i).currentTarget;
-            float preTarget = featureVelocityDataList->at(i).preTarget;
-            float currentTargetMean = featureVelocityDataList->at(i).currentTargetMean;
-            float preTargetMean = featureVelocityDataList->at(i).preTargetMean;
-            float preStatus = featureVelocityDataList->at(i).preStatus;
-            float frameShiftCount = featureVelocityDataList->at(i).frameShiftCount;
+            const featureVelocityData featureData = featureVelocityDataList->at(i);
+            float currentTarget = featureData.currentTarget;
+            float preTarget = featureData.preTarget;
+            float currentTargetMean = featureData.currentTargetMean;
+            float preTargetMean = featureData.preTargetMean;
+            float preStatus = featureData.preStatus;
+            float frameShiftCount = featureData.frameShiftCount;
 
             float status = featureVelocityResult->at(i);
 
-            float threshold1 = featureVelocityList->at(i).threshold1;
-            float threshold2 = featureVelocityList->at(i).threshold2;
-            float filterType = featureVelocityList->at(i).filterType;
+            const featureVelocity feature = featureVelocityList->at(i);
+            float threshold1 = feature.threshold1;
+            float threshold2 = feature.threshold2;
+            float shiftCount1 = feature.shiftCount1;
+            float shiftCount2 = feature.shiftCount2;
+            float stopCount = feature.stopCount;
+            float filterType = feature.filterType;
 
             if(filterType == 1) {
                 currentTargetMean = currentTargetMean * 0.8 + currentTarget * 0.2;
@@ -107,7 +112,7 @@ namespace actionDetection {
 
             if(currentTarget - preTargetMean > threshold1) {
                 if(status != -1) {
-                    if(frameShiftCount > 3 && status == 1) {
+                    if(frameShiftCount > shiftCount1 && status == 1) {
                         status = -1;
                     }
                     else frameShiftCount = frameShiftCount + 1;
@@ -117,7 +122,7 @@ namespace actionDetection {
 
             else if(currentTarget - preTargetMean < threshold2) {
                 if(status != 1) {
-                    if(frameShiftCount > 3 && (status == -1 || status == 0)) {
+                    if(frameShiftCount > shiftCount2 && (status == -1 || status == 0)) {
                         status = 1;
                     }
                     else frameShiftCount = frameShiftCount + 1;
@@ -127,7 +132,7 @@ namespace actionDetection {
 
             else {
                 if(status != 0) {
-                    if(frameShiftCount > 5) {
+                    if(frameShiftCount > stopCount) {
                         status = 0;
                     }
                     else frameShiftCount = frameShiftCount + 1;
@@ -186,6 +191,8 @@ namespace actionDetection {
     // provide customization for feature target
     void actionDetectionCalculator::calculateFeatureTarget(const PoseData::Pose* data) {
         featureVelocityTargetList->at(0) = data->keypoints()->Get(12)->y();
+        featureVelocityTargetList->at(1) = data->keypoints()->Get(28)->x() + data->keypoints()->Get(32)->x();
+        featureVelocityTargetList->at(2) = data->keypoints()->Get(27)->x() + data->keypoints()->Get(31)->x();
         for(int i = 0; i < featureVelocityDataList->size(); i++) {
             featureVelocityDataList->at(i).currentTarget = featureVelocityTargetList->at(featureVelocityList->at(i).target);
         }

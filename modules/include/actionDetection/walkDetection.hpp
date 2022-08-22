@@ -57,6 +57,9 @@ namespace actionwalk {
             ~ walk();
             bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
             void writeToFlatbuffers(actionData::ActionBuilder&);
+            void setPlayer(float);
+            float getCurrentLeftStatus() { return currentLeftStatus; };
+            float getCurrentRightStatus() { return currentRightStatus; };
             void calculateFrame(const PoseData::Pose* data);
             void calculateMean();
             void calculateLeft();
@@ -132,6 +135,10 @@ namespace actionwalk {
 
     void walk::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {
         actionBuilder.add_walk(flatbuffersOffset);
+    }
+
+    void walk::setPlayer(float height) {
+        configHeight = height * 0.01;
     }
 
     void walk::calculateFrame(const PoseData::Pose* data) {
@@ -336,10 +343,10 @@ namespace actionwalk {
             currentStepRate = 1 / (float(abs(timeData2->at(timeAlpha) - timeData2->at(timeBeta)))/1000);
         }
         if(currentStepRate > 30) currentStepRate = 10;
-        currentVelocity = currentVelocity * 0.8 + (currentStepRate * currentStepLength) * 0.2;
-        if(currentVelocity > 10) currentVelocity = 10;
-        if(currentVelocity < 0.01) currentVelocity = 0;
-        // currentVelocity = currentStepRate * currentStepLength;
+        // currentVelocity = currentVelocity * 0.8 + (currentStepRate * currentStepLength) * 0.2;
+        // if(currentVelocity > 10) currentVelocity = 10;
+        // if(currentVelocity < 0.01) currentVelocity = 0;
+        currentVelocity = currentStepRate * currentStepLength;
         currentVelocityThreshold = (configHeight==0)? sqrt(2.401 * meanData->at(currentHeightMean)) : sqrt(2.401 * configHeight);
     }
 
