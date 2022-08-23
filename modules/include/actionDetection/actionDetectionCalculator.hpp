@@ -112,7 +112,7 @@ namespace actionDetection {
 
             if(currentTarget - preTargetMean > threshold1) {
                 if(status != -1) {
-                    if(frameShiftCount > shiftCount1 && status == 1) {
+                    if(frameShiftCount > shiftCount1) {
                         status = -1;
                     }
                     else frameShiftCount = frameShiftCount + 1;
@@ -122,7 +122,7 @@ namespace actionDetection {
 
             else if(currentTarget - preTargetMean < threshold2) {
                 if(status != 1) {
-                    if(frameShiftCount > shiftCount2 && (status == -1 || status == 0)) {
+                    if(frameShiftCount > shiftCount2) {
                         status = 1;
                     }
                     else frameShiftCount = frameShiftCount + 1;
