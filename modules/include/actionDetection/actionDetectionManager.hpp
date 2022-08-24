@@ -18,10 +18,18 @@ namespace actionDetection {
 
             actionwalk::walk walkInstance;
             bool init = false;
+
+            // stand travel mode shift params
             float currentLeftStatus = 0;
             float currentRightStatus = 0;
-            int modeShiftStatus = 0;
+            int modeLeftShiftStatus = 0;
+            int modeRightShiftStatus = 0;
             int modeShiftCount = 0;
+            void resetModeStatusBit() {
+                modeLeftShiftStatus = 0;
+                modeRightShiftStatus = 0;
+                modeShiftCount = 0;
+            }
 
         public:
             actionDetectionManager();
@@ -63,28 +71,54 @@ namespace actionDetection {
             currentRightStatus = walkInstance.getCurrentRightStatus();
             if(mode == 0) {
                 if(leftFootConstraint == 0 && rightFootConstraint == 0) {
-                    if(abs(hipDis) < 0.4 && abs(footDis) < 0.4) {
-                        switch (modeShiftStatus)
+                    if(abs(hipDis) < 0.35 && abs(footDis) < 0.35) {
+                        switch (modeLeftShiftStatus)
                         {
                         case 0:
-                            if(preLeftStatus == 0 && currentLeftStatus == 1) modeShiftStatus = 1;
+                            if(preLeftStatus != 1 && currentLeftStatus == 1) modeLeftShiftStatus = 1;
                             break;
                         case 1:
-                            if(preLeftStatus == 1 && currentLeftStatus == -1) {
-                                modeShiftStatus = 0;
-                                mode = 1;
-                            }
+                            if(preLeftStatus == 1 && currentLeftStatus == -1) modeLeftShiftStatus = 2;
+                            break;
                         default:
                             break;
                         }
+
+                        switch (modeRightShiftStatus)
+                        {
+                        case 0:
+                            if(preRightStatus != 1 && currentRightStatus == 1) modeRightShiftStatus = 1;
+                            break;
+                        case 1:
+                            if(preRightStatus == 1 && currentRightStatus == -1) modeRightShiftStatus = 2;
+                            break;
+                        default:
+                            break;
+                        }
+
+                        if(modeLeftShiftStatus == 2 && modeRightShiftStatus == 2) {
+                            mode = 1;
+                            resetModeStatusBit();
+                        }
+                        if(modeLeftShiftStatus != 2 && modeRightShiftStatus != 2) {
+                            if(modeShiftCount > 80) {
+                                resetModeStatusBit();
+                            }
+                            else modeShiftCount = modeShiftCount + 1;
+                        }
+                        else modeShiftCount = 0;
                     }
-                    else modeShiftStatus = 0;
+                    else {
+                        resetModeStatusBit();
+                    }
                 }
-                else modeShiftStatus = 0;
+                else {
+                    resetModeStatusBit();
+                }
             }
             else if(mode == 1) {
                 if(currentLeftStatus == 0 && currentRightStatus == 0) {
-                    if(modeShiftCount > 5) {
+                    if(modeShiftCount > 20) {
                         mode = 0;
                         modeShiftCount = 0;
                     }
