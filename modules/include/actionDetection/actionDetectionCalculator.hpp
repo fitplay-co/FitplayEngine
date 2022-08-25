@@ -139,7 +139,6 @@ namespace actionDetection {
                 }
                 else frameShiftCount = 0;
             }
-
             featureVelocityDataList->at(i).currentTargetMean = currentTargetMean;
             featureVelocityDataList->at(i).preTargetMean = preTargetMean;
             featureVelocityDataList->at(i).preStatus = preStatus;

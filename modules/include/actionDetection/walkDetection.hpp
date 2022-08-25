@@ -321,7 +321,7 @@ namespace actionwalk {
     void walk::calculateStepRate() {
         if((currentLeftStatus == 0 || currentLeftStatus == 2) && (currentRightStatus == 0 || currentRightStatus == 2)) {
             fpmStopCount = fpmStopCount + 1;
-            if(fpmStopCount > 15) {
+            if(fpmStopCount > 8) {
                 timeData2->at(timeAlpha) = 0;
                 timeData2->at(timeBeta) = 0;
                 timeData2->at(timeLock) = 0;

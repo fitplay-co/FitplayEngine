@@ -47,15 +47,23 @@ namespace actionDetection {
                 struct subscribeAngle test = { 12,24,26,1 };
                 struct subscribeDistance hipDis = { 11,12,1 };
                 struct subscribeDistance footDis = { 11,12,1 };
+                struct subscribeDistance leftDis = { 25,27,1 };
+                struct subscribeDistance rightDis = { 26,28,1 };
                 struct featureVelocity test3 = { 0,1,0.01,-0.01,3,3,5 };
                 struct featureVelocity leftFootConstraint = { 1,1,0.04,-0.04,3,3,5 };
                 struct featureVelocity rightFootConstraint = { 2,1,0.04,-0.04,3,3,5 };
-                int temp = calculatorInstance.addSubscribeAngle(&test);
+
+                calculatorInstance.addSubscribeAngle(&test);
+
                 int temp2 = calculatorInstance.addSubscribeDistance(&hipDis);
                 calculatorInstance.addSubscribeDistance(&footDis);
+                calculatorInstance.addSubscribeDistance(&leftDis);
+                calculatorInstance.addSubscribeDistance(&rightDis);
+
                 int temp3 = calculatorInstance.addFeatureVelocity(&test3);
                 int temp4 = calculatorInstance.addFeatureVelocity(&leftFootConstraint);
                 int temp5 = calculatorInstance.addFeatureVelocity(&rightFootConstraint);
+
                 init = true;
             }
             walkInstance.process(data, builder);
@@ -63,6 +71,8 @@ namespace actionDetection {
             float temp = calculatorInstance.getSubscribeAngle()->at(0);
             float hipDis = calculatorInstance.getSubscribeDistance()->at(0);
             float footDis = calculatorInstance.getSubscribeDistance()->at(1);
+            float leftDis = calculatorInstance.getSubscribeDistance()->at(2);
+            float rightDis = calculatorInstance.getSubscribeDistance()->at(3);
             float leftFootConstraint = calculatorInstance.getFeatureVelocity()->at(1);
             float rightFootConstraint = calculatorInstance.getFeatureVelocity()->at(2);
             float preLeftStatus = currentLeftStatus;
@@ -71,7 +81,7 @@ namespace actionDetection {
             currentRightStatus = walkInstance.getCurrentRightStatus();
             if(mode == 0) {
                 if(leftFootConstraint == 0 && rightFootConstraint == 0) {
-                    if(abs(hipDis) < 0.35 && abs(footDis) < 0.35) {
+                    if(abs(hipDis) < 0.35 && abs(footDis) < 0.35 && abs(leftDis) < 0.05 && abs(rightDis) < 0.05 ) {
                         switch (modeLeftShiftStatus)
                         {
                         case 0:
