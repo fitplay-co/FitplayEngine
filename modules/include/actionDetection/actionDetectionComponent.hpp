@@ -24,7 +24,7 @@ namespace actionDetection {
 
     bool actionDetectionComponent::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
         if (data->type() == Input::MessageType::MessageType_Pose) {
-            managerInstance.process(data, builder);\
+            managerInstance.process(data, builder);
             jumpInstance.process(data, builder);
             squatInstance.process(data, builder);
             return true;
