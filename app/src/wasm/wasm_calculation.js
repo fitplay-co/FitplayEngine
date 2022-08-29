@@ -33,7 +33,7 @@ var wasm_processor = {
             }
             if (actionTemp.stand()) {
                 pose.stand_detection = {
-                    "test" : actionTemp.stand().test()
+                    "mode" : actionTemp.stand().mode()
                 }
             }
             if (actionTemp.walk() || actionTemp.jump() || actionTemp.squat()) {
@@ -71,8 +71,8 @@ var wasm_processor = {
                 pose.monitor = {
                     "m1" : pose.general_detection.confidence,
                     "m1Name" : "confidence",
-                    "m2" : pose.stand_detection.test,
-                    "m2Name" : "test"
+                    "m2" : pose.stand_detection.mode,
+                    "m2Name" : "mode"
                 }
             }
             
