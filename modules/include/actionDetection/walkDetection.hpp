@@ -343,7 +343,7 @@ namespace actionwalk {
         if(timeData2->at(timeAlpha)!=0&&timeData2->at(timeBeta)!=0){
             currentStepRate = 1 / (float(abs(timeData2->at(timeAlpha) - timeData2->at(timeBeta)))/1000);
         }
-        if(currentStepRate > 30) currentStepRate = 10;
+        if(currentStepRate > 10) currentStepRate = 10;
         // currentVelocity = currentVelocity * 0.8 + (currentStepRate * currentStepLength) * 0.2;
         // if(currentVelocity > 10) currentVelocity = 10;
         // if(currentVelocity < 0.01) currentVelocity = 0;
