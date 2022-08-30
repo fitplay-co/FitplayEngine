@@ -27,8 +27,12 @@ client.on('connect', function(connection) {
     });
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
-            // var rr = JSON.parse(message.utf8Data).timeProfiling;
-            // console.log(rr)
+            // console.log("frame")
+            var rr = JSON.parse(message.utf8Data).action_detection.walk;
+            console.log(rr.leftLeg + "," + rr.rightLeg + "," + rr.leftFrequency + "," + rr.rightFrequency + "," + rr.leftHipAng
+                    + "," + rr.rightHipAng + "," + rr.leftStepLength + "," + rr.rightStepLength + "," + rr.turn + "," +
+                    rr.stepRate + "," + rr.stepLen + "," + rr.velocity + "," + rr.velocityThreshold + "," + rr.realtimeLeftLeg
+                    + "," + rr.realtimeRightLeg);
             // console.log("Frame")
             // console.log("keyPoints")
             // JSON.parse(message.utf8Data).pose_landmark.keypoints.forEach(element => {
@@ -38,7 +42,7 @@ client.on('connect', function(connection) {
             // JSON.parse(message.utf8Data).pose_landmark.keypoints3D.forEach(element => {
             //     console.log(element.name + "," +element.x + "," + element.y + "," + element.z )
             // });
-            console.log(JSON.parse(message.utf8Data))
+            //console.log(JSON.parse(message.utf8Data))
         }
     });
     var appClientMessage =  {

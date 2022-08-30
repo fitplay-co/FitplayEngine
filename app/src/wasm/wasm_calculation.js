@@ -27,9 +27,13 @@ var wasm_processor = {
             var actionBuf = new flatbuffers.ByteBuffer(actionData)
             var actionTemp = action.getRootAsAction(actionBuf)
             if (actionTemp.general()) {
-                // console.log(actionTemp.general().confidence())
                 pose.general_detection = {
                     "confidence" : actionTemp.general().confidence()
+                }
+            }
+            if (actionTemp.stand()) {
+                pose.stand_detection = {
+                    "mode" : actionTemp.stand().mode()
                 }
             }
             if (actionTemp.walk() || actionTemp.jump() || actionTemp.squat()) {
@@ -51,6 +55,7 @@ var wasm_processor = {
                     "stepRate" : actionTemp.walk().stepRate(),
                     "stepLen" : actionTemp.walk().stepLen(),
                     "velocity" : actionTemp.walk().velocity(),
+                    "velocityThreshold" : actionTemp.walk().velocityThreshold(),
                     "realtimeLeftLeg" : actionTemp.walk().realtimeLeftLeg(),
                     "realtimeRightLeg" : actionTemp.walk().realtimeRightLeg()
                 }
@@ -66,8 +71,8 @@ var wasm_processor = {
                 pose.monitor = {
                     "m1" : pose.general_detection.confidence,
                     "m1Name" : "confidence",
-                    "m2" : pose.action_detection.walk.realtimeLeftLeg,
-                    "m2Name" : "real_left_leg"
+                    "m2" : pose.stand_detection.mode,
+                    "m2Name" : "mode"
                 }
             }
             
