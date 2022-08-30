@@ -321,8 +321,7 @@ namespace actionwalk {
     void walk::calculateStepRate() {
         if((currentLeftStatus == 0 || currentLeftStatus == 2) && (currentRightStatus == 0 || currentRightStatus == 2)) {
             fpmStopCount = fpmStopCount + 1;
-            currentStepRate = 0;
-            if(fpmStopCount > 8) {
+            if(fpmStopCount > 15) {
                 timeData2->at(timeAlpha) = 0;
                 timeData2->at(timeBeta) = 0;
                 timeData2->at(timeLock) = 0;
@@ -348,6 +347,9 @@ namespace actionwalk {
         // if(currentVelocity > 10) currentVelocity = 10;
         // if(currentVelocity < 0.01) currentVelocity = 0;
         currentVelocity = currentStepRate * currentStepLength;
+        if(currentLeftStatus == 0 && currentRightStatus == 0) {
+            currentVelocity = 0;
+        }
         currentVelocityThreshold = (configHeight==0)? sqrt(2.401 * meanData->at(currentHeightMean)) : sqrt(2.401 * configHeight);
     }
 
