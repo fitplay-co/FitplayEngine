@@ -43,7 +43,7 @@ public:
     BodyErrorData errorDataList[errorDataDims];
     bool frameCached = false;
 
-    detection::OneEuroFilter landMarkFilter = detection::OneEuroFilter(2, 0.8, 0.4 ,1);
+    detection::OneEuroFilter* landMarkFilter =new detection::OneEuroFilter(2, 0.8, 0.4 ,1);
 
     FittingLandmark ();
     ~FittingLandmark ();

@@ -45,9 +45,9 @@ namespace fitplay {
         landmarkFittingInstance.handcraftFitting(landmarkData3D, fkInstance.jointPoints);
         //Filter
         for (int i=0; i < jointPointSize;i ++){
-            landmarkData3D[i] = vec3(landmarkFittingInstance.landMarkFilter.filter(landmarkFittingInstance.currentFitLandmarkData[i].x),
-                landmarkFittingInstance.landMarkFilter.filter(landmarkFittingInstance.currentFitLandmarkData[i].y),
-                landmarkFittingInstance.landMarkFilter.filter(landmarkFittingInstance.currentFitLandmarkData[i].z));
+            landmarkData3D[i] = vec3(landmarkFittingInstance.landMarkFilter->filter(landmarkFittingInstance.currentFitLandmarkData[i].x),
+                landmarkFittingInstance.landMarkFilter->filter(landmarkFittingInstance.currentFitLandmarkData[i].y),
+                landmarkFittingInstance.landMarkFilter->filter(landmarkFittingInstance.currentFitLandmarkData[i].z));
         }
         
         //  if(mirror) {
