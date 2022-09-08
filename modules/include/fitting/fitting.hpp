@@ -13,7 +13,6 @@
 #include "fitting_landmark.hpp"
 #include "fitting_rgbd.hpp"
 
-
 using namespace glm;
 using namespace std;
 
@@ -43,12 +42,7 @@ namespace fitplay {
         readPoseDataToLandmark3D(data, landmarkData3D);
     
         landmarkFittingInstance.handcraftFitting(landmarkData3D, fkInstance.jointPoints);
-        //Filter
-        for (int i=0; i < jointPointSize;i ++){
-            landmarkData3D[i] = vec3(landmarkFittingInstance.landMarkFilter.filter(landmarkFittingInstance.currentFitLandmarkData[i].x),
-                landmarkFittingInstance.landMarkFilter.filter(landmarkFittingInstance.currentFitLandmarkData[i].y),
-                landmarkFittingInstance.landMarkFilter.filter(landmarkFittingInstance.currentFitLandmarkData[i].z));
-        }
+        landmarkData3D = landmarkFittingInstance.currentFitLandmarkData;
         
         //  if(mirror) {
         //     readPoseDataToLandmark2D(data, landmarkData2D);
@@ -77,7 +71,7 @@ namespace fitplay {
             landmarkData[L_FOOT] = readLandmarkPointVectorMirror3D(32, data);
             landmarkData[R_FOOT] = readLandmarkPointVectorMirror3D(31, data); 
         } else {
-            //read inverse by mirror s
+            //read inverse by mirror 
             landmarkData[HEAD] = readLandmarkPointVector3D(0, data);
             landmarkData[L_SHOULDER] = readLandmarkPointVector3D(11, data); 
             landmarkData[R_SHOULDER] = readLandmarkPointVector3D(12, data);

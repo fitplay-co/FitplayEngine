@@ -10,7 +10,6 @@
 #include "glm/glm.hpp"
 #include "glm/gtx/quaternion.hpp"
 #include "fitting_data.hpp"
-#include "actionDetection/euroFilter.hpp"
 
 using namespace std;
 
@@ -27,10 +26,8 @@ private:
     /* cached past frame joint points */
     std::vector<jointPoint> currentJointPoints;
 
-
     //TODO ugly temp variables should take care in each different calculators
     float gravityErrorMean = 1.0f;
-
 
 public:
     landmarks cachedLandmarkData;
@@ -43,19 +40,11 @@ public:
     BodyErrorData errorDataList[errorDataDims];
     bool frameCached = false;
 
-    detection::OneEuroFilter landMarkFilter = detection::OneEuroFilter(2, 0.8, 0.4 ,1);;
-
     FittingLandmark ();
     ~FittingLandmark ();
     /**
      * @brief smooth error with previous frame
      */
-
-    void IKError(BodyErrorData & errorData);
-    void ProjError(BodyErrorData & errorData);
-    void SmoothError(BodyErrorData & errorData);
-    void DepthError(BodyErrorData & errorData);
-
     void smoothError (BodyErrorData & errorData); 
     //smoothness point wise 
     
@@ -142,20 +131,6 @@ void FittingLandmark::smoothError(BodyErrorData & errorData) {
         errorData.landmarkErrorData[i].toPointHandcraftSolution = - residual;
         errorData.landmarkErrorData[i].fromPointIndex = -1;
     }
-}
-//ErrorTypes --IK,Projection,Depth,Smooth
-
-void FittingLandmark::IKError(BodyErrorData & errorData) {
-    
-}
-void FittingLandmark::ProjError(BodyErrorData & errorData) {
-    
-}
-void FittingLandmark::SmoothError(BodyErrorData & errorData) {
-    
-}
-void FittingLandmark::DepthError(BodyErrorData & errorData) {
-    
 }
 
 void FittingLandmark::boneDirectionError(BodyErrorData & errorData) {
