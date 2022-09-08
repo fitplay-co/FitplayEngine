@@ -124,12 +124,6 @@ namespace actionwalk {
                                                         currentRealTimeLeftStatus,
                                                         currentRealTimeRightStatus);
         }
-        else if(data->type() == Input::MessageType::MessageType_ApplicationControl) {
-            const ApplicationControl::Control* control = data->control();
-            if (control->action()->str() == "set_player") {
-                configHeight = control->data()->height() * 0.01;
-            }
-        }
         return true;
     }
 
