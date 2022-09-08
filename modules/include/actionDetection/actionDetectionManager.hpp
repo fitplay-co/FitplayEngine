@@ -70,6 +70,7 @@ namespace actionDetection {
             walkInstance.process(data, builder);
             calculatorInstance.process(data);
             float temp = calculatorInstance.getSubscribeAngle()->at(0);
+
             float kneeDis = calculatorInstance.getSubscribeDistance()->at(0);
             float footDis = calculatorInstance.getSubscribeDistance()->at(1);
             float leftDis = calculatorInstance.getSubscribeDistance()->at(2);
@@ -86,7 +87,7 @@ namespace actionDetection {
             currentRightStatus = walkInstance.getCurrentRightStatus();
             if(mode == 0) {
                 if(leftFootConstraint == 0 && rightFootConstraint == 0) {
-                    if(abs(kneeDis) < shoulderDis + 0.1 && abs(footDis) < shoulderDis + 0.1 && abs(leftDis) < 0.15 && abs(rightDis) < 0.15 ) {
+                    if(abs(kneeDis) < (shoulderDis + 0.1) && abs(footDis) < (shoulderDis + 0.1) && abs(leftDis) < 0.15 && abs(rightDis) < 0.15 ) {
                         switch (modeLeftShiftStatus)
                         {
                         case 0:
@@ -152,7 +153,7 @@ namespace actionDetection {
                 // }
             }
             flatbuffersOffset = actionData::CreateStand(builder,
-                                                            footDis);
+                                                            mode);
             return true;
         }
         if (data->type() == Input::MessageType::MessageType_ApplicationControl) {
