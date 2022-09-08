@@ -85,6 +85,7 @@ namespace actionDetection {
 
             float preLeftStatus = currentLeftStatus;
             float preRightStatus = currentRightStatus;
+            shoulderDis = abs(shoulderDis);
 
             currentLeftStatus = walkInstance.getCurrentLeftStatus();
             currentRightStatus = walkInstance.getCurrentRightStatus();
