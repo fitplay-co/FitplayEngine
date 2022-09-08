@@ -81,7 +81,7 @@ namespace actionDetection {
             currentRightStatus = walkInstance.getCurrentRightStatus();
             if(mode == 0) {
                 if(leftFootConstraint == 0 && rightFootConstraint == 0) {
-                    if(abs(hipDis) < 0.4 && abs(footDis) < 0.4 && abs(leftDis) < 0.1 && abs(rightDis) < 0.1 ) {
+                    if(abs(hipDis) < 0.5 && abs(footDis) < 0.4 && abs(leftDis) < 0.1 && abs(rightDis) < 0.1 ) {
                         switch (modeLeftShiftStatus)
                         {
                         case 0:
@@ -135,6 +135,15 @@ namespace actionDetection {
                     else modeShiftCount = modeShiftCount + 1;
                 }
                 else modeShiftCount = 0;
+
+                static int modeShiftCount2 = 0;
+                if(abs(footDis > 0.4)) {
+                    if(modeShiftCount2 > 5) {
+                        mode = 0;
+                        modeShiftCount2 = 0;
+                    }
+                    else modeShiftCount2++;
+                }
             }
             flatbuffersOffset = actionData::CreateStand(builder,
                                                             mode);
