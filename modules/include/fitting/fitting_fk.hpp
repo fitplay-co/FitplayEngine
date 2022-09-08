@@ -228,8 +228,7 @@ namespace fitplay {
         getLookRotation(jointPoints[9],fitplay::forward,normalize(landmarkData[R_WRIST]-landmarkData[R_HAND]));
         getLookRotation(jointPoints[10],normalize(landmarkData[HIP_CENTER]-landmarkData[R_HIP]),fitplay::down);//Pelvis
         getLookRotation(jointPoints[11],normalize(landmarkData[HIP_CENTER]-landmarkData[R_HIP]),fitplay::down);
-        getLookRotation(jointPoints[12],normalize(landmarkData[R_HIP]-landmarkData[L_HIP]),normalize(landmarkData[L_HIP]-landmarkData[L_KNEE]));
-        getLookRotation(jointPoints[13],normalize(landmarkData[R_HIP]-landmarkData[L_HIP]),normalize(landmarkData[R_HIP]-landmarkData[R_KNEE]));
+
 
         vec3 leftFootRight = normalize(cross(normalize(landmarkData[L_KNEE]-landmarkData[L_ANKLE]),normalize(landmarkData[L_FOOT]-landmarkData[L_ANKLE])));
         vec3 rightFootRight = normalize(cross(normalize(landmarkData[R_KNEE]-landmarkData[R_ANKLE]),normalize(landmarkData[R_FOOT]-landmarkData[R_ANKLE])));
@@ -248,6 +247,9 @@ namespace fitplay {
         // Do the math
         vec3 lv_prime = 2.0f * dot(l_u, leftFoot) * l_u + (l_s*l_s - dot(l_u, l_u)) * leftFoot + 2.0f * l_s * cross(l_u, leftFoot);
         vec3 rv_prime = 2.0f * dot(r_u, rightFoot) * r_u + (r_s*r_s - dot(r_u, r_u)) * rightFoot + 2.0f * r_s * cross(r_u, rightFoot);
+
+        getLookRotation(jointPoints[12],leftFootRight,normalize(landmarkData[L_HIP]-landmarkData[L_KNEE]));
+        getLookRotation(jointPoints[13],rightFootRight,normalize(landmarkData[R_HIP]-landmarkData[R_KNEE]));
         getLookRotation(jointPoints[14],leftFootRight,normalize(landmarkData[L_KNEE]-landmarkData[L_ANKLE]));
         getLookRotation(jointPoints[15],rightFootRight,normalize(landmarkData[R_KNEE]-landmarkData[R_ANKLE]));
 

@@ -3,9 +3,13 @@
 source ./emsdk_env.sh
 
 # cmake command
+cd ..
+cd modules
 rm -rf build
 mkdir build
 cd build
 emcmake cmake ..
 emmake make
-cd ..
+cd ../..
+cd app
+npm start

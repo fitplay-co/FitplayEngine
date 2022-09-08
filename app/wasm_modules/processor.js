@@ -87,7 +87,7 @@ var nodePath;
 var requireNodeFS;
 
 if (ENVIRONMENT_IS_NODE) {
-  if (!(typeof process == 'object' && typeof require == 'function')) throw new Error('not compiled for this environment (did you build to HTML and try to run it not on the web, or set ENVIRONMENT to something - like node - and run it someplace else - like on the web?)');
+  if (typeof process == 'undefined' || !process.release || process.release.name !== 'node') throw new Error('not compiled for this environment (did you build to HTML and try to run it not on the web, or set ENVIRONMENT to something - like node - and run it someplace else - like on the web?)');
   if (ENVIRONMENT_IS_WORKER) {
     scriptDirectory = require('path').dirname(scriptDirectory) + '/';
   } else {
@@ -422,10 +422,6 @@ function unexportedRuntimeSymbol(sym) {
 }
 
 // end include: runtime_debug.js
-var tempRet0 = 0;
-var setTempRet0 = (value) => { tempRet0 = value; };
-var getTempRet0 = () => tempRet0;
-
 
 
 // === Preamble library stuff ===
@@ -698,8 +694,8 @@ function writeStackCookie() {
   // The stack grow downwards towards _emscripten_stack_get_end.
   // We write cookies to the final two words in the stack and detect if they are
   // ever overwritten.
-  HEAP32[((max)>>2)] = 0x2135467;
-  HEAP32[(((max)+(4))>>2)] = 0x89BACDFE;
+  HEAPU32[((max)>>2)] = 0x2135467;
+  HEAPU32[(((max)+(4))>>2)] = 0x89BACDFE;
   // Also test the global address 0 for integrity.
   HEAPU32[0] = 0x63736d65; /* 'emsc' */
 }
@@ -3283,10 +3279,6 @@ var ASM_CONSTS = {
       return 0;
     }
 
-  function _setTempRet0(val) {
-      setTempRet0(val);
-    }
-
   function uleb128Encode(n, target) {
       assert(n < 16384);
       if (n < 128) {
@@ -3689,8 +3681,7 @@ var asmLibraryArg = {
   "emscripten_resize_heap": _emscripten_resize_heap,
   "fd_close": _fd_close,
   "fd_seek": _fd_seek,
-  "fd_write": _fd_write,
-  "setTempRet0": _setTempRet0
+  "fd_write": _fd_write
 };
 var asm = createWasm();
 /** @type {function(...*):?} */
@@ -3700,7 +3691,7 @@ var ___wasm_call_ctors = Module["___wasm_call_ctors"] = createExportWrapper("__w
 var ___getTypeName = Module["___getTypeName"] = createExportWrapper("__getTypeName");
 
 /** @type {function(...*):?} */
-var ___embind_register_native_and_builtin_types = Module["___embind_register_native_and_builtin_types"] = createExportWrapper("__embind_register_native_and_builtin_types");
+var __embind_initialize_bindings = Module["__embind_initialize_bindings"] = createExportWrapper("_embind_initialize_bindings");
 
 /** @type {function(...*):?} */
 var ___errno_location = Module["___errno_location"] = createExportWrapper("__errno_location");
@@ -3785,15 +3776,15 @@ var unexportedRuntimeSymbols = [
   'getCompilerSetting',
   'print',
   'printErr',
-  'getTempRet0',
-  'setTempRet0',
   'callMain',
   'abort',
   'keepRuntimeAlive',
   'wasmMemory',
+  'stackAlloc',
   'stackSave',
   'stackRestore',
-  'stackAlloc',
+  'getTempRet0',
+  'setTempRet0',
   'writeStackCookie',
   'checkStackCookie',
   'ptrToString',
