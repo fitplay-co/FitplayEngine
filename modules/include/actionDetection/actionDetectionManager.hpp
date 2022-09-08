@@ -86,7 +86,7 @@ namespace actionDetection {
             currentRightStatus = walkInstance.getCurrentRightStatus();
             if(mode == 0) {
                 if(leftFootConstraint == 0 && rightFootConstraint == 0) {
-                    if(abs(kneeDis) < shoulderDis + 0.1 && abs(footDis) < shoulderDis + 0.1 && abs(leftDis) < 0.1 && abs(rightDis) < 0.1 ) {
+                    if(abs(kneeDis) < shoulderDis + 0.1 && abs(footDis) < shoulderDis + 0.1 && abs(leftDis) < 0.15 && abs(rightDis) < 0.15 ) {
                         switch (modeLeftShiftStatus)
                         {
                         case 0:
