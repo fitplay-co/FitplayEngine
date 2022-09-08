@@ -13,7 +13,7 @@ namespace fitplay {
 
     static constexpr int jointPointSize = 18;
     static constexpr quat rotateFromLookatZtoX = quat(0.5, -0.5, -0.5, -0.5);
-
+    static constexpr float footPitchAngle = radians(-150.0f);//quat(0.1736482 ,  0.9848078, 0,0);//x degree,foot to ankle angle
     static constexpr vec3 up = vec3 (0.0f, 1.0f, 0.0f);
     static constexpr vec3 down = vec3 (0.0f, -1.0f, 0.0f);
     static constexpr vec3 left = vec3 (-1.0f, 0.0f, 0.0f);
