@@ -46,8 +46,8 @@ namespace actionDetection {
             static int modeShiftCount2 = 0;
             if(init == false) {
                 struct subscribeAngle test = { 12,24,26,1 };
-                struct subscribeDistance hipDis = { 11,12,1 };
-                struct subscribeDistance footDis = { 11,12,1 };
+                struct subscribeDistance kneeDis = { 25,26,1 };
+                struct subscribeDistance footDis = { 27,28,1 };
                 struct subscribeDistance leftDis = { 25,27,1 };
                 struct subscribeDistance rightDis = { 26,28,1 };
                 struct featureVelocity test3 = { 0,1,0.01,-0.01,3,3,5 };
@@ -56,7 +56,7 @@ namespace actionDetection {
 
                 calculatorInstance.addSubscribeAngle(&test);
 
-                int temp2 = calculatorInstance.addSubscribeDistance(&hipDis);
+                int temp2 = calculatorInstance.addSubscribeDistance(&kneeDis);
                 calculatorInstance.addSubscribeDistance(&footDis);
                 calculatorInstance.addSubscribeDistance(&leftDis);
                 calculatorInstance.addSubscribeDistance(&rightDis);
@@ -70,7 +70,7 @@ namespace actionDetection {
             walkInstance.process(data, builder);
             calculatorInstance.process(data);
             float temp = calculatorInstance.getSubscribeAngle()->at(0);
-            float hipDis = calculatorInstance.getSubscribeDistance()->at(0);
+            float kneeDis = calculatorInstance.getSubscribeDistance()->at(0);
             float footDis = calculatorInstance.getSubscribeDistance()->at(1);
             float leftDis = calculatorInstance.getSubscribeDistance()->at(2);
             float rightDis = calculatorInstance.getSubscribeDistance()->at(3);
@@ -82,7 +82,7 @@ namespace actionDetection {
             currentRightStatus = walkInstance.getCurrentRightStatus();
             if(mode == 0) {
                 if(leftFootConstraint == 0 && rightFootConstraint == 0) {
-                    if(abs(hipDis) < 0.5 && abs(footDis) < 0.4 && abs(leftDis) < 0.1 && abs(rightDis) < 0.1 ) {
+                    if(abs(kneeDis) < 0.5 && abs(footDis) < 0.4 && abs(leftDis) < 0.1 && abs(rightDis) < 0.1 ) {
                         switch (modeLeftShiftStatus)
                         {
                         case 0:
