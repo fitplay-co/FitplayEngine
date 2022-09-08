@@ -121,6 +121,14 @@ namespace actionDetection {
                             mode = 1;
                             resetModeStatusBit();
                         }
+                        if(modeLeftShiftStatus == 2 && modeRightShiftStatus == 1) {
+                            mode = 1;
+                            resetModeStatusBit();
+                        }
+                        if(modeLeftShiftStatus == 1 && modeRightShiftStatus == 2) {
+                            mode = 1;
+                            resetModeStatusBit();
+                        }
                         if(modeLeftShiftStatus == 1 || modeRightShiftStatus == 1) {
                             if(modeShiftCount > 80) {
                                 resetModeStatusBit();
