@@ -43,6 +43,7 @@ namespace actionDetection {
 
     bool actionDetectionManager::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
         if (data->type() == Input::MessageType::MessageType_Pose) {
+            static int modeShiftCount2 = 0;
             if(init == false) {
                 struct subscribeAngle test = { 12,24,26,1 };
                 struct subscribeDistance hipDis = { 11,12,1 };
@@ -127,26 +128,27 @@ namespace actionDetection {
                 }
             }
             else if(mode == 1) {
-                if(currentLeftStatus == 0 && currentRightStatus == 0) {
-                    if(modeShiftCount > 20) {
-                        mode = 0;
-                        modeShiftCount = 0;
-                    }
-                    else modeShiftCount = modeShiftCount + 1;
-                }
-                else modeShiftCount = 0;
+                // if(currentLeftStatus == 0 && currentRightStatus == 0) {
+                //     if(modeShiftCount > 20) {
+                //         mode = 0;
+                //         modeShiftCount = 0;
+                //     }
+                //     else modeShiftCount = modeShiftCount + 1;
+                // }
+                // else modeShiftCount = 0;
 
-                static int modeShiftCount2 = 0;
-                if(abs(footDis > 0.4)) {
-                    if(modeShiftCount2 > 5) {
-                        mode = 0;
-                        modeShiftCount2 = 0;
-                    }
-                    else modeShiftCount2++;
-                }
+                if(abs(footDis) > 0.4) mode = 0;
+                
+                // if(abs(footDis > 0.4)) {
+                //     if(modeShiftCount2 > 5) {
+                //         mode = 0;
+                //         modeShiftCount2 = 0;
+                //     }
+                //     else modeShiftCount2++;
+                // }
             }
             flatbuffersOffset = actionData::CreateStand(builder,
-                                                            mode);
+                                                            footDis);
             return true;
         }
         if (data->type() == Input::MessageType::MessageType_ApplicationControl) {
