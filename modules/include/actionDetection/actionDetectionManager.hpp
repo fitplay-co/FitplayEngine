@@ -50,7 +50,7 @@ namespace actionDetection {
                 struct subscribeDistance footDis = { 27,28,1 };
                 struct subscribeDistance leftDis = { 25,27,1 };
                 struct subscribeDistance rightDis = { 26,28,1 };
-                struct featureVelocity test3 = { 0,1,0.01,-0.01,3,3,5 };
+                struct subscribeDistance shoulderDis = { 11,12,1 };
                 struct featureVelocity leftFootConstraint = { 1,1,0.04,-0.04,3,3,5 };
                 struct featureVelocity rightFootConstraint = { 2,1,0.04,-0.04,3,3,5 };
 
@@ -60,8 +60,8 @@ namespace actionDetection {
                 calculatorInstance.addSubscribeDistance(&footDis);
                 calculatorInstance.addSubscribeDistance(&leftDis);
                 calculatorInstance.addSubscribeDistance(&rightDis);
+                calculatorInstance.addSubscribeDistance(&shoulderDis);
 
-                int temp3 = calculatorInstance.addFeatureVelocity(&test3);
                 int temp4 = calculatorInstance.addFeatureVelocity(&leftFootConstraint);
                 int temp5 = calculatorInstance.addFeatureVelocity(&rightFootConstraint);
 
@@ -74,15 +74,19 @@ namespace actionDetection {
             float footDis = calculatorInstance.getSubscribeDistance()->at(1);
             float leftDis = calculatorInstance.getSubscribeDistance()->at(2);
             float rightDis = calculatorInstance.getSubscribeDistance()->at(3);
+            float shoulderDis = calculatorInstance.getSubscribeDistance()->at(4);
+
             float leftFootConstraint = calculatorInstance.getFeatureVelocity()->at(1);
             float rightFootConstraint = calculatorInstance.getFeatureVelocity()->at(2);
+
             float preLeftStatus = currentLeftStatus;
             float preRightStatus = currentRightStatus;
+
             currentLeftStatus = walkInstance.getCurrentLeftStatus();
             currentRightStatus = walkInstance.getCurrentRightStatus();
             if(mode == 0) {
                 if(leftFootConstraint == 0 && rightFootConstraint == 0) {
-                    if(abs(kneeDis) < 0.5 && abs(footDis) < 0.4 && abs(leftDis) < 0.1 && abs(rightDis) < 0.1 ) {
+                    if(abs(kneeDis) < shoulderDis + 0.1 && abs(footDis) < shoulderDis + 0.1 && abs(leftDis) < 0.1 && abs(rightDis) < 0.1 ) {
                         switch (modeLeftShiftStatus)
                         {
                         case 0:
@@ -128,16 +132,16 @@ namespace actionDetection {
                 }
             }
             else if(mode == 1) {
-                // if(currentLeftStatus == 0 && currentRightStatus == 0) {
-                //     if(modeShiftCount > 20) {
-                //         mode = 0;
-                //         modeShiftCount = 0;
-                //     }
-                //     else modeShiftCount = modeShiftCount + 1;
-                // }
-                // else modeShiftCount = 0;
+                if(currentLeftStatus == 0 && currentRightStatus == 0) {
+                    if(modeShiftCount > 20) {
+                        mode = 0;
+                        modeShiftCount = 0;
+                    }
+                    else modeShiftCount = modeShiftCount + 1;
+                }
+                else modeShiftCount = 0;
 
-                if(abs(footDis) > 0.4) mode = 0;
+                if(abs(footDis) > 0.45) mode = 0;
                 
                 // if(abs(footDis > 0.4)) {
                 //     if(modeShiftCount2 > 5) {
