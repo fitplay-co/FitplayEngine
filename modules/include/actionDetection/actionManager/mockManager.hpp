@@ -3,6 +3,7 @@
 
 #include "../actionDetectionData.hpp"
 #include "inputMessage_generated.h"
+#include "actionData_generated.h"
 
 namespace actionDetection {
 
@@ -15,6 +16,7 @@ namespace actionDetection {
             mockManager();
             ~mockManager();
             void process(const Input::InputMessage* data);
+            void recordWalkCycle(flatbuffers::Offset<actionData::Walk>, int);
             void calculateWalkConfidence(const PoseData::Pose* data);
     };
 

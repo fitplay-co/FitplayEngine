@@ -18,7 +18,8 @@ namespace actionDetection {
             // 1 : travel
             float mode = 0;
 
-            flatbuffers::Offset<actionData::Stand> flatbuffersOffset;
+            flatbuffers::Offset<actionData::Stand> standFlatbuffersOffset;
+            flatbuffers::Offset<actionData::Walk> walkFlatbuffersOffset;
 
             bool init = false;
 
@@ -160,8 +161,10 @@ namespace actionDetection {
                     resetModeStatusBit();
                 }
             }
-            flatbuffersOffset = actionData::CreateStand(builder,
+            standFlatbuffersOffset = actionData::CreateStand(builder,
                                                             mode);
+            walkFlatbuffersOffset = walkInstance.getOffset();
+            mockInstance.recordWalkCycle(walkFlatbuffersOffset, currentLeftStatus);
             return true;
         }
         if (data->type() == Input::MessageType::MessageType_ApplicationControl) {
@@ -176,8 +179,8 @@ namespace actionDetection {
     }
 
     void actionDetectionManager::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {
-        actionBuilder.add_stand(flatbuffersOffset);
-        walkInstance.writeToFlatbuffers(actionBuilder);
+        actionBuilder.add_stand(standFlatbuffersOffset);
+        actionBuilder.add_walk(walkFlatbuffersOffset);
     }
 
 }

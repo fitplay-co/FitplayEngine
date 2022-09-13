@@ -60,6 +60,7 @@ namespace actionwalk {
             void setPlayer(float);
             float getCurrentLeftStatus() { return currentLeftStatus; };
             float getCurrentRightStatus() { return currentRightStatus; };
+            flatbuffers::Offset<actionData::Walk> getOffset() { return flatbuffersOffset; }
             void calculateFrame(const PoseData::Pose* data);
             void calculateMean();
             void calculateLeft();
