@@ -1,7 +1,7 @@
 #ifndef ACTION_detection_manager
 #define ACTION_detection_manager
 
-#include "actionManager/testManager.hpp"
+#include "actionManager/mockManager.hpp"
 #include "actionDetectionCalculator.hpp"
 #include "walkDetection.hpp"
 
@@ -10,7 +10,7 @@ namespace actionDetection {
     class actionDetectionManager {
         private:
 
-            testManager testInstance;
+            mockManager mockInstance;
             actionwalk::walk walkInstance;
             actionDetectionCalculator calculatorInstance;
 
