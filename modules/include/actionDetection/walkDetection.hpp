@@ -192,7 +192,7 @@ namespace actionwalk {
                 if(currentLeftStatus != -1) {
                     if(frameShiftFilterCount->at(0) > 3 && currentLeftStatus == 1) {
                         currentLeftStatus = -1;
-                        timeData->at(timeLeftDown) = militime();
+                        timeData->at(timeLeftDown) = militime(); 
                         timeData->at(timeLeftWindow) = float((timeData->at(timeLeftDown) - timeData->at(timeLeftUp)))/1000;
                     }
                     else { frameShiftFilterCount->at(0) = frameShiftFilterCount->at(0) + 1; }
@@ -300,7 +300,7 @@ namespace actionwalk {
     }
 
     void walk::calculateStepLength() {
-        float maxSL = (configHeight==0)? meanData->at(currentHeightMean) * 1.2 : configHeight * 1.2;
+        float maxSL = (configHeight==0)? meanData->at(currentHeightMean) * 1.2 : configHeight * 1.2;//configHeight 是 身高？
         float leftFlexion = (180 - meanData->at(currentLeftHipAngMean)) > 90 ? 90 : (180 - meanData->at(currentLeftHipAngMean));
         float rightFlexion = (180 - meanData->at(currentRightHipAngMean)) > 90 ? 90 : (180 - meanData->at(currentRightHipAngMean));
         if(progressData->at(preLeftStatus) == 1 && currentLeftStatus == -1) {
