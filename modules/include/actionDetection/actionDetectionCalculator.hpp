@@ -13,6 +13,8 @@ namespace actionDetection {
             vector<subscribeAngle> *subscribeAngleList;
             vector<subscribeDistance> *subscribeDistanceList;
 
+            shared_ptr<vector<subscribeAngle>> p1 = make_shared<vector<subscribeAngle>>();
+
             // store feature velocity data from manager for calculation
             vector<featureVelocity> *featureVelocityList;
             vector<featureVelocityData> *featureVelocityDataList;

@@ -15,18 +15,18 @@ namespace actionDetection {
         public:
             mockManager();
             ~mockManager();
-            void process(const Input::InputMessage* data);
-            void recordWalkCycle(flatbuffers::Offset<actionData::Walk>, int);
+            void process(const Input::InputMessage* data, vector<float>&);
+            void recordWalkCycle(vector<float>*, int, int);
             void calculateWalkConfidence(const PoseData::Pose* data);
     };
 
     mockManager::mockManager() {}
     mockManager::~mockManager() {}
     
-    void mockManager::process(const Input::InputMessage* data) {
-        if (data->type() == Input::MessageType::MessageType_Pose) {
-
-        }
+    void mockManager::process(const Input::InputMessage* data, vector<float>& walkOffset) {
+        // int currentLeftStatus = walkOffset.at(0);
+        // int currentRightStatus = walkOffset.at(1);
+        recordWalkCycle(&walkOffset, walkOffset.at(0), walkOffset.at(1));
     }
 
     void mockManager::calculateWalkConfidence(const PoseData::Pose* data) {

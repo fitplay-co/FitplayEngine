@@ -52,15 +52,14 @@ namespace actionwalk {
             float realTimeRightInit = 0;
 
             flatbuffers::Offset<actionData::Walk> flatbuffersOffset;
+            vector<float> walkOffset;
         public:
             walk();
             ~ walk();
             bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
             void writeToFlatbuffers(actionData::ActionBuilder&);
             void setPlayer(float);
-            float getCurrentLeftStatus() { return currentLeftStatus; };
-            float getCurrentRightStatus() { return currentRightStatus; };
-            flatbuffers::Offset<actionData::Walk> getOffset() { return flatbuffersOffset; }
+            vector<float> getWalkOffset() {return walkOffset; }
             void calculateFrame(const PoseData::Pose* data);
             void calculateMean();
             void calculateLeft();
@@ -106,6 +105,11 @@ namespace actionwalk {
             calculateRealTimeLeft();
             calculateRealTimeRight();
 
+            walkOffset = { currentLeftStatus, currentRightStatus, currentLeftStepRate, currentRightStepRate,
+                        meanData->at(currentLeftHipAngMean), meanData->at(currentRightHipAngMean), currentLeftStepLength,
+                        currentRightStepLength, currentLeftProgress, currentRightProgress, currentTurnAng, currentStepRate,
+                        currentStepLength, currentVelocity, currentVelocityThreshold, currentRealTimeLeftStatus, currentRealTimeRightStatus};
+            
             flatbuffersOffset = actionData::CreateWalk(builder, 
                                                         currentLeftStatus,
                                                         currentRightStatus,
