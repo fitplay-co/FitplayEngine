@@ -9,7 +9,10 @@ objc_library(
     srcs = [
         "FitplayPoseTracker.mm",
     ],
-    deps = ["//integration:hello-time"]
+    deps = [
+        "//integration:hello-time",
+        "//integration:protocol",
+    ]
 )
 
 

@@ -1,5 +1,6 @@
 #import "FitplayPoseTracker.h"
 #import "integration/hello-time.h"
+#import "integration/protocol/actionData_generated.h"
 
 @interface FitplayPoseTracker ()
 

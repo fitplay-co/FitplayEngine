@@ -5,4 +5,17 @@ cc_library(
     srcs = ["hello-time.cc"],
     hdrs = ["hello-time.h"],
     visibility = ["//visibility:public"],
+    deps = [
+        ":protocol"
+    ]
+)
+
+cc_library(
+    name = "protocol",
+    hdrs = glob(["protocol/**/*.hpp", "protocol/**/*.h"]),
+    visibility = ["//visibility:public"],
+    deps = [
+        "//integration/third_party:flatbuffers",
+        "//integration/third_party:glm",
+    ]
 )
