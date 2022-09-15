@@ -1,4 +1,6 @@
-var Module = require('../../wasm_modules/processor.js');
+// var Module = require('../../wasm_modules/processor.js');
+var NewModule = require('../../wasm_modules/bridge-class.js');
+
 var flatbuffers = require('flatbuffers');
 var Point = require('../../../protocol/js/pose-data/point').Point
 var Pose = require('../../../protocol/js/pose-data/pose').Pose;
@@ -16,16 +18,22 @@ var wasm_processor = {
     process : function(inputMessage, pose, monitor = false){
         if(!this.initialized) {
             //console.log("do initializing")
-            this.instance = new Module.BridgeClass()
+            // this.instance = new Module.BridgeClass()
+            this.newModeule = new NewModule.BridgeClass()
+            console.log("module loaded")
             this.initialized = true
             //console.log("initialized")
         }
         
-        var actionResult =  this.instance.entry(inputMessage)
-        var actionData = new Uint8Array(actionResult)
+        // var actionResult =  this.instance.entry(inputMessage)
+        var newResult = this.newModeule.entry(inputMessage)
+
+        // console.log("got new result")
+        var actionData = new Uint8Array(newResult)
         if (actionData.length > 0) {
             var actionBuf = new flatbuffers.ByteBuffer(actionData)
             var actionTemp = action.getRootAsAction(actionBuf)
+            console.log(actionTemp)
             if (actionTemp.general()) {
                 pose.general_detection = {
                     "confidence" : actionTemp.general().confidence()
@@ -148,8 +156,8 @@ var wasm_processor = {
             }
         }
 
-        this.instance.release()
-        
+        // this.instance.release()
+        this.newModeule.release()
         // var bbb = builder.asUint8Array()
         // fs.writeFileSync('pose.bin',bbb,'binary')
         // // function stringToUint8Array(str){

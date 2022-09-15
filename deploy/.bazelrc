@@ -6,6 +6,8 @@ build:ios
  # No need to specify additional configs
 
 ##### WASM #####
+# bazel build --config=wasm //wasm:bridge-class-wasm
+
 # Use our custom-configured c++ toolchain.
 build:wasm --crosstool_top=//emscripten_toolchain:everything
 
