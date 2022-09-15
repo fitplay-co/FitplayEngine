@@ -3,6 +3,7 @@
 #include <iostream>
 #include "flatbuffers/flatbuffers.h"
 #include "glm/glm.hpp"
+#include "midware/fitting/fitting.hpp"
 
 void print_localtime() {
   std::time_t result = std::time(nullptr);

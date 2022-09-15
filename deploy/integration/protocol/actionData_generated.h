@@ -11,6 +11,9 @@ namespace actionData {
 struct General;
 struct GeneralBuilder;
 
+struct Stand;
+struct StandBuilder;
+
 struct Walk;
 struct WalkBuilder;
 
@@ -76,6 +79,47 @@ inline flatbuffers::Offset<General> CreateGeneral(
     float confidence = 0.0f) {
   GeneralBuilder builder_(_fbb);
   builder_.add_confidence(confidence);
+  return builder_.Finish();
+}
+
+struct Stand FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  typedef StandBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_MODE = 4
+  };
+  float mode() const {
+    return GetField<float>(VT_MODE, 0.0f);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<float>(verifier, VT_MODE, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct StandBuilder {
+  typedef Stand Table;
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_mode(float mode) {
+    fbb_.AddElement<float>(Stand::VT_MODE, mode, 0.0f);
+  }
+  explicit StandBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  flatbuffers::Offset<Stand> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<Stand>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Stand> CreateStand(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    float mode = 0.0f) {
+  StandBuilder builder_(_fbb);
+  builder_.add_mode(mode);
   return builder_.Finish();
 }
 
@@ -858,15 +902,19 @@ struct Action FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   typedef ActionBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_GENERAL = 4,
-    VT_WALK = 6,
-    VT_JUMP = 8,
-    VT_GAZE = 10,
-    VT_SQUAT = 12,
-    VT_GROUND = 14,
-    VT_FITTING = 16
+    VT_STAND = 6,
+    VT_WALK = 8,
+    VT_JUMP = 10,
+    VT_GAZE = 12,
+    VT_SQUAT = 14,
+    VT_GROUND = 16,
+    VT_FITTING = 18
   };
   const actionData::General *general() const {
     return GetPointer<const actionData::General *>(VT_GENERAL);
+  }
+  const actionData::Stand *stand() const {
+    return GetPointer<const actionData::Stand *>(VT_STAND);
   }
   const actionData::Walk *walk() const {
     return GetPointer<const actionData::Walk *>(VT_WALK);
@@ -890,6 +938,8 @@ struct Action FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_GENERAL) &&
            verifier.VerifyTable(general()) &&
+           VerifyOffset(verifier, VT_STAND) &&
+           verifier.VerifyTable(stand()) &&
            VerifyOffset(verifier, VT_WALK) &&
            verifier.VerifyTable(walk()) &&
            VerifyOffset(verifier, VT_JUMP) &&
@@ -912,6 +962,9 @@ struct ActionBuilder {
   flatbuffers::uoffset_t start_;
   void add_general(flatbuffers::Offset<actionData::General> general) {
     fbb_.AddOffset(Action::VT_GENERAL, general);
+  }
+  void add_stand(flatbuffers::Offset<actionData::Stand> stand) {
+    fbb_.AddOffset(Action::VT_STAND, stand);
   }
   void add_walk(flatbuffers::Offset<actionData::Walk> walk) {
     fbb_.AddOffset(Action::VT_WALK, walk);
@@ -945,6 +998,7 @@ struct ActionBuilder {
 inline flatbuffers::Offset<Action> CreateAction(
     flatbuffers::FlatBufferBuilder &_fbb,
     flatbuffers::Offset<actionData::General> general = 0,
+    flatbuffers::Offset<actionData::Stand> stand = 0,
     flatbuffers::Offset<actionData::Walk> walk = 0,
     flatbuffers::Offset<actionData::Jump> jump = 0,
     flatbuffers::Offset<actionData::Gaze> gaze = 0,
@@ -958,6 +1012,7 @@ inline flatbuffers::Offset<Action> CreateAction(
   builder_.add_gaze(gaze);
   builder_.add_jump(jump);
   builder_.add_walk(walk);
+  builder_.add_stand(stand);
   builder_.add_general(general);
   return builder_.Finish();
 }
