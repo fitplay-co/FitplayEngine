@@ -19,6 +19,14 @@ var wasm_processor = {
         if(!this.initialized) {
             //console.log("do initializing")
             // this.instance = new Module.BridgeClass()
+            NewModule.print = function(text) {
+                if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                console.warn(text);
+            }
+            NewModule.printErr =  function(text) {
+                if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                console.error(text);
+            },
             this.newModeule = new NewModule.BridgeClass()
             console.log("module loaded")
             this.initialized = true

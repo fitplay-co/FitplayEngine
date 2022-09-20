@@ -34,6 +34,7 @@ cc_binary(
     srcs = ["bridgeClass.cc"],
     linkopts = DEFAULT_EMSCRIPTEN_LINKOPTS + WASM_LINKOPTS,
     deps = [
+        "@ceres_solver//:ceres",
         "//midware:midware",
     ],
 )
