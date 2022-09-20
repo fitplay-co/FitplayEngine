@@ -10,7 +10,7 @@ cc_library(
         ":protocol",
         "//integration/third_party:glm",
         "//midware:midware",
-        "@com_gitlab_libeigen_eigen//:eigen",
+        # "@com_gitlab_libeigen_eigen//:eigen",
         "@ceres_solver//:ceres",
     ],
     includes = ["protocol"]
