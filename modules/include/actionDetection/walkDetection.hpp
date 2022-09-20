@@ -104,10 +104,9 @@ namespace actionwalk {
             calculateTurn(pose);
             calculateRealTimeLeft();
             calculateRealTimeRight();
-
             flatbuffersOffset = actionData::CreateWalk(builder, 
-                                                        currentLeftStatus,
-                                                        currentRightStatus,
+                                                        int(currentLeftStatus),
+                                                        int(currentRightStatus),
                                                         currentLeftStepRate,
                                                         currentRightStepRate,
                                                         meanData->at(currentLeftHipAngMean),
