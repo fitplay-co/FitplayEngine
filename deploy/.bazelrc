@@ -32,3 +32,8 @@ build:wasm --host_cxxopt="-fomit-frame-pointer"
 # Disable sandbox environment because emsdk caches files by writing to
 # home directory.
 build:wasm --spawn_strategy=local
+
+# testing all : bazel test --config=test //test/... 
+# trying to view all logs :   bazel test --config=test --test_output=all //test/...
+build:test --cxxopt='-std=c++17'
+
