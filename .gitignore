@@ -130,3 +130,5 @@ app/.vscode/
 modules/test/build/*
 
 */bazel-*
+bazel-*
+build/

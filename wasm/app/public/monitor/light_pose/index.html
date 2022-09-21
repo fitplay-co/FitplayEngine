@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>light</title>
+    <script src="echarts.min.js"></script>
+</head>
+<body>
+    <div>Keypoint
+        <select id="keypoints">
+            <option value="0" class="active">nose</option>
+            <option value="11">left_shoulder</option>
+            <option value="12">right_shoulder</option>
+            <option value="13">left_elbow</option>
+            <option value="14">right_elbow</option>
+            <option value="15">left_wrist</option>
+            <option value="16">right_wrist</option>
+            <option value="19">left_index</option>
+            <option value="20">right_index</option>
+            <option value="23">left_hip</option>
+            <option value="24">right_hip</option>
+            <option value="25">left_knee</option>
+            <option value="26">right_knee</option>
+            <option value="27">left_ankle</option>
+            <option value="28">right_ankle</option>
+            <option value="31">left_foot_index</option>
+            <option value="32">right_foot_index</option>
+        </select> 
+    </div>
+    <div>Keypoint Type
+        <select id="keypoints_type">
+            <option value="1" class="active">2D</option>
+            <option value="2">3D</option>
+        </select> 
+    </div>
+    <div>Keypoint Data
+        <select id="keypoints_data">
+            <option value="1" class="active">x</option>
+            <option value="2">y</option>
+            <option value="3">z</option>
+        </select> 
+    </div>
+    <div id="chart1" style="width: 800px;height:400px;"></div>
+    <div id="chart2" style="width: 800px;height:400px;"></div>
+    <div id="chart3" style="width: 800px;height:400px;"></div>
+    <div>Walk API
+        <select id="Walk_API">
+            <option value="0" class="active">leftLeg</option>
+            <option value="1">rightLeg</option>
+            <option value="2">leftFrequency</option>
+            <option value="3">rightFrequency</option>
+            <option value="4">leftHipAng</option>
+            <option value="5">rightHipAng</option>
+            <option value="6">leftStepLength</option>
+            <option value="7">rightStepLength</option>
+            <option value="8">leftProgress</option>
+            <option value="9">rightProgress</option>
+            <option value="10">turn</option>
+            <option value="11">stepRate</option>
+            <option value="12">stepLen</option>
+            <option value="13">velocity</option>
+            <option value="13">velocityThreshold</option>
+            <option value="14">realtimeLeftLeg</option>
+            <option value="15">realtimeRightLeg</option>
+        </select> 
+    </div>
+    <div id="chart4" style="width: 800px;height:400px;"></div>
+    <script src="index.js"></script>
+</body>
+</html>
