@@ -1,1 +1,3 @@
-exports_files(["testfile.csv"])
+exports_files(glob(
+    ["**"],
+))

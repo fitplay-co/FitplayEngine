@@ -26,3 +26,36 @@ cc_test(
       "//test/data:testfile.csv"
     ]
 )
+
+cc_test(
+    name = "old_tests",
+    size = "small",
+    srcs = [
+      "old_tests.cc",
+      "testUtils.hpp",
+      "testGlm.hpp",
+      "testDefaultTPose.hpp",
+      "testDefaultStandPose.hpp",
+      "testCapturedStandPose.hpp",
+      "testFittingStandPose.hpp",
+      "testUtilsMocLandmark.hpp",
+      "testFittingRgbd.hpp",
+      "testFittingStandPoseGravity.hpp"
+    ],
+    deps = [
+      "@com_google_googletest//:gtest_main",
+      "//midware:midware",
+      "//integration/third_party:glm",
+    ],
+    data = [
+      "//test/data:testfile.csv",
+      "//test/data:test_data_full.csv",
+      "//test/data:jump_data_full.csv",
+      "//test/data:occlusion_data_full.csv",
+      "//test/data:replay.csv",
+      "//test/data:replay2.csv",
+      "//test/data:rgbd_stand_pose_test.csv",
+      "//test/data:test_data_heavy.csv",
+    ]
+)
+

@@ -23,5 +23,4 @@ TEST(HelloTest, BasicAssertions) {
 
   std::cout << message << std::endl;
 
-
 }
