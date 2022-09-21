@@ -1,7 +1,7 @@
 #ifndef ACTION_detection_manager
 #define ACTION_detection_manager
 
-#include "actionManager/mockManager.hpp"
+// #include "actionManager/mockManager.hpp"
 #include "actionDetectionCalculator.hpp"
 #include "walkDetection.hpp"
 
@@ -10,7 +10,7 @@ namespace actionDetection {
     class actionDetectionManager {
         private:
 
-            mockManager mockInstance;
+            // mockManager mockInstance;
             actionwalk::walk walkInstance;
             actionDetectionCalculator calculatorInstance;
 
@@ -189,14 +189,16 @@ namespace actionDetection {
 
     void actionDetectionManager::calculateMock(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
         vector<float> walkOffset = walkInstance.getWalkOffset();
-        mockInstance.process(data, walkOffset);
+
+        // mockInstance.process(data, walkOffset);
+
         // walkOffset = { currentLeftStatus, currentRightStatus, currentLeftStepRate, currentRightStepRate,
         //             meanData->at(currentLeftHipAngMean), meanData->at(currentRightHipAngMean), currentLeftStepLength,
         //             currentRightStepLength, currentLeftProgress, currentRightProgress, currentTurnAng, currentStepRate,
         //             currentStepLength, currentVelocity, currentVelocityThreshold, currentRealTimeLeftStatus, currentRealTimeRightStatus};
         walkFlatbuffersOffset = actionData::CreateWalk(builder, 
-                                                    walkOffset.at(0),
-                                                    walkOffset.at(1),
+                                                    int(walkOffset.at(0)),
+                                                    int(walkOffset.at(1)),
                                                     walkOffset.at(2),
                                                     walkOffset.at(3),
                                                     walkOffset.at(4),
