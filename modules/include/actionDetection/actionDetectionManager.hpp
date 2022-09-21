@@ -170,8 +170,8 @@ namespace actionDetection {
             }
         }
         else if(mode == 1) {
-            if(currentLeftStatus == 0 && currentRightStatus == 0) {
-                if(modeShiftCount > 20) {
+            if((currentLeftStatus == 0 && currentRightStatus == 0) || currentLeftStatus == 2 || currentRightStatus == 2) {
+                if(modeShiftCount > 120) {
                     mode = 0;
                     modeShiftCount = 0;
                 }

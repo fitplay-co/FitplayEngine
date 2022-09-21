@@ -111,8 +111,8 @@ namespace actionwalk {
                         currentStepLength, currentVelocity, currentVelocityThreshold, currentRealTimeLeftStatus, currentRealTimeRightStatus};
             
             flatbuffersOffset = actionData::CreateWalk(builder, 
-                                                        currentLeftStatus,
-                                                        currentRightStatus,
+                                                        int(currentLeftStatus),
+                                                        int(currentRightStatus),
                                                         currentLeftStepRate,
                                                         currentRightStepRate,
                                                         meanData->at(currentLeftHipAngMean),
@@ -284,7 +284,7 @@ namespace actionwalk {
                 if(currentRightStatus != 0 && currentRightStatus != 2) {
                     if(frameShiftFilterCount->at(1) > 6) {
                         // threshold to be tested
-                        if(frameData->at(currentLeftLegHeight) - frameData->at(currentRightLegHeight) > 0.1 && currentLeftStatus == 1) {
+                        if(frameData->at(currentLeftLegHeight) - frameData->at(currentRightLegHeight) > 0.1 && currentRightStatus == 1) {
                             currentRightStatus = 2;
                         }
                         else {
