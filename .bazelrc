@@ -1,0 +1,39 @@
+# using default ios build config because ios framework auto search for ios tool chain
+# bazel build --config=ios //ios:FitplayPoseTracker
+build:ios --cxxopt='-std=c++17'
+
+##### Native #####
+ # No need to specify additional configs
+
+##### WASM #####
+# bazel build --config=wasm //wasm:bridge-class-wasm
+
+# Use our custom-configured c++ toolchain.
+build:wasm --crosstool_top=//emscripten_toolchain:everything
+
+# Use --cpu as a differentiator.
+build:wasm --cpu=wasm
+
+# Use the default C++ toolchain to build the tools used during the build.
+build:wasm --host_crosstool_top=@bazel_tools//tools/cpp:toolchain
+
+# These compile flags are active no matter which build mode we are in
+# (dbg vs opt). For flags specific to build mode, see cc_toolchain_config.bzl.
+build:wasm --cxxopt="-flto"
+build:wasm --cxxopt="-Wno-error=unused-but-set-variable"
+build:wasm --cxxopt="-Wno-error=deprecated-declarations"
+build:wasm --cxxopt='-std=c++17'
+
+build:wasm --host_cxxopt="-flto"
+build:wasm --host_cxxopt="-fno-rtti"
+build:wasm --host_cxxopt="-fno-exceptions"
+build:wasm --host_cxxopt="-fomit-frame-pointer"
+
+# Disable sandbox environment because emsdk caches files by writing to
+# home directory.
+build:wasm --spawn_strategy=local
+
+# testing all : bazel test --config=test //test/... 
+# trying to view all logs :   bazel test --config=test --test_output=all //test/...
+build:test --cxxopt='-std=c++17'
+
