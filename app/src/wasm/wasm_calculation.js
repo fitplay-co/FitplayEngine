@@ -41,7 +41,7 @@ var wasm_processor = {
         if (actionData.length > 0) {
             var actionBuf = new flatbuffers.ByteBuffer(actionData)
             var actionTemp = action.getRootAsAction(actionBuf)
-            console.log(actionTemp)
+            // console.log(actionTemp)
             if (actionTemp.general()) {
                 pose.general_detection = {
                     "confidence" : actionTemp.general().confidence()

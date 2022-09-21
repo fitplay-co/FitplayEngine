@@ -144,11 +144,11 @@ struct Walk FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_REALTIMELEFTLEG = 34,
     VT_REALTIMERIGHTLEG = 36
   };
-  float leftLeg() const {
-    return GetField<float>(VT_LEFTLEG, 0.0f);
+  int32_t leftLeg() const {
+    return GetField<int32_t>(VT_LEFTLEG, 0);
   }
-  float rightLeg() const {
-    return GetField<float>(VT_RIGHTLEG, 0.0f);
+  int32_t rightLeg() const {
+    return GetField<int32_t>(VT_RIGHTLEG, 0);
   }
   float leftFrequency() const {
     return GetField<float>(VT_LEFTFREQUENCY, 0.0f);
@@ -197,8 +197,8 @@ struct Walk FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<float>(verifier, VT_LEFTLEG, 4) &&
-           VerifyField<float>(verifier, VT_RIGHTLEG, 4) &&
+           VerifyField<int32_t>(verifier, VT_LEFTLEG, 4) &&
+           VerifyField<int32_t>(verifier, VT_RIGHTLEG, 4) &&
            VerifyField<float>(verifier, VT_LEFTFREQUENCY, 4) &&
            VerifyField<float>(verifier, VT_RIGHTFREQUENCY, 4) &&
            VerifyField<float>(verifier, VT_LEFTHIPANG, 4) &&
@@ -222,11 +222,11 @@ struct WalkBuilder {
   typedef Walk Table;
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_leftLeg(float leftLeg) {
-    fbb_.AddElement<float>(Walk::VT_LEFTLEG, leftLeg, 0.0f);
+  void add_leftLeg(int32_t leftLeg) {
+    fbb_.AddElement<int32_t>(Walk::VT_LEFTLEG, leftLeg, 0);
   }
-  void add_rightLeg(float rightLeg) {
-    fbb_.AddElement<float>(Walk::VT_RIGHTLEG, rightLeg, 0.0f);
+  void add_rightLeg(int32_t rightLeg) {
+    fbb_.AddElement<int32_t>(Walk::VT_RIGHTLEG, rightLeg, 0);
   }
   void add_leftFrequency(float leftFrequency) {
     fbb_.AddElement<float>(Walk::VT_LEFTFREQUENCY, leftFrequency, 0.0f);
@@ -286,8 +286,8 @@ struct WalkBuilder {
 
 inline flatbuffers::Offset<Walk> CreateWalk(
     flatbuffers::FlatBufferBuilder &_fbb,
-    float leftLeg = 0.0f,
-    float rightLeg = 0.0f,
+    int32_t leftLeg = 0,
+    int32_t rightLeg = 0,
     float leftFrequency = 0.0f,
     float rightFrequency = 0.0f,
     float leftHipAng = 0.0f,
