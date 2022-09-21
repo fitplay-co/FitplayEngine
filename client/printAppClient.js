@@ -28,11 +28,12 @@ client.on('connect', function(connection) {
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
             // console.log("frame")
-            var rr = JSON.parse(message.utf8Data).action_detection.walk;
+            if(JSON.parse(message.utf8Data).action_detection)
+            {var rr = JSON.parse(message.utf8Data).action_detection.walk;
             console.log(rr.leftLeg + "," + rr.rightLeg + "," + rr.leftFrequency + "," + rr.rightFrequency + "," + rr.leftHipAng
                     + "," + rr.rightHipAng + "," + rr.leftStepLength + "," + rr.rightStepLength + "," + rr.turn + "," +
                     rr.stepRate + "," + rr.stepLen + "," + rr.velocity + "," + rr.velocityThreshold + "," + rr.realtimeLeftLeg
-                    + "," + rr.realtimeRightLeg);
+                    + "," + rr.realtimeRightLeg);}
             // console.log("Frame")
             // console.log("keyPoints")
             // JSON.parse(message.utf8Data).pose_landmark.keypoints.forEach(element => {

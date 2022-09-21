@@ -52,14 +52,14 @@ namespace actionwalk {
             float realTimeRightInit = 0;
 
             flatbuffers::Offset<actionData::Walk> flatbuffersOffset;
+            vector<float> walkOffset;
         public:
             walk();
             ~ walk();
             bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
             void writeToFlatbuffers(actionData::ActionBuilder&);
             void setPlayer(float);
-            float getCurrentLeftStatus() { return currentLeftStatus; };
-            float getCurrentRightStatus() { return currentRightStatus; };
+            vector<float> getWalkOffset() {return walkOffset; }
             void calculateFrame(const PoseData::Pose* data);
             void calculateMean();
             void calculateLeft();
@@ -104,6 +104,12 @@ namespace actionwalk {
             calculateTurn(pose);
             calculateRealTimeLeft();
             calculateRealTimeRight();
+
+            walkOffset = { currentLeftStatus, currentRightStatus, currentLeftStepRate, currentRightStepRate,
+                        meanData->at(currentLeftHipAngMean), meanData->at(currentRightHipAngMean), currentLeftStepLength,
+                        currentRightStepLength, currentLeftProgress, currentRightProgress, currentTurnAng, currentStepRate,
+                        currentStepLength, currentVelocity, currentVelocityThreshold, currentRealTimeLeftStatus, currentRealTimeRightStatus};
+            
             flatbuffersOffset = actionData::CreateWalk(builder, 
                                                         int(currentLeftStatus),
                                                         int(currentRightStatus),
@@ -186,7 +192,7 @@ namespace actionwalk {
                 if(currentLeftStatus != -1) {
                     if(frameShiftFilterCount->at(0) > 3 && currentLeftStatus == 1) {
                         currentLeftStatus = -1;
-                        timeData->at(timeLeftDown) = militime();
+                        timeData->at(timeLeftDown) = militime(); 
                         timeData->at(timeLeftWindow) = float((timeData->at(timeLeftDown) - timeData->at(timeLeftUp)))/1000;
                     }
                     else { frameShiftFilterCount->at(0) = frameShiftFilterCount->at(0) + 1; }
@@ -294,7 +300,7 @@ namespace actionwalk {
     }
 
     void walk::calculateStepLength() {
-        float maxSL = (configHeight==0)? meanData->at(currentHeightMean) * 1.2 : configHeight * 1.2;
+        float maxSL = (configHeight==0)? meanData->at(currentHeightMean) * 1.2 : configHeight * 1.2;//configHeight 是 身高？
         float leftFlexion = (180 - meanData->at(currentLeftHipAngMean)) > 90 ? 90 : (180 - meanData->at(currentLeftHipAngMean));
         float rightFlexion = (180 - meanData->at(currentRightHipAngMean)) > 90 ? 90 : (180 - meanData->at(currentRightHipAngMean));
         if(progressData->at(preLeftStatus) == 1 && currentLeftStatus == -1) {
