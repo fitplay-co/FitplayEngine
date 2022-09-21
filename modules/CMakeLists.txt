@@ -1,6 +1,0 @@
-cmake_minimum_required(VERSION 3.15)
-project(processor)
-include_directories(vendor include ../protocol/cpp)
-set(EXECUTABLE_OUTPUT_PATH ../../app/wasm_modules)
-add_executable(processor src/bridgeClass.cc)
-set_target_properties(processor PROPERTIES LINK_FLAGS "--bind -s \"EXPORTED_RUNTIME_METHODS=['addOnPostRun']\"")
