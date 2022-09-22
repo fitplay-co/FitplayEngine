@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node ./printAppClient.js",
     "imu": "node ./mock_imu.js",
-    "record" : "node ./recordSensorClient.js"
+    "record": "node ./recordSensorClient.js"
   },
   "dependencies": {
     "serialport": "^10.4.0",
