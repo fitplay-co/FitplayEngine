@@ -11,6 +11,7 @@ var action = require('../../../../common/protocol/js/action-data/action').Action
 var FeatureConfig = require('../../../../common/protocol/js/feature-configs/feature-config').FeatureConfig
 var FeatureConfigList = require('../../../../common/protocol/js/feature-configs/feature-config-list').FeatureConfigList
 var InputMessage = require('../../../../common/protocol/js/input/input-message').InputMessage
+var OutputMessage = require('../../../../common/protocol/js/output/output-message').OutputMessage
 var MessageType = require('../../../../common/protocol/js/input/message-type').MessageType
 
 var wasm_processor = {
@@ -34,13 +35,15 @@ var wasm_processor = {
         }
         
         // var actionResult =  this.instance.entry(inputMessage)
-        var newResult = this.newModeule.entry(inputMessage)
+        var midwareResult = this.newModeule.entry(inputMessage)
 
         // console.log("got new result")
-        var actionData = new Uint8Array(newResult)
-        if (actionData.length > 0) {
-            var actionBuf = new flatbuffers.ByteBuffer(actionData)
-            var actionTemp = action.getRootAsAction(actionBuf)
+        var midwareResultUint8Array = new Uint8Array(midwareResult)
+        if (midwareResultUint8Array.length > 0) {
+            pose.flatbuffersData = midwareResultUint8Array
+            var outputMessageBuf = new flatbuffers.ByteBuffer(midwareResultUint8Array)
+            var outputMessage = OutputMessage.getRootAsOutputMessage(outputMessageBuf)
+            var actionTemp = outputMessage.detectionResult()
             // console.log(actionTemp)
             if (actionTemp.general()) {
                 pose.general_detection = {

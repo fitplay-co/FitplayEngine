@@ -136,8 +136,12 @@ var messageLoop = coroutine(function*() {
                             poseDataForClient.fitting = pose.fitting
                         }
                     }
-                    messageContent = JSON.stringify(poseDataForClient)
-                    ws.send(messageContent)
+                    if (ws.useJson) {
+                        messageContent = JSON.stringify(poseDataForClient)
+                        ws.send(messageContent)
+                    } else if (pose.flatbuffersData) {
+                        ws.send(Buffer.from(pose.flatbuffersData))
+                    }
                 }
             });
         } else if(type === MessageType.ApplicationControl) {
@@ -168,6 +172,7 @@ var messageLoop = coroutine(function*() {
             if (id) {
                 clientMap.set(id, ws)
                 clientIdMap.set(ws, id)
+                ws.useJson = message.client().useJson()
             }
             console.log(`application client with id "${id}" attached`)
         } else if (type === MessageType.SensorClient) {
@@ -328,6 +333,7 @@ function jsonMessageToFlatbuffers(message) {
         var id = builder.createString(message.id)
         Client.startClient(builder)
         Client.addId(builder, id)
+        Client.addUseJson(builder, message.useJson)
         var sensorControlOffset = Client.endClient(builder)
 
         InputMessage.startInputMessage(builder)

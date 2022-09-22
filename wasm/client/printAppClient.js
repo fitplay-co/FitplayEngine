@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 var WebSocketClient = require('websocket').client;
 var flatbuffers = require('flatbuffers');
-var InputMessage = require('../protocol/js/input/input-message').InputMessage
-var MessageType = require('../protocol/js/input/message-type').MessageType
-var Control = require('../protocol/js/application-control/control').Control
-var ControlData = require('../protocol/js/application-control/control-data').ControlData
-var Client = require('../protocol/js/application-client/client').Client
-var SensorClient = require('../protocol/js/sensor/sensor-client').SensorClient
-var SensorFrame = require('../protocol/js/sensor/sensor-frame').SensorFrame
-var SensorControl = require('../protocol/js/sensor/sensor-control').SensorControl
+var InputMessage = require('../../common/protocol/js/input/input-message').InputMessage
+var OutputMessage = require('../../common/protocol/js/output/output-message').OutputMessage
+var MessageType = require('../../common/protocol/js/input/message-type').MessageType
+var Control = require('../../common/protocol/js/application-control/control').Control
+var ControlData = require('../../common/protocol/js/application-control/control-data').ControlData
+var Client = require('../../common/protocol/js/application-client/client').Client
+var SensorClient = require('../../common/protocol/js/sensor/sensor-client').SensorClient
+var SensorFrame = require('../../common/protocol/js/sensor/sensor-frame').SensorFrame
+var SensorControl = require('../../common/protocol/js/sensor/sensor-control').SensorControl
 
 var client = new WebSocketClient();
 var count = 0
@@ -44,11 +45,20 @@ client.on('connect', function(connection) {
             //     console.log(element.name + "," +element.x + "," + element.y + "," + element.z )
             // });
             //console.log(JSON.parse(message.utf8Data))
+        } else {
+            // console.log(message.binaryData)
+            var outputMessage = OutputMessage.getRootAsOutputMessage(new flatbuffers.ByteBuffer(message.binaryData))
+            var detectionResult = outputMessage.detectionResult()
+            var pose = outputMessage.pose()
+            // console.log("legLength:"+detectionResult.walk().leftLeg())
+            console.log(outputMessage.type() + "|" + outputMessage.sensorType())
+            console.log("y[0]:"+pose.keypoints(0).y())
         }
     });
     var appClientMessage =  {
         "type" : "application_client",
-        "id": "test_client"
+        "id": "test_client",
+        // "useJson": true
     }
     var imuFPS = {
         "type" : "application_control",
@@ -210,6 +220,7 @@ function flatbuffersMessage(message) {
         var id = builder.createString(message.id)
         Client.startClient(builder)
         Client.addId(builder, id)
+        Client.addUseJson(builder, message.useJson)
         var sensorControlOffset = Client.endClient(builder)
 
         InputMessage.startInputMessage(builder)
