@@ -27,22 +27,22 @@ load(
 
 apple_support_dependencies()
 
-# http_archive(
-#     name = "io_bazel_rules_appengine",
-#     strip_prefix = "rules_appengine-8099725bab2fa01ccd385fac2f78278ea8145a7a",
-#     # TODO: update to a release version that contains 339f6aba67fcedb7268cf54d1163cf7704a277ca.
-#     # This commit fixes the Maven artifact URLs to use "https" instead of "http".
-#     # We don't specify sha256, because the sha256 of GitHub-served non-release archives isn't
-#     # stable.
-#     urls = ["https://github.com/bazelbuild/rules_appengine/archive/8099725bab2fa01ccd385fac2f78278ea8145a7a.tar.gz"],
-# )
+http_archive(
+    name = "io_bazel_rules_appengine",
+    strip_prefix = "rules_appengine-8099725bab2fa01ccd385fac2f78278ea8145a7a",
+    # TODO: update to a release version that contains 339f6aba67fcedb7268cf54d1163cf7704a277ca.
+    # This commit fixes the Maven artifact URLs to use "https" instead of "http".
+    # We don't specify sha256, because the sha256 of GitHub-served non-release archives isn't
+    # stable.
+    urls = ["https://github.com/bazelbuild/rules_appengine/archive/8099725bab2fa01ccd385fac2f78278ea8145a7a.tar.gz"],
+)
 
-# load(
-#     "@io_bazel_rules_appengine//appengine:java_appengine.bzl",
-#     "java_appengine_repositories",
-# )
+load(
+    "@io_bazel_rules_appengine//appengine:java_appengine.bzl",
+    "java_appengine_repositories",
+)
 
-# java_appengine_repositories()
+java_appengine_repositories()
 
 android_sdk_repository(name = "androidsdk")
 
@@ -53,18 +53,24 @@ http_archive(
     urls = ["https://github.com/bazelbuild/rules_android/archive/v0.1.1.zip"],
 )
 
-# emsdk 3.1.13
+# Emscripten toolchain
 http_archive(
     name = "emsdk",
-    strip_prefix = "emsdk-311acff345fd71dcfe5f350653cec466ee7e3fbc/bazel",
-    url = "https://github.com/emscripten-core/emsdk/archive/311acff345fd71dcfe5f350653cec466ee7e3fbc.tar.gz",
+    # TODO: Remove repo_mapping when emsdk updates to rules_nodejs 5
+    repo_mapping = {"@nodejs": "@nodejs_host"},
+    sha256 = "fd336c6d3e51c7205a8ec68e835c442dcbb187f92e50c42b3d7d54a312072ef7",
+    strip_prefix = "emsdk-3.1.20/bazel",
+    urls = ["https://github.com/emscripten-core/emsdk/archive/refs/tags/3.1.20.tar.gz"],
 )
 
 load("@emsdk//:deps.bzl", emsdk_deps = "deps")
+
 emsdk_deps()
 
 load("@emsdk//:emscripten_deps.bzl", emsdk_emscripten_deps = "emscripten_deps")
+
 emsdk_emscripten_deps()
+
 
 # gtest 
 
