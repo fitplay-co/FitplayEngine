@@ -50,7 +50,8 @@ function ws_init(){
 
   var appClientMessage = {
     "type" : "application_client",
-    "id": "test_client"
+    "id": "test_client",
+    "useJson" : true
   }
 
   var actionDetectionSubscribe = {
@@ -226,7 +227,7 @@ function addData(inputData){
         break;
       case "leftHipAng" :
         m4 = jsonObj.action_detection.walk.leftHipAng;
-        break; 
+        break;
       case "rightHipAng" :
         m4 = jsonObj.action_detection.walk.rightHipAng;
         break; 
