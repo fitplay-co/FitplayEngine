@@ -13,16 +13,16 @@ const messageBuffer = require('./src/message_buffer');
 const childProcess = require('child_process');
 
 var flatbuffers = require('flatbuffers');
-var Point = require('../protocol/js/pose-data/point').Point
-var Pose = require('../protocol/js/pose-data/pose').Pose;
-var InputMessage = require('../protocol/js/input/input-message').InputMessage
-var MessageType = require('../protocol/js/input/message-type').MessageType
-var Control = require('../protocol/js/application-control/control').Control
-var ControlData = require('../protocol/js/application-control/control-data').ControlData
-var Client = require('../protocol/js/application-client/client').Client
-var SensorClient = require('../protocol/js/sensor/sensor-client').SensorClient
-var SensorFrame = require('../protocol/js/sensor/sensor-frame').SensorFrame
-var SensorControl = require('../protocol/js/sensor/sensor-control').SensorControl
+var Point = require('../../common/protocol/js/pose-data/point').Point
+var Pose = require('../../common/protocol/js/pose-data/pose').Pose;
+var InputMessage = require('../../common/protocol/js/input/input-message').InputMessage
+var MessageType = require('../../common/protocol/js/input/message-type').MessageType
+var Control = require('../../common/protocol/js/application-control/control').Control
+var ControlData = require('../../common/protocol/js/application-control/control-data').ControlData
+var Client = require('../../common/protocol/js/application-client/client').Client
+var SensorClient = require('../../common/protocol/js/sensor/sensor-client').SensorClient
+var SensorFrame = require('../../common/protocol/js/sensor/sensor-frame').SensorFrame
+var SensorControl = require('../../common/protocol/js/sensor/sensor-control').SensorControl
 
 var app = express();
 

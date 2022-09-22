@@ -2,16 +2,16 @@
 var NewModule = require('../../wasm_modules/bridge-class.js');
 
 var flatbuffers = require('flatbuffers');
-var Point = require('../../../protocol/js/pose-data/point').Point
-var Pose = require('../../../protocol/js/pose-data/pose').Pose;
+var Point = require('../../../../common/protocol/js/pose-data/point').Point
+var Pose = require('../../../../common/protocol/js/pose-data/pose').Pose;
 var fs = require('fs');
 const { z } = require('../midware_gaze_tracking.js');
 const { type } = require('os');
-var action = require('../../../protocol/js/action-data/action').Action
-var FeatureConfig = require('../../../protocol/js/feature-configs/feature-config').FeatureConfig
-var FeatureConfigList = require('../../../protocol/js/feature-configs/feature-config-list').FeatureConfigList
-var InputMessage = require('../../../protocol/js/input/input-message').InputMessage
-var MessageType = require('../../../protocol/js/input/message-type').MessageType
+var action = require('../../../../common/protocol/js/action-data/action').Action
+var FeatureConfig = require('../../../../common/protocol/js/feature-configs/feature-config').FeatureConfig
+var FeatureConfigList = require('../../../../common/protocol/js/feature-configs/feature-config-list').FeatureConfigList
+var InputMessage = require('../../../../common/protocol/js/input/input-message').InputMessage
+var MessageType = require('../../../../common/protocol/js/input/message-type').MessageType
 
 var wasm_processor = {
     initialized : false ,

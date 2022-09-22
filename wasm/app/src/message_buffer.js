@@ -1,5 +1,5 @@
 const {performance} = require('perf_hooks');
-var MessageType = require('../../protocol/js/input/message-type').MessageType
+var MessageType = require('../../../common/protocol/js/input/message-type').MessageType
 
 const MAX_BUFFER_SIZE = 3 //缓冲队列容量上限
 
