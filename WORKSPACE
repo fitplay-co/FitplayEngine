@@ -27,22 +27,22 @@ load(
 
 apple_support_dependencies()
 
-http_archive(
-    name = "io_bazel_rules_appengine",
-    strip_prefix = "rules_appengine-8099725bab2fa01ccd385fac2f78278ea8145a7a",
-    # TODO: update to a release version that contains 339f6aba67fcedb7268cf54d1163cf7704a277ca.
-    # This commit fixes the Maven artifact URLs to use "https" instead of "http".
-    # We don't specify sha256, because the sha256 of GitHub-served non-release archives isn't
-    # stable.
-    urls = ["https://github.com/bazelbuild/rules_appengine/archive/8099725bab2fa01ccd385fac2f78278ea8145a7a.tar.gz"],
-)
+# http_archive(
+#     name = "io_bazel_rules_appengine",
+#     strip_prefix = "rules_appengine-8099725bab2fa01ccd385fac2f78278ea8145a7a",
+#     # TODO: update to a release version that contains 339f6aba67fcedb7268cf54d1163cf7704a277ca.
+#     # This commit fixes the Maven artifact URLs to use "https" instead of "http".
+#     # We don't specify sha256, because the sha256 of GitHub-served non-release archives isn't
+#     # stable.
+#     urls = ["https://github.com/bazelbuild/rules_appengine/archive/8099725bab2fa01ccd385fac2f78278ea8145a7a.tar.gz"],
+# )
 
-load(
-    "@io_bazel_rules_appengine//appengine:java_appengine.bzl",
-    "java_appengine_repositories",
-)
+# load(
+#     "@io_bazel_rules_appengine//appengine:java_appengine.bzl",
+#     "java_appengine_repositories",
+# )
 
-java_appengine_repositories()
+# java_appengine_repositories()
 
 android_sdk_repository(name = "androidsdk")
 
