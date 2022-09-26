@@ -37,6 +37,10 @@ public:
     midwareBridge.release();
   }
 
+  std::string getCurrentJsonString() {
+    return midwareBridge.getCurrentJSON();
+  }
+
   val entry(std::string inputData) {
   
     LOG(INFO) << "Found " << "glog started where to go" << " cookies";
@@ -91,5 +95,6 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
     .constructor<>()
     .function("entry", &JSMidwareBridgeClass::entry)
     .function("release", &JSMidwareBridgeClass::release)
+    .function("json", &JSMidwareBridgeClass::getCurrentJsonString)
     ;
 }

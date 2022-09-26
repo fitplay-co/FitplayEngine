@@ -78,68 +78,23 @@ var messageLoop = coroutine(function*() {
         const rawData = bufferData.rawData
         type = message.type()
 
-        messageTime = Math.round(performance.now()*1000)+'μs'
-        processingTime = Math.round(performance.now()*1000)+'μs'
+        messageTime = Math.round(performance.now()*1000)+'us'
+        processingTime = Math.round(performance.now()*1000)+'us'
         // 中间件处理
         wasm.process(rawData, bufferData.jsonMessage)
         // os处理
         if(type === MessageType.Pose) {
             pose = bufferData.jsonMessage
       
-            pose.timeProfiling = {}
-            pose.timeProfiling.serverReceive = messageTime
-            pose.timeProfiling.processingTime = processingTime
-
-            pose.sensor_type = "camera"
-
-            //调整pose结构适配api格式
-            pose.type = "application_frame"
-            pose.pose_landmark = {
-                keypoints: pose.keypoints,
-                keypoints3D: pose.keypoints3D,
-                timestamp: Date.now(),
-                version:"0.1.0"
-            }
-            
-            delete pose.keypoints
-            delete pose.keypoints3D
-
-            pose.timeProfiling.beforeSendTime = Math.round(performance.now()*1000)+'μs'
-
             activeApplicationClient.forEach(function(ws){
                 if(!ws.notActived) {
-                    const poseDataForClient = Object.assign({}, pose)
-                    if ('ground_location' in poseDataForClient) {
-                        delete poseDataForClient.ground_location
-                    }
-                    if ('action_detection' in poseDataForClient) {
-                        delete poseDataForClient.action_detection
-                    }
-                    if ('gaze_tracking' in poseDataForClient) {
-                        delete poseDataForClient.gaze_tracking
-                    }
-                    if ('fitting' in poseDataForClient) {
-                        delete poseDataForClient.fitting
-                    }
-                    if (clientSubscriptionMap.has(ws)) {
-                        const featureSubscriptions = clientSubscriptionMap.get(ws)
-                        if (featureSubscriptions.indexOf('ground_location') >= 0) {
-                            poseDataForClient.ground_location = pose.ground_location
-                        }
-                        if (featureSubscriptions.indexOf('action_detection') >= 0) {
-                            poseDataForClient.action_detection = pose.action_detection
-                        }
-                        if (featureSubscriptions.indexOf('gaze_tracking') >= 0) {
-                            poseDataForClient.gaze_tracking = pose.gaze_tracking
-                        }
-                        if (featureSubscriptions.indexOf('fitting') >= 0) {
-                            poseDataForClient.fitting = pose.fitting
-                        }
-                    }
                     if (ws.useJson) {
-                        delete poseDataForClient.flatbuffersData
-                        messageContent = JSON.stringify(poseDataForClient)
-                        ws.send(messageContent)
+                        const poseJson = JSON.parse(pose.json)
+                        poseJson.timeProfiling = {}
+                        poseJson.timeProfiling.serverReceive = messageTime
+                        poseJson.timeProfiling.processingTime = processingTime
+                        poseJson.timeProfiling.beforeSendTime = Math.round(performance.now()*1000)+'us'
+                        ws.send(JSON.stringify(poseJson))
                     } else if (pose.flatbuffersData) {
                         ws.send(Buffer.from(pose.flatbuffersData))
                     }

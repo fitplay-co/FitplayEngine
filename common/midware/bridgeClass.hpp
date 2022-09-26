@@ -12,6 +12,9 @@
 #include "midwareComponent/midwareComponent.hpp"
 #include "midwareComponent/midwareManager.hpp"
 #include "generalDetection/generalCalculator.hpp"
+#include "json.hpp"
+
+#define FITPLAY_ENGINE_VERSION "0.1.0"
 
 namespace fitplayBridge {
   class BridgeClass {
@@ -33,6 +36,7 @@ namespace fitplayBridge {
       uint8_t* getCurrentBuffer();
       int getCurrentBufferSize();
       bool hasOutput();
+      std::string getCurrentJSON();
   };
 
   BridgeClass::BridgeClass() {
@@ -124,5 +128,203 @@ namespace fitplayBridge {
 
   bool BridgeClass::hasOutput() {
     return hasOutputMessage;
+  }
+
+  static const string LANDMARK_NAME[33] = {
+    "nose",
+    "left_eye_inner",
+    "left_eye",
+    "left_eye_outer",
+    "right_eye_inner",
+    "right_eye",
+    "right_eye_outer",
+    "left_ear",
+    "right_ear",
+    "mouth_left",
+    "mouth_right",
+    "left_shoulder",
+    "right_shoulder",
+    "left_elbow",
+    "right_elbow",
+    "left_wrist",
+    "right_wrist",
+    "left_pinky",
+    "right_pinky",
+    "left_index",
+    "right_index",
+    "left_thumb",
+    "right_thumb",
+    "left_hip",
+    "right_hip",
+    "left_knee",
+    "right_knee",
+    "left_ankle",
+    "right_ankle",
+    "left_heel",
+    "right_heel",
+    "left_foot_index",
+    "right_foot_index"
+  };
+
+  using nlohmann::json;
+  std::string BridgeClass::getCurrentJSON() {
+    json result;
+
+    if (outputData.GetSize() > 0) {
+      result["type"] = "application_frame";
+      result["sensor_type"] = "camera";
+
+      const Output::OutputMessage* outputMessage = Output::GetOutputMessage(getCurrentBuffer());
+
+      vector<json> keypoints_json_vec;
+      vector<json> keypoints3d_json_vec;
+
+      const PoseData::Pose* pose = outputMessage->pose();
+ 
+      for(int i = 0; i < pose->keypoints()->size(); i++){
+          json keypoint_json;
+          keypoint_json["x"] = pose->keypoints()->Get(i)->x();
+          keypoint_json["y"] = pose->keypoints()->Get(i)->y();
+          keypoint_json["z"] = pose->keypoints()->Get(i)->z();
+          keypoint_json["score"] = pose->keypoints()->Get(i)->score();
+          keypoint_json["name"] = LANDMARK_NAME[i];
+
+          keypoints_json_vec.push_back(keypoint_json);
+      }
+      for(int i = 0; i < pose->keypoints3D()->size(); i++){
+          json keypoint_json;
+          keypoint_json["x"] = pose->keypoints3D()->Get(i)->x();
+          keypoint_json["y"] = pose->keypoints3D()->Get(i)->y();
+          keypoint_json["z"] = pose->keypoints3D()->Get(i)->z();
+          keypoint_json["score"] = pose->keypoints3D()->Get(i)->score();
+          keypoint_json["name"] = LANDMARK_NAME[i];
+
+          keypoints3d_json_vec.push_back(keypoint_json);
+      }
+      result["pose_landmark"]["keypoints"] = keypoints_json_vec;
+      result["pose_landmark"]["keypoints3D"] = keypoints3d_json_vec;
+      result["pose_landmark"]["version"] = FITPLAY_ENGINE_VERSION;
+
+      const actionData::Action* action = outputMessage->detectionResult();
+
+      if(action->fitting() != NULL){
+          auto rotation = action->fitting()->rotation();
+          if(rotation != NULL){
+              vector<json> rotation_json_vec;
+              for(int i = 0; i < rotation->size(); i++){
+                  auto joint = rotation->Get(i);
+                  json joint_json;
+                  joint_json["name"] = joint->name()->c_str();
+                  joint_json["x"] = joint->x();
+                  joint_json["y"] = joint->y();
+                  joint_json["z"] = joint->z();
+                  joint_json["w"] = joint->w();
+                  rotation_json_vec.push_back(joint_json);
+              }
+              result["fitting"]["rotation"] = rotation_json_vec;
+          }
+
+          auto mirrorRotation = action->fitting()->mirrorRotation();
+          if(mirrorRotation != NULL){
+              vector<json> mirror_rotation_json_vec;
+              for(int i = 0; i < mirrorRotation->size(); i++){
+                  auto joint = mirrorRotation->Get(i);
+                  json joint_json;
+                  joint_json["name"] = joint->name()->c_str();
+                  joint_json["x"] = joint->x();
+                  joint_json["y"] = joint->y();
+                  joint_json["z"] = joint->z();
+                  joint_json["w"] = joint->w();
+                  mirror_rotation_json_vec.push_back(joint_json);
+              }
+              result["fitting"]["mirrorRotation"] = mirror_rotation_json_vec;
+          }
+
+          auto localRotation = action->fitting()->localRotation();
+          if(localRotation != NULL){
+              vector<json> local_rotation_json_vec;
+              for(int i = 0; i < localRotation->size(); i++){
+                  auto joint = localRotation->Get(i);
+                  json joint_json;
+                  joint_json["name"] = joint->name()->c_str();
+                  joint_json["x"] = joint->x();
+                  joint_json["y"] = joint->y();
+                  joint_json["z"] = joint->z();
+                  joint_json["w"] = joint->w();
+                  local_rotation_json_vec.push_back(joint_json);
+              }
+              result["fitting"]["localRotation"] = local_rotation_json_vec;
+          }
+
+          auto mirrorLocalRotation = action->fitting()->mirrorLocalRotation();
+          if(mirrorLocalRotation != NULL){
+              vector<json> mirror_local_rotation_json_vec;
+              for(int i = 0; i < mirrorLocalRotation->size(); i++){
+                  auto joint = mirrorLocalRotation->Get(i);
+                  json joint_json;
+                  joint_json["name"] = joint->name()->c_str();
+                  joint_json["x"] = joint->x();
+                  joint_json["y"] = joint->y();
+                  joint_json["z"] = joint->z();
+                  joint_json["w"] = joint->w();
+                  mirror_local_rotation_json_vec.push_back(joint_json);
+              }
+              result["fitting"]["mirrorLocalRotation"] = mirror_local_rotation_json_vec;
+          }
+      }
+
+      if(action->ground() != NULL){
+          result["ground_location"]["x"] = action->ground()->x();
+          result["ground_location"]["y"] = action->ground()->y();
+          result["ground_location"]["z"] = action->ground()->z();
+          result["ground_location"]["legLength"] = action->ground()->legLength();
+          result["ground_location"]["tracing"] = action->ground()->tracing();
+      }
+
+      if(action->walk() != NULL){
+          cout << __FUNCTION__ << ": has walk output" << endl;
+          result["action_detection"]["version"] = "0.2";
+          result["action_detection"]["walk"]["leftLeg"] = action->walk()->leftLeg();
+          result["action_detection"]["walk"]["rightLeg"] = action->walk()->rightLeg(); 
+          result["action_detection"]["walk"]["leftFrequency"] = action->walk()->leftFrequency(); 
+          result["action_detection"]["walk"]["rightFrequency"] = action->walk()->rightFrequency(); 
+          result["action_detection"]["walk"]["leftHipAng"] = action->walk()->leftHipAng(); 
+          result["action_detection"]["walk"]["rightHipAng"] = action->walk()->rightHipAng(); 
+          result["action_detection"]["walk"]["leftStepLength"] = action->walk()->leftStepLength(); 
+          result["action_detection"]["walk"]["rightStepLength"] = action->walk()->rightStepLength(); 
+          result["action_detection"]["walk"]["leftProgress"] = action->walk()->leftProgress(); 
+          result["action_detection"]["walk"]["rightProgress"] = action->walk()->rightProgress();  
+          result["action_detection"]["walk"]["turn"] = action->walk()->turn(); 
+          result["action_detection"]["walk"]["stepRate"] = action->walk()->stepRate(); 
+          result["action_detection"]["walk"]["stepLen"] = action->walk()->stepLen(); 
+          result["action_detection"]["walk"]["velocity"] = action->walk()->velocity(); 
+      }
+
+      if(action->squat() != NULL){
+          result["action_detection"]["squat"]["squat"] = (int)(action->squat()->status());
+      }
+
+      if(action->jump() != NULL){
+          result["action_detection"]["jump"]["onTheGround"] = action->jump()->onTheGround();
+          result["action_detection"]["jump"]["velocity"] = action->jump()->velocity();
+      }
+
+      if(action->gaze() != NULL){
+          result["gaze_tracking"]["x"] = action->gaze()->x();
+          result["gaze_tracking"]["y"] = action->gaze()->y();
+          result["gaze_tracking"]["z"] = action->gaze()->z();
+      }
+
+      if(action->general() != NULL){
+          result["general"]["confidence"] = action->general()->confidence();
+      }
+
+      if(action->stand() != NULL){
+           result["stand_detection"]["mode"] = action->stand()->mode();
+        }
+    }
+
+    return result.dump();
+    // return "test";
   }
 }
