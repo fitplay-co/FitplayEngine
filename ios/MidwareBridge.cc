@@ -3,7 +3,7 @@
 #include "json.hpp"
 #include <chrono>
 
-#define FITPLAY_ENGINE_VERSION "0.2.0"
+#define FITPLAY_ENGINE_VERSION "0.1.0"
 
 static const string landmark_name[33] = {
     "nose",

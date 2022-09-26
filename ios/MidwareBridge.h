@@ -1,5 +1,5 @@
 /**
- * @file MidwareBridge.h
+ * @file midwareBridge.h
  * @author Sijia Rong (sijia.rong@fitplay.co)
  * @brief It is an interface to Fitplay OS midware layer.
  *  You can (un)subscribe midware services, and modify subscribtions through application.
@@ -25,14 +25,12 @@ typedef struct MidWareLandmark{
     float x;
     float y;
     float z;
-    float confidence;
 }MidWareLandmark;
 
 typedef struct MidWareLandmark3D{
     float x;
     float y;
     float z;
-    float confidence;
 }MidWareLandmark3D;
 
 /**
