@@ -1,34 +1,32 @@
 load("@rules_cc//cc:defs.bzl", "objc_library")
 load("@build_bazel_rules_apple//apple:ios.bzl", "ios_framework")
 
-objc_library(
-    name = "native-lib-oc",
+cc_library(
+    name = "native-lib-cc",
     hdrs = [
-        "FitplayPoseTracker.h",
+        "MidwareBridge.h",
     ],
     srcs = [
-        "FitplayPoseTracker.mm",
+        "MidwareBridge.cc",
     ],
     copts = ["--std=c++17"],
     deps = [
-        "//common:hello-time",
-        "//common:protocol",
+        "//common:common_lib",
     ]
 )
 
-
 ios_framework(
-    name = "FitplayPoseTrackerFramework",
-    bundle_id = "com.fitplay.FitplayPoseTrackerFramework",
+    name = "FitplayMidwareFramework",
+    bundle_id = "com.fitplay.FitplayMidwareFramework",
     families = [
         "iphone",
         "ipad",
     ],
     hdrs = [
-        "FitplayPoseTracker.h",
+        "MidwareBridge.h",
     ],
     infoplists = [":stub.plist"],
     minimum_os_version = "8.0",
     visibility = ["//visibility:public"],
-    deps = [":native-lib-oc"],
+    deps = [":native-lib-cc"],
 )

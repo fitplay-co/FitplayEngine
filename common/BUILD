@@ -1,14 +1,12 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
 cc_library(
-    name = "hello-time",
-    srcs = ["hello-time.cc"],
-    hdrs = ["hello-time.h"],
+    name = "common_lib",
     copts = ["--std=c++17"],
     visibility = ["//visibility:public"],
     deps = [
         ":protocol",
-        "//common/third_party:glm",
+        ":third_party_lib",
         "//common/midware:midware",
         # "@com_gitlab_libeigen_eigen//:eigen",
         "@ceres_solver//:ceres",
