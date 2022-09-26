@@ -282,7 +282,7 @@ namespace fitplayBridge {
       }
 
       if(action->walk() != NULL){
-          cout << __FUNCTION__ << ": has walk output" << endl;
+          // cout << __FUNCTION__ << ": has walk output" << endl;
           result["action_detection"]["version"] = "0.2";
           result["action_detection"]["walk"]["leftLeg"] = action->walk()->leftLeg();
           result["action_detection"]["walk"]["rightLeg"] = action->walk()->rightLeg(); 

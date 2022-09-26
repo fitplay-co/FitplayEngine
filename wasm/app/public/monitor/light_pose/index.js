@@ -66,6 +66,22 @@ function ws_init(){
     "action" : "subscribe" 
   }
 
+  var groundLocationSubscribe = {
+    "type" : "application_control",
+    "feature_id" : "ground_location",
+    "action" : "subscribe" 
+}
+  var gazeSubscribe = {
+      "type" : "application_control",
+      "feature_id" : "gaze_tracking",
+      "action" : "subscribe" 
+  }
+  var fittingSubscribe = {
+      "type" : "application_control",
+      "feature_id" : "fitting",
+      "action" : "subscribe" 
+  }
+
   var heightControl = {
     "type" : "application_control",
     "feature_id" : "action_detection",
@@ -83,6 +99,15 @@ function ws_init(){
 }, 1000);
   setTimeout(() => {
     ws_send(JSON.stringify(generalDetectionSubscribe))
+}, 1000);
+  setTimeout(() => {
+    ws_send(JSON.stringify(groundLocationSubscribe))
+}, 1000);
+  setTimeout(() => {
+    ws_send(JSON.stringify(gazeSubscribe))
+}, 1000);
+  setTimeout(() => {
+    ws_send(JSON.stringify(fittingSubscribe))
 }, 1000);
 //   setTimeout(() => {
 //     ws_send(JSON.stringify(heightControl))
@@ -129,44 +154,44 @@ myChart1.setOption({
       type: "line"
     }]
 });
-myChart2.setOption({
-    title: {
-        text: 'Monitor',
-        subtext: 'M2'
-    },
-    xAxis: {
-      type: "category",
-      name: "time",
-      data: arr
-    },
-    yAxis: {
-      type: "value"
-    },
-    series: [{
-      symbol: "none",
-      data: num2,
-      type: "line"
-    }]
-});
-myChart3.setOption({
-  title: {
-      text: 'Monitor',
-      subtext: 'M3'
-  },
-  xAxis: {
-    type: "category",
-    name: "time",
-    data: arr
-  },
-  yAxis: {
-    type: "value"
-  },
-  series: [{
-    // symbol: "none",
-    data: num3,
-    type: "line"
-  }]
-});
+// myChart2.setOption({
+//     title: {
+//         text: 'Monitor',
+//         subtext: 'M2'
+//     },
+//     xAxis: {
+//       type: "category",
+//       name: "time",
+//       data: arr
+//     },
+//     yAxis: {
+//       type: "value"
+//     },
+//     series: [{
+//       symbol: "none",
+//       data: num2,
+//       type: "line"
+//     }]
+// });
+// myChart3.setOption({
+//   title: {
+//       text: 'Monitor',
+//       subtext: 'M3'
+//   },
+//   xAxis: {
+//     type: "category",
+//     name: "time",
+//     data: arr
+//   },
+//   yAxis: {
+//     type: "value"
+//   },
+//   series: [{
+//     // symbol: "none",
+//     data: num3,
+//     type: "line"
+//   }]
+// });
 myChart4.setOption({
   title: {
       text: 'API Monitor',
@@ -268,19 +293,20 @@ function addData(inputData){
 
     num1.push(m1)
     num1.shift()
-    console.log("m1 = " + m1)
+    // console.log("m1 = " + m1)
+    console.log(jsonObj)
 
-    num2.push(jsonObj.monitor.m1)
-    num2.shift()
-    console.log("m2 = " + jsonObj.monitor.m1)
+    // num2.push(jsonObj.monitor.m1)
+    // num2.shift()
+    // console.log("m2 = " + jsonObj.monitor.m1)
 
-    num3.push(jsonObj.monitor.m2)
-    num3.shift()
-    console.log("m3 = " + jsonObj.monitor.m2)
+    // num3.push(jsonObj.monitor.m2)
+    // num3.shift()
+    // console.log("m3 = " + jsonObj.monitor.m2)
 
     num4.push(m4)
     num4.shift()
-    console.log("m4 = " + m4)
+    // console.log("m4 = " + m4)
 
     myChart1.setOption({
         title: {
@@ -293,28 +319,28 @@ function addData(inputData){
           data: num1
         }]
     });
-    myChart2.setOption({
-        title: {
-          subtext: jsonObj.monitor.m1Name
-        },
-        yAxis: {
-          type: "value"
-        },
-        series: [{
-          data: num2
-        }]
-    });
-    myChart3.setOption({
-      title: {
-        subtext: jsonObj.monitor.m2Name
-      },
-      yAxis: {
-        type: "value"
-      },
-      series: [{
-        data: num3
-      }]
-  });
+  //   myChart2.setOption({
+  //       title: {
+  //         subtext: jsonObj.monitor.m1Name
+  //       },
+  //       yAxis: {
+  //         type: "value"
+  //       },
+  //       series: [{
+  //         data: num2
+  //       }]
+  //   });
+  //   myChart3.setOption({
+  //     title: {
+  //       subtext: jsonObj.monitor.m2Name
+  //     },
+  //     yAxis: {
+  //       type: "value"
+  //     },
+  //     series: [{
+  //       data: num3
+  //     }]
+  // });
   myChart4.setOption({
     title: {
       subtext: text2
