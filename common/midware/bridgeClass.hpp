@@ -297,7 +297,10 @@ namespace fitplayBridge {
           result["action_detection"]["walk"]["turn"] = action->walk()->turn(); 
           result["action_detection"]["walk"]["stepRate"] = action->walk()->stepRate(); 
           result["action_detection"]["walk"]["stepLen"] = action->walk()->stepLen(); 
-          result["action_detection"]["walk"]["velocity"] = action->walk()->velocity(); 
+          result["action_detection"]["walk"]["velocity"] = action->walk()->velocity();
+          result["action_detection"]["walk"]["velocityThreshold"] = action->walk()->velocityThreshold(); 
+          result["action_detection"]["walk"]["realtimeLeftLeg"] = action->walk()->realtimeLeftLeg(); 
+          result["action_detection"]["walk"]["realtimeRightLeg"] = action->walk()->realtimeRightLeg();  
       }
 
       if(action->squat() != NULL){
