@@ -137,6 +137,7 @@ var messageLoop = coroutine(function*() {
                         }
                     }
                     if (ws.useJson) {
+                        delete poseDataForClient.flatbuffersData
                         messageContent = JSON.stringify(poseDataForClient)
                         ws.send(messageContent)
                     } else if (pose.flatbuffersData) {
