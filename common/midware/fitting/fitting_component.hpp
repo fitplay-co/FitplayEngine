@@ -8,13 +8,13 @@ namespace fitplay {
         private:
             fitplay::fitting fitInstance;
             fitplay::fitting mirrorFitInstance;
-            flatbuffers::Offset<actionData::Fitting> flatbuffersOffset;
+            flatbuffers::Offset<ActionData::Fitting> flatbuffersOffset;
         
         public:
             fittingComponent();
             ~fittingComponent();
             bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
-            void writeToFlatbuffers(actionData::ActionBuilder&);
+            void writeToFlatbuffers(ActionData::ActionBuilder&);
     };
 
     fittingComponent::fittingComponent(): MidwareComponent("fitting") {
@@ -32,14 +32,14 @@ namespace fitplay {
             auto p2 = mirrorFitInstance.writeFlatBuffer(builder);
             auto pl1 = fitInstance.writeFlatBufferLocal(builder);
             auto pl2 = mirrorFitInstance.writeFlatBufferLocal(builder);
-            flatbuffersOffset = actionData::CreateFitting(builder, p1, p2, pl1, pl2);
+            flatbuffersOffset = ActionData::CreateFitting(builder, p1, p2, pl1, pl2);
             return true;
         }
         
         return false;
     }
 
-    void fittingComponent::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {
+    void fittingComponent::writeToFlatbuffers(ActionData::ActionBuilder& actionBuilder) {
         actionBuilder.add_fitting(flatbuffersOffset);
     }
 }

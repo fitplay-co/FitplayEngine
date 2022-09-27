@@ -30,13 +30,13 @@ namespace actionjump {
             float frameShiftCount2 = 0;
             bool timeLock = false;
 
-            flatbuffers::Offset<actionData::Jump> flatbuffersOffset;
+            flatbuffers::Offset<ActionData::Jump> flatbuffersOffset;
 
         public:
             jump();
             ~ jump();
             bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
-            void writeToFlatbuffers(actionData::ActionBuilder&);
+            void writeToFlatbuffers(ActionData::ActionBuilder&);
             void calculateCurrent(const PoseData::Pose* data);
             void calculateTrunk();
             void calculateFoot();
@@ -59,7 +59,7 @@ namespace actionjump {
             calculateKnee();
             checkTimestamp();
 
-            flatbuffersOffset = actionData::CreateJump(builder,
+            flatbuffersOffset = ActionData::CreateJump(builder,
                                                         onTheGround,
                                                         trunkVelocity);
         }
@@ -67,7 +67,7 @@ namespace actionjump {
         return true;
     }
 
-    void jump::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {
+    void jump::writeToFlatbuffers(ActionData::ActionBuilder& actionBuilder) {
         actionBuilder.add_jump(flatbuffersOffset);
     }
 

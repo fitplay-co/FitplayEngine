@@ -30,13 +30,13 @@ namespace ground {
             float legLength = 0;
             float whichLeg = 0; //用来识别以左右哪只脚的y为准，0代表左脚，1代表右脚
             float ground_data[5];
-            flatbuffers::Offset<actionData::Ground> flatbuffersOffset;
+            flatbuffers::Offset<ActionData::Ground> flatbuffersOffset;
             
         public:
             groundLocation();
             ~groundLocation();
             bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
-            void writeToFlatbuffers(actionData::ActionBuilder&);
+            void writeToFlatbuffers(ActionData::ActionBuilder&);
             float distance_finder_z_filtered(const PoseData::Pose* data, int num1, int num2);
             void distance_finder_leg(const PoseData::Pose* data);
     };
@@ -88,7 +88,7 @@ namespace ground {
             pre_y = res_down[1];
             pre_z = z_down;
 
-            flatbuffersOffset = actionData::CreateGround(builder, ground_data[0], ground_data[1], ground_data[2], ground_data[3], ground_data[4]);
+            flatbuffersOffset = ActionData::CreateGround(builder, ground_data[0], ground_data[1], ground_data[2], ground_data[3], ground_data[4]);
             return true;
         } else if (data->type() == Input::MessageType::MessageType_ApplicationControl) {
             const ApplicationControl::Control* control = data->control();
@@ -102,7 +102,7 @@ namespace ground {
         return false;
     }
 
-    void groundLocation::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {
+    void groundLocation::writeToFlatbuffers(ActionData::ActionBuilder& actionBuilder) {
         actionBuilder.add_ground(flatbuffersOffset);
     }
 

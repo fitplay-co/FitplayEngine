@@ -13,14 +13,14 @@ namespace generalDetection {
     class generalCalculator: public Midware::MidwareComponent {
 
         private:
-            flatbuffers::Offset<actionData::General> flatbuffersOffset;
+            flatbuffers::Offset<ActionData::General> flatbuffersOffset;
             float confidence;
 
         public:
             generalCalculator();
             ~ generalCalculator();
             bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
-            void writeToFlatbuffers(actionData::ActionBuilder&);
+            void writeToFlatbuffers(ActionData::ActionBuilder&);
             void calculateConfidence(const PoseData::Pose* data);
     };
 
@@ -32,13 +32,13 @@ namespace generalDetection {
         if (data->type() == Input::MessageType::MessageType_Pose) {
             const PoseData::Pose* pose = data->pose();
             calculateConfidence(pose);
-            flatbuffersOffset = actionData::CreateGeneral(builder,
+            flatbuffersOffset = ActionData::CreateGeneral(builder,
                                                         confidence);
         }
         return true;
     }
 
-    void generalCalculator::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {
+    void generalCalculator::writeToFlatbuffers(ActionData::ActionBuilder& actionBuilder) {
         actionBuilder.add_general(flatbuffersOffset);
     }
 

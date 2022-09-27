@@ -32,8 +32,8 @@ namespace fitplay {
             vec3 readLandmarkPointVectorMirror3D(int point, const PoseData::Pose* data);
             vec3 readLandmarkPointVector2D(int point, const PoseData::Pose* data);
             vec3 readLandmarkPointVectorMirror2D(int point, const PoseData::Pose* data);
-            flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>>> writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder);
-            flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>>> writeFlatBufferLocal(flatbuffers::FlatBufferBuilder& resultBuilder);
+            flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ActionData::Joint>>> writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder);
+            flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ActionData::Joint>>> writeFlatBufferLocal(flatbuffers::FlatBufferBuilder& resultBuilder);
     };
 
     void fitting::process(const PoseData::Pose* data) {
@@ -148,10 +148,10 @@ namespace fitplay {
                     + landmarkData[R_SHOULDER][1])/2.0f, (landmarkData[L_SHOULDER][2] + landmarkData[R_SHOULDER][2])/2.0f);
     }
 
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>>> fitting::writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder) {
-        std::vector<flatbuffers::Offset<actionData::Joint>> nodeVector;
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ActionData::Joint>>> fitting::writeFlatBuffer(flatbuffers::FlatBufferBuilder& resultBuilder) {
+        std::vector<flatbuffers::Offset<ActionData::Joint>> nodeVector;
         for(int i = 0; i < jointPointSize; i ++) {
-            auto nodeOffset = actionData::CreateJointDirect(resultBuilder,
+            auto nodeOffset = ActionData::CreateJointDirect(resultBuilder,
                 fkInstance.jointPoints[i].fkRotation.w, 
                 fkInstance.jointPoints[i].fkRotation.x, 
                 fkInstance.jointPoints[i].fkRotation.y, 
@@ -162,10 +162,10 @@ namespace fitplay {
         return resultBuilder.CreateVector(nodeVector);
     }
 
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<actionData::Joint>>> fitting::writeFlatBufferLocal(flatbuffers::FlatBufferBuilder& resultBuilder) {
-        std::vector<flatbuffers::Offset<actionData::Joint>> nodeVector;
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<ActionData::Joint>>> fitting::writeFlatBufferLocal(flatbuffers::FlatBufferBuilder& resultBuilder) {
+        std::vector<flatbuffers::Offset<ActionData::Joint>> nodeVector;
         for(int i = 0; i < jointPointSize; i ++) {
-            auto nodeOffset = actionData::CreateJointDirect(resultBuilder,
+            auto nodeOffset = ActionData::CreateJointDirect(resultBuilder,
                 fkInstance.jointPoints[i].jointLocalRotation.w, 
                 fkInstance.jointPoints[i].jointLocalRotation.x, 
                 fkInstance.jointPoints[i].jointLocalRotation.y, 

@@ -16,8 +16,8 @@ namespace actionDetection {
 
             bool init = false;
 
-            flatbuffers::Offset<actionData::Stand> standFlatbuffersOffset;
-            flatbuffers::Offset<actionData::Walk> walkFlatbuffersOffset;
+            flatbuffers::Offset<ActionData::Stand> standFlatbuffersOffset;
+            flatbuffers::Offset<ActionData::Walk> walkFlatbuffersOffset;
 
             // stand travel mode shift params
             // 0 : stand
@@ -41,7 +41,7 @@ namespace actionDetection {
             void calculateMode(flatbuffers::FlatBufferBuilder& builder);
             void calculateMock(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder);
             bool process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder);
-            void writeToFlatbuffers(actionData::ActionBuilder&);
+            void writeToFlatbuffers(ActionData::ActionBuilder&);
     };
 
     actionDetectionManager::actionDetectionManager() {};
@@ -184,7 +184,7 @@ namespace actionDetection {
                 resetModeStatusBit();
             }
         }
-        standFlatbuffersOffset = actionData::CreateStand(builder, mode);
+        standFlatbuffersOffset = ActionData::CreateStand(builder, mode);
     }
 
     void actionDetectionManager::calculateMock(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
@@ -196,7 +196,7 @@ namespace actionDetection {
         //             meanData->at(currentLeftHipAngMean), meanData->at(currentRightHipAngMean), currentLeftStepLength,
         //             currentRightStepLength, currentLeftProgress, currentRightProgress, currentTurnAng, currentStepRate,
         //             currentStepLength, currentVelocity, currentVelocityThreshold, currentRealTimeLeftStatus, currentRealTimeRightStatus};
-        walkFlatbuffersOffset = actionData::CreateWalk(builder, 
+        walkFlatbuffersOffset = ActionData::CreateWalk(builder, 
                                                     int(walkOffset.at(0)),
                                                     int(walkOffset.at(1)),
                                                     walkOffset.at(2),
@@ -216,7 +216,7 @@ namespace actionDetection {
                                                     walkOffset.at(16));
     }
 
-    void actionDetectionManager::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {
+    void actionDetectionManager::writeToFlatbuffers(ActionData::ActionBuilder& actionBuilder) {
         actionBuilder.add_stand(standFlatbuffersOffset);
         actionBuilder.add_walk(walkFlatbuffersOffset);
         // walkInstance.writeToFlatbuffers(actionBuilder);

@@ -20,12 +20,12 @@ namespace actionsquat {
             float squat_status = 0;
             float legLength = 0;
             float preLegLength = 0;
-            flatbuffers::Offset<actionData::Squat> flatbuffersOffset;
+            flatbuffers::Offset<ActionData::Squat> flatbuffersOffset;
         public:
             squat();
             ~squat();
             bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
-            void writeToFlatbuffers(actionData::ActionBuilder&);
+            void writeToFlatbuffers(ActionData::ActionBuilder&);
             void calculate_relativeHip_distance(const PoseData::Pose* data);
             void calculate_squat_status();
     };
@@ -39,13 +39,13 @@ namespace actionsquat {
             calculate_relativeHip_distance(pose);
             calculate_squat_status();
 
-            flatbuffersOffset = actionData::CreateSquat(builder, squat_status);
+            flatbuffersOffset = ActionData::CreateSquat(builder, squat_status);
         }
         
         return true;
     }
 
-    void squat::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {
+    void squat::writeToFlatbuffers(ActionData::ActionBuilder& actionBuilder) {
         actionBuilder.add_squat(flatbuffersOffset);
     }
 
