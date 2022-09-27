@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <chrono>
 #include "fitting/fitting_component.hpp"
 #include "poseData_generated.h"
 #include "actionData_generated.h"
@@ -59,6 +60,8 @@ namespace fitplayBridge {
   }
 
   void BridgeClass::processData(const char* inputData) {
+    auto processingTime = std::chrono::duration_cast<std::chrono::microseconds>
+        (std::chrono::system_clock::now().time_since_epoch()).count();
     const Input::InputMessage* inputMessage = Input::GetInputMessage(&inputData[0]);
     hasOutputMessage = false;
     vector<int> componentIndexWithOutput;
@@ -109,11 +112,19 @@ namespace fitplayBridge {
       auto typeOffset = outputData.CreateString("application_frame");
       auto sensorTypeOffset = outputData.CreateString("camera");
 
+      auto beforeSendTime = std::chrono::duration_cast<std::chrono::microseconds>
+        (std::chrono::system_clock::now().time_since_epoch()).count();
+      Output::TimeProfilingBuilder timeProfilingBuilder(outputData);
+      timeProfilingBuilder.add_processingTime(processingTime);
+      timeProfilingBuilder.add_beforeSendTime(beforeSendTime);
+      auto timeProfilingOffset = timeProfilingBuilder.Finish();
+
       Output::OutputMessageBuilder outputBuilder(outputData);
       outputBuilder.add_type(typeOffset);
       outputBuilder.add_sensorType(sensorTypeOffset);
       outputBuilder.add_pose(poseOffset);
       outputBuilder.add_detectionResult(actionOffset);
+      outputBuilder.add_timeProfiling(timeProfilingOffset);
       outputData.Finish(outputBuilder.Finish());  
     }
   }
@@ -208,6 +219,7 @@ namespace fitplayBridge {
       const actionData::Action* action = outputMessage->detectionResult();
 
       if(action->fitting() != NULL){
+          cout << __FUNCTION__ << ": has fitting output" << endl;
           auto rotation = action->fitting()->rotation();
           if(rotation != NULL){
               vector<json> rotation_json_vec;
@@ -273,7 +285,8 @@ namespace fitplayBridge {
           }
       }
 
-      if(action->ground() != NULL){
+      if(action->ground() != NULL) {
+          cout << __FUNCTION__ << ": has ground output" << endl;
           result["ground_location"]["x"] = action->ground()->x();
           result["ground_location"]["y"] = action->ground()->y();
           result["ground_location"]["z"] = action->ground()->z();
@@ -304,25 +317,30 @@ namespace fitplayBridge {
       }
 
       if(action->squat() != NULL){
+          cout << __FUNCTION__ << ": has squat output" << endl;
           result["action_detection"]["squat"]["squat"] = (int)(action->squat()->status());
       }
 
       if(action->jump() != NULL){
+          cout << __FUNCTION__ << ": has jump output" << endl;
           result["action_detection"]["jump"]["onTheGround"] = action->jump()->onTheGround();
           result["action_detection"]["jump"]["velocity"] = action->jump()->velocity();
       }
 
       if(action->gaze() != NULL){
+          cout << __FUNCTION__ << ": has gaze output" << endl;
           result["gaze_tracking"]["x"] = action->gaze()->x();
           result["gaze_tracking"]["y"] = action->gaze()->y();
           result["gaze_tracking"]["z"] = action->gaze()->z();
       }
 
       if(action->general() != NULL){
+          cout << __FUNCTION__ << ": has general output" << endl;
           result["general"]["confidence"] = action->general()->confidence();
       }
 
       if(action->stand() != NULL){
+          cout << __FUNCTION__ << ": has stand output" << endl;
            result["stand_detection"]["mode"] = action->stand()->mode();
         }
     }
