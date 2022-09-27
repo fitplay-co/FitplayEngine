@@ -17,7 +17,7 @@ namespace Midware {
             ~MidwareComponent();
             bool handleInput(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
             virtual bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
-            virtual void writeToFlatbuffers(actionData::ActionBuilder&);
+            virtual void writeToFlatbuffers(ActionData::ActionBuilder&);
     };
 
     MidwareComponent::MidwareComponent(string name) {
@@ -59,7 +59,7 @@ namespace Midware {
         return false;
     }
 
-    void MidwareComponent::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {
+    void MidwareComponent::writeToFlatbuffers(ActionData::ActionBuilder& actionBuilder) {
         
     }
 }

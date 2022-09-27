@@ -16,7 +16,7 @@ namespace actionDetection {
             actionDetectionComponent();
             ~actionDetectionComponent();
             bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
-            void writeToFlatbuffers(actionData::ActionBuilder&);
+            void writeToFlatbuffers(ActionData::ActionBuilder&);
     };
 
     actionDetectionComponent::actionDetectionComponent(): MidwareComponent("action_detection") {}
@@ -36,7 +36,7 @@ namespace actionDetection {
         return false;
     }
 
-    void actionDetectionComponent::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {
+    void actionDetectionComponent::writeToFlatbuffers(ActionData::ActionBuilder& actionBuilder) {
         managerInstance.writeToFlatbuffers(actionBuilder);
         jumpInstance.writeToFlatbuffers(actionBuilder);
         squatInstance.writeToFlatbuffers(actionBuilder);

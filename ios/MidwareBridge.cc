@@ -143,7 +143,7 @@ const int bridge_perform (void* handler, MidWareLandmark* landmarks, int num,
         cout << __FUNCTION__ << ": flatbuffer size: " << flatbuffer_size <<endl;
         uint8_t* flatbuffer = bridge_handler->getCurrentBuffer();
 
-        const actionData::Action* action = actionData::GetAction(flatbuffer);
+        const ActionData::Action* action = ActionData::GetAction(flatbuffer);
 
         if(action->fitting() != NULL){
             cout << __FUNCTION__ << ": has fitting output" << endl;

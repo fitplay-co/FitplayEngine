@@ -21,12 +21,12 @@ namespace gaze {
             float centerPointY = 240;
             float f_dx = 500; //  f/dx
             float f_dy = 900;
-            flatbuffers::Offset<actionData::Gaze> flatbuffersOffset;
+            flatbuffers::Offset<ActionData::Gaze> flatbuffersOffset;
         public:
             gazeTracking();
             ~gazeTracking();
             bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
-            void writeToFlatbuffers(actionData::ActionBuilder&);
+            void writeToFlatbuffers(ActionData::ActionBuilder&);
             float distance_finder_z_filtered(const PoseData::Pose* data, int num1, int num2);
     };
 
@@ -51,7 +51,7 @@ namespace gaze {
             pre_y = res_y;
             pre_z = z;
 
-            flatbuffersOffset = actionData::CreateGaze(builder, res_x, res_y, z);
+            flatbuffersOffset = ActionData::CreateGaze(builder, res_x, res_y, z);
 
             return true;
         }
@@ -59,7 +59,7 @@ namespace gaze {
         return false;
     }
 
-    void gazeTracking::writeToFlatbuffers(actionData::ActionBuilder& actionBuilder) {
+    void gazeTracking::writeToFlatbuffers(ActionData::ActionBuilder& actionBuilder) {
         actionBuilder.add_gaze(flatbuffersOffset);
     }
 

@@ -74,7 +74,7 @@ namespace fitplayBridge {
 
     if (componentIndexWithOutput.size() > 0) {
       hasOutputMessage = true;
-      actionData::ActionBuilder actionBuilder(outputData);
+      ActionData::ActionBuilder actionBuilder(outputData);
       for (int i = 0; i < componentIndexWithOutput.size(); i++) {
         midwareManager.componentList.at(componentIndexWithOutput.at(i))->writeToFlatbuffers(actionBuilder);    
         }
@@ -216,7 +216,7 @@ namespace fitplayBridge {
       result["pose_landmark"]["keypoints3D"] = keypoints3d_json_vec;
       result["pose_landmark"]["version"] = FITPLAY_ENGINE_VERSION;
 
-      const actionData::Action* action = outputMessage->detectionResult();
+      const ActionData::Action* action = outputMessage->detectionResult();
 
       if(action->fitting() != NULL){
           cout << __FUNCTION__ << ": has fitting output" << endl;
