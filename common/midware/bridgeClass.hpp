@@ -336,7 +336,7 @@ namespace fitplayBridge {
 
       if(action->general() != NULL){
           cout << __FUNCTION__ << ": has general output" << endl;
-          result["general"]["confidence"] = action->general()->confidence();
+          result["general_detection"]["confidence"] = action->general()->confidence();
       }
 
       if(action->stand() != NULL){
