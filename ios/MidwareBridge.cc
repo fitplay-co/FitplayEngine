@@ -118,7 +118,7 @@ const int bridge_perform (void* handler, MidWareLandmark* landmarks, int num,
     vector<json> keypoints_json_vec;
     vector<json> keypoints3d_json_vec;
 
-    for(int i = 0; i < num; i++){
+    for(int i = 0; i < MEDIAPIPE_LANDMARK_SIZE; i++){
         auto name = builder.CreateString(to_string(i).c_str());
         int landmarkIndex = num < MEDIAPIPE_LANDMARK_SIZE ? fitplayToMediapipeLandmarkIndexMap[i] : i;
         auto point = PoseData::CreatePoint(builder, landmarks[landmarkIndex].x, landmarks[landmarkIndex].y, landmarks[landmarkIndex].z, landmarks[landmarkIndex].confidence, name);
@@ -137,7 +137,7 @@ const int bridge_perform (void* handler, MidWareLandmark* landmarks, int num,
     }
     auto keypoints = builder.CreateVector(keypoints_vec);
 
-    for(int i = 0; i < num3d; i++){
+    for(int i = 0; i < MEDIAPIPE_LANDMARK_SIZE; i++){
         auto name = builder.CreateString(to_string(i).c_str());
         int landmarkIndex = num3d < MEDIAPIPE_LANDMARK_SIZE ? fitplayToMediapipeLandmarkIndexMap[i] : i;
         auto point3d = PoseData::CreatePoint(builder, landmarks3d[landmarkIndex].x, landmarks3d[landmarkIndex].y, landmarks3d[landmarkIndex].z, landmarks[landmarkIndex].confidence, name);
