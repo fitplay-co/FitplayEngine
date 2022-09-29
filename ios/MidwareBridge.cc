@@ -4,6 +4,7 @@
 #include <chrono>
 
 #define FITPLAY_ENGINE_VERSION "0.1.0"
+#define MEDIAPIPE_LANDMARK_SIZE 33
 
 static const string landmark_name[33] = {
     "nose",
@@ -40,6 +41,42 @@ static const string landmark_name[33] = {
     "left_foot_index",
     "right_foot_index"
 };
+
+static const int fitplayToMediapipeLandmarkIndexMap[33] = {
+    16, // nose[0]
+    16, // left_eye_inner[1]
+    16, // left_eye[2]
+    16, // left_eye_outer[3]
+    16, // right_eye_inner[4]
+    16, // right_eye[5]
+    16, // right_eye_outer[6]
+    16, // left_ear[7]
+    16, // right_ear[8]
+    16, // mouth_left[9]
+    16, // mouth_right[10]
+    5, // left_shoulder[11]
+    2, // right_shoulder[12]
+    6, // left_elbow[13]
+    3, // right_elbow[14]
+    7, // left_wrist[15]
+    4, // right_wrist[16]
+    18, // left_pinky[17]
+    17, // right_pinky[18]
+    18, // left_index[19]
+    17, // right_index[20]
+    18, // left_thumb[21]
+    17, // right_thumb[22]
+    11, // left_hip[23]
+    8, // right_hip[24]
+    12, // left_knee[25]
+    9, // right_knee[26]
+    13, // left_ankle[27]
+    10, // right_ankle[28]
+    20, // left_heel[29]
+    19, // right_heel[30]
+    20, // left_foot_index[31]
+    19, // right_foot_index[32]
+}; 
     
 void* bridge_create(){
     fitplayBridge::BridgeClass* bridge_handler = new fitplayBridge::BridgeClass();
@@ -83,13 +120,14 @@ const int bridge_perform (void* handler, MidWareLandmark* landmarks, int num,
 
     for(int i = 0; i < num; i++){
         auto name = builder.CreateString(to_string(i).c_str());
-        auto point = PoseData::CreatePoint(builder, landmarks[i].x, landmarks[i].y, landmarks[i].z, 1.0f, name);
+        int landmarkIndex = num < MEDIAPIPE_LANDMARK_SIZE ? fitplayToMediapipeLandmarkIndexMap[i] : i;
+        auto point = PoseData::CreatePoint(builder, landmarks[landmarkIndex].x, landmarks[landmarkIndex].y, landmarks[landmarkIndex].z, landmarks[landmarkIndex].confidence, name);
         json keypoint_json;
-        keypoint_json["x"] = landmarks[i].x;
-        keypoint_json["y"] = landmarks[i].y;
-        keypoint_json["z"] = landmarks[i].z;
-        keypoint_json["score"] = 1.0f;
-        if(i<33){
+        keypoint_json["x"] = landmarks[landmarkIndex].x;
+        keypoint_json["y"] = landmarks[landmarkIndex].y;
+        keypoint_json["z"] = landmarks[landmarkIndex].z;
+        keypoint_json["score"] = landmarks[landmarkIndex].confidence;
+        if(i < MEDIAPIPE_LANDMARK_SIZE){
             keypoint_json["name"] = landmark_name[i];
         }else{
             keypoint_json["name"] = "unknown";
@@ -101,13 +139,14 @@ const int bridge_perform (void* handler, MidWareLandmark* landmarks, int num,
 
     for(int i = 0; i < num3d; i++){
         auto name = builder.CreateString(to_string(i).c_str());
-        auto point3d = PoseData::CreatePoint(builder, landmarks3d[i].x, landmarks3d[i].y, landmarks3d[i].z, 1.0f, name);
+        int landmarkIndex = num3d < MEDIAPIPE_LANDMARK_SIZE ? fitplayToMediapipeLandmarkIndexMap[i] : i;
+        auto point3d = PoseData::CreatePoint(builder, landmarks3d[landmarkIndex].x, landmarks3d[landmarkIndex].y, landmarks3d[landmarkIndex].z, landmarks[landmarkIndex].confidence, name);
         json keypoint_json;
-        keypoint_json["x"] = landmarks3d[i].x;
-        keypoint_json["y"] = landmarks3d[i].y;
-        keypoint_json["z"] = landmarks3d[i].z;
-        keypoint_json["score"] = 0.999f;
-        if(i<33){
+        keypoint_json["x"] = landmarks3d[landmarkIndex].x;
+        keypoint_json["y"] = landmarks3d[landmarkIndex].y;
+        keypoint_json["z"] = landmarks3d[landmarkIndex].z;
+        keypoint_json["score"] = landmarks[landmarkIndex].confidence;
+        if(i < MEDIAPIPE_LANDMARK_SIZE){
             keypoint_json["name"] = landmark_name[i];
         }else{
             keypoint_json["name"] = "unknown";
