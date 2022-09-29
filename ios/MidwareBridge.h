@@ -25,12 +25,14 @@ typedef struct MidWareLandmark{
     float x;
     float y;
     float z;
+    float confidence;
 }MidWareLandmark;
 
 typedef struct MidWareLandmark3D{
     float x;
     float y;
     float z;
+    float confidence;
 }MidWareLandmark3D;
 
 /**
