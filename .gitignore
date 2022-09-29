@@ -117,14 +117,14 @@ dist
 */*.DS_Store
 *.DS_Store
 
-# wasm
-modules/build
-modules/vendor/emscripten
-modules/legacy
-
 .vscode/
 
 app/.vscode/
 
 */build/*
 modules/test/build/*
+
+*/bazel-*
+bazel-*
+build/
+obj/
