@@ -27,7 +27,7 @@ namespace actionDetection {
         public:
             actionDetectionCalculator();
             ~actionDetectionCalculator();
-            bool process(const Input::InputMessage*);
+            bool process(const OsInput::InputMessage*);
             int addSubscribeAngle(subscribeAngle*);
             int addSubscribeDistance(subscribeDistance*);
             int addFeatureVelocity(featureVelocity*);
@@ -56,8 +56,8 @@ namespace actionDetection {
     
     actionDetectionCalculator::~actionDetectionCalculator() {}
 
-    bool actionDetectionCalculator::process(const Input::InputMessage* data) {
-        if (data->type() == Input::MessageType::MessageType_Pose) {
+    bool actionDetectionCalculator::process(const OsInput::InputMessage* data) {
+        if (data->type() == OsInput::MessageType::MessageType_Pose) {
             const PoseData::Pose* pose = data->pose();
             calculateSubscribe(pose);
             calculateFeature(pose);

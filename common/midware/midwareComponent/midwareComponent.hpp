@@ -15,8 +15,8 @@ namespace Midware {
         public:
             MidwareComponent(string);
             ~MidwareComponent();
-            bool handleInput(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
-            virtual bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
+            bool handleInput(const OsInput::InputMessage*, flatbuffers::FlatBufferBuilder&);
+            virtual bool process(const OsInput::InputMessage*, flatbuffers::FlatBufferBuilder&);
             virtual void writeToFlatbuffers(ActionData::ActionBuilder&);
     };
 
@@ -35,15 +35,15 @@ namespace Midware {
         }
     }
 
-    bool MidwareComponent::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
+    bool MidwareComponent::process(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
         return false;
     }
 
-    bool MidwareComponent::handleInput(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
-        if (data->type() == Input::MessageType::MessageType_Pose) {
+    bool MidwareComponent::handleInput(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
+        if (data->type() == OsInput::MessageType::MessageType_Pose) {
             return subscriberCount > 0 ? this->process(data, builder) : false;
             // return this->process(data, builder);
-        } else if (data->type() == Input::MessageType::MessageType_ApplicationControl) {
+        } else if (data->type() == OsInput::MessageType::MessageType_ApplicationControl) {
             const ApplicationControl::Control* control = data->control(); 
             if (control->featureId()->str() != name) {
                 return false;

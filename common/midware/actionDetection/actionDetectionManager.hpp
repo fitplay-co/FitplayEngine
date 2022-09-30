@@ -39,16 +39,16 @@ namespace actionDetection {
             ~actionDetectionManager();
             void addActionDetectionCalculator();
             void calculateMode(flatbuffers::FlatBufferBuilder& builder);
-            void calculateMock(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder);
-            bool process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder);
+            void calculateMock(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder);
+            bool process(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder);
             void writeToFlatbuffers(ActionData::ActionBuilder&);
     };
 
     actionDetectionManager::actionDetectionManager() {};
     actionDetectionManager::~actionDetectionManager() {};
 
-    bool actionDetectionManager::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
-        if (data->type() == Input::MessageType::MessageType_Pose) {
+    bool actionDetectionManager::process(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
+        if (data->type() == OsInput::MessageType::MessageType_Pose) {
 
             if(init == false) {
                 addActionDetectionCalculator();
@@ -62,7 +62,7 @@ namespace actionDetection {
 
             return true;
         }
-        if (data->type() == Input::MessageType::MessageType_ApplicationControl) {
+        if (data->type() == OsInput::MessageType::MessageType_ApplicationControl) {
             const ApplicationControl::Control* control = data->control(); 
             if (control->featureId()->str() == "action_detection") {
                 if (control->action()->str() == "set_player") {
@@ -187,7 +187,7 @@ namespace actionDetection {
         standFlatbuffersOffset = ActionData::CreateStand(builder, mode);
     }
 
-    void actionDetectionManager::calculateMock(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
+    void actionDetectionManager::calculateMock(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
         vector<float> walkOffset = walkInstance.getWalkOffset();
 
          mockInstance.process(data, walkOffset);

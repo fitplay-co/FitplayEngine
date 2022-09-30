@@ -35,7 +35,7 @@ namespace ground {
         public:
             groundLocation();
             ~groundLocation();
-            bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
+            bool process(const OsInput::InputMessage*, flatbuffers::FlatBufferBuilder&);
             void writeToFlatbuffers(ActionData::ActionBuilder&);
             float distance_finder_z_filtered(const PoseData::Pose* data, int num1, int num2);
             void distance_finder_leg(const PoseData::Pose* data);
@@ -44,8 +44,8 @@ namespace ground {
     groundLocation::groundLocation(): MidwareComponent("ground_location") {}
     groundLocation::~groundLocation() {}
 
-    bool groundLocation::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
-        if (data->type() == Input::MessageType::MessageType_Pose) {
+    bool groundLocation::process(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
+        if (data->type() == OsInput::MessageType::MessageType_Pose) {
             const PoseData::Pose* pose = data->pose();
             mat3 cameraParam = mat3(f_dx, 0, centerPointX,
                                 0, f_dy, centerPointY,
@@ -90,7 +90,7 @@ namespace ground {
 
             flatbuffersOffset = ActionData::CreateGround(builder, ground_data[0], ground_data[1], ground_data[2], ground_data[3], ground_data[4]);
             return true;
-        } else if (data->type() == Input::MessageType::MessageType_ApplicationControl) {
+        } else if (data->type() == OsInput::MessageType::MessageType_ApplicationControl) {
             const ApplicationControl::Control* control = data->control();
             if (control->action()->str() == "reset") {
                 startX = pre_x;

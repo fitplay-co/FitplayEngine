@@ -13,7 +13,7 @@ namespace fitplay {
         public:
             fittingComponent();
             ~fittingComponent();
-            bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
+            bool process(const OsInput::InputMessage*, flatbuffers::FlatBufferBuilder&);
             void writeToFlatbuffers(ActionData::ActionBuilder&);
     };
 
@@ -23,8 +23,8 @@ namespace fitplay {
     }
     fittingComponent::~fittingComponent() {}
 
-    bool fittingComponent::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
-        if (data->type() == Input::MessageType::MessageType_Pose) {
+    bool fittingComponent::process(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
+        if (data->type() == OsInput::MessageType::MessageType_Pose) {
             const PoseData::Pose* pose = data->pose();
             fitInstance.process(pose);
             mirrorFitInstance.process(pose);

@@ -33,7 +33,7 @@ namespace actionDetection {
         public:
             mockManager();
             ~mockManager();
-            void process(const Input::InputMessage* data, vector<float>&);
+            void process(const OsInput::InputMessage* data, vector<float>&);
             void recordWalkCycle(vector<float>, int, int);
             void mockWalkCycle(vector<float>&);
             void calculateWalkConfidence(const PoseData::Pose* data);
@@ -42,7 +42,7 @@ namespace actionDetection {
     mockManager::mockManager() {}
     mockManager::~mockManager() {}
     
-    void mockManager::process(const Input::InputMessage* data, vector<float>& walkOffset) {
+    void mockManager::process(const OsInput::InputMessage* data, vector<float>& walkOffset) {
         // walkOffset = { currentLeftStatus, currentRightStatus, currentLeftStepRate, currentRightStepRate,
         //             meanData->at(currentLeftHipAngMean), meanData->at(currentRightHipAngMean), currentLeftStepLength,
         //             currentRightStepLength, currentLeftProgress, currentRightProgress, currentTurnAng, currentStepRate,

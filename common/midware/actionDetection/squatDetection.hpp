@@ -24,7 +24,7 @@ namespace actionsquat {
         public:
             squat();
             ~squat();
-            bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
+            bool process(const OsInput::InputMessage*, flatbuffers::FlatBufferBuilder&);
             void writeToFlatbuffers(ActionData::ActionBuilder&);
             void calculate_relativeHip_distance(const PoseData::Pose* data);
             void calculate_squat_status();
@@ -33,8 +33,8 @@ namespace actionsquat {
     squat::squat(): MidwareComponent("squat") {}
     squat::~squat() {}
 
-    bool squat::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
-        if (data->type() == Input::MessageType::MessageType_Pose) {
+    bool squat::process(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
+        if (data->type() == OsInput::MessageType::MessageType_Pose) {
             const PoseData::Pose* pose = data->pose();
             calculate_relativeHip_distance(pose);
             calculate_squat_status();

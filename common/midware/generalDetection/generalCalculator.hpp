@@ -19,7 +19,7 @@ namespace generalDetection {
         public:
             generalCalculator();
             ~ generalCalculator();
-            bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
+            bool process(const OsInput::InputMessage*, flatbuffers::FlatBufferBuilder&);
             void writeToFlatbuffers(ActionData::ActionBuilder&);
             void calculateConfidence(const PoseData::Pose* data);
     };
@@ -28,8 +28,8 @@ namespace generalDetection {
 
     generalCalculator::~generalCalculator() {}
 
-    bool generalCalculator::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
-        if (data->type() == Input::MessageType::MessageType_Pose) {
+    bool generalCalculator::process(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
+        if (data->type() == OsInput::MessageType::MessageType_Pose) {
             const PoseData::Pose* pose = data->pose();
             calculateConfidence(pose);
             flatbuffersOffset = ActionData::CreateGeneral(builder,

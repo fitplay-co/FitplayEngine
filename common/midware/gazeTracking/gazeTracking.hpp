@@ -25,7 +25,7 @@ namespace gaze {
         public:
             gazeTracking();
             ~gazeTracking();
-            bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
+            bool process(const OsInput::InputMessage*, flatbuffers::FlatBufferBuilder&);
             void writeToFlatbuffers(ActionData::ActionBuilder&);
             float distance_finder_z_filtered(const PoseData::Pose* data, int num1, int num2);
     };
@@ -33,8 +33,8 @@ namespace gaze {
     gazeTracking::gazeTracking(): MidwareComponent("gaze_tracking") {}
     gazeTracking::~gazeTracking() {}
 
-    bool gazeTracking::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
-        if (data->type() == Input::MessageType::MessageType_Pose) {
+    bool gazeTracking::process(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
+        if (data->type() == OsInput::MessageType::MessageType_Pose) {
             const PoseData::Pose* pose = data->pose();
             mat3 cameraParam = mat3(f_dx, 0, centerPointX,
                                 0, f_dy, centerPointY,
