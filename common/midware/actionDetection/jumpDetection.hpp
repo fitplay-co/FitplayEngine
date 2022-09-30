@@ -35,7 +35,7 @@ namespace actionjump {
         public:
             jump();
             ~ jump();
-            bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
+            bool process(const OsInput::InputMessage*, flatbuffers::FlatBufferBuilder&);
             void writeToFlatbuffers(ActionData::ActionBuilder&);
             void calculateCurrent(const PoseData::Pose* data);
             void calculateTrunk();
@@ -50,8 +50,8 @@ namespace actionjump {
 
     jump::~jump() {}
 
-    bool jump::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
-        if (data->type() == Input::MessageType::MessageType_Pose) {
+    bool jump::process(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
+        if (data->type() == OsInput::MessageType::MessageType_Pose) {
             const PoseData::Pose* pose = data->pose();
             calculateCurrent(pose);
             calculateTrunk();

@@ -15,21 +15,21 @@ namespace actionDetection {
         public:
             actionDetectionComponent();
             ~actionDetectionComponent();
-            bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
+            bool process(const OsInput::InputMessage*, flatbuffers::FlatBufferBuilder&);
             void writeToFlatbuffers(ActionData::ActionBuilder&);
     };
 
     actionDetectionComponent::actionDetectionComponent(): MidwareComponent("action_detection") {}
     actionDetectionComponent::~actionDetectionComponent() {}
 
-    bool actionDetectionComponent::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
-        if (data->type() == Input::MessageType::MessageType_Pose) {
+    bool actionDetectionComponent::process(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
+        if (data->type() == OsInput::MessageType::MessageType_Pose) {
             managerInstance.process(data, builder);
             jumpInstance.process(data, builder);
             squatInstance.process(data, builder);
             return true;
         }
-        if (data->type() == Input::MessageType::MessageType_ApplicationControl) {
+        if (data->type() == OsInput::MessageType::MessageType_ApplicationControl) {
             managerInstance.process(data, builder);
         }
         

@@ -162,9 +162,9 @@ const int bridge_perform (void* handler, MidWareLandmark* landmarks, int num,
     pose_builder.add_keypoints3D(keypoints3d);
     auto pose = pose_builder.Finish();
 
-    Input::InputMessageBuilder input_builder(builder);
+    OsInput::InputMessageBuilder input_builder(builder);
     input_builder.add_pose(pose);
-    input_builder.add_type(Input::MessageType::MessageType_Pose);
+    input_builder.add_type(OsInput::MessageType::MessageType_Pose);
     auto input_msg = input_builder.Finish();
 
     builder.Finish(input_msg);
@@ -369,8 +369,8 @@ const int bridge_process_request(void* handler, json app_json){
         auto id = builder.CreateString(id_str);
         auto app_client = ApplicationClient::CreateClient(builder, id);
         
-        Input::InputMessageBuilder input_builder(builder);
-        input_builder.add_type(Input::MessageType::MessageType_ApplicationClient);
+        OsInput::InputMessageBuilder input_builder(builder);
+        input_builder.add_type(OsInput::MessageType::MessageType_ApplicationClient);
         input_builder.add_client(app_client);
         auto input_msg = input_builder.Finish();
         builder.Finish(input_msg);
@@ -391,8 +391,8 @@ const int bridge_process_request(void* handler, json app_json){
         auto control_data = ApplicationControl::CreateControlData(builder, fps, height);
         auto app_control = ApplicationControl::CreateControl(builder, feature_id, action, control_data);
 
-        Input::InputMessageBuilder input_builder(builder);
-        input_builder.add_type(Input::MessageType::MessageType_ApplicationControl);
+        OsInput::InputMessageBuilder input_builder(builder);
+        input_builder.add_type(OsInput::MessageType::MessageType_ApplicationControl);
         input_builder.add_control(app_control);
         auto input_msg = input_builder.Finish();
         builder.Finish(input_msg);

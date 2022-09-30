@@ -62,7 +62,7 @@ namespace fitplayBridge {
   void BridgeClass::processData(const char* inputData) {
     auto processingTime = std::chrono::duration_cast<std::chrono::microseconds>
         (std::chrono::system_clock::now().time_since_epoch()).count();
-    const Input::InputMessage* inputMessage = Input::GetInputMessage(&inputData[0]);
+    const OsInput::InputMessage* inputMessage = OsInput::GetInputMessage(&inputData[0]);
     hasOutputMessage = false;
     vector<int> componentIndexWithOutput;
     for (int i = 0; i < midwareManager.componentList.size(); i++) {
@@ -82,7 +82,7 @@ namespace fitplayBridge {
 
       std::vector<flatbuffers::Offset<PoseData::Point>> keypoints;
       std::vector<flatbuffers::Offset<PoseData::Point>> keypoints3D;
-      if (inputMessage->type() == Input::MessageType::MessageType_Pose) {
+      if (inputMessage->type() == OsInput::MessageType::MessageType_Pose) {
         const PoseData::Pose* pose = inputMessage->pose();
         for (int i = 0; i < pose->keypoints()->size(); i++) {
           keypoints.push_back(PoseData::CreatePoint(outputData,
@@ -103,7 +103,7 @@ namespace fitplayBridge {
       auto keypointsOffset = outputData.CreateVector(keypoints);
       auto keypointsOffset3D = outputData.CreateVector(keypoints3D);
       PoseData::PoseBuilder poseBuilder(outputData);
-      if (inputMessage->type() == Input::MessageType::MessageType_Pose) {
+      if (inputMessage->type() == OsInput::MessageType::MessageType_Pose) {
         poseBuilder.add_keypoints(keypointsOffset);
         poseBuilder.add_keypoints3D(keypointsOffset3D);
       }
@@ -114,12 +114,12 @@ namespace fitplayBridge {
 
       auto beforeSendTime = std::chrono::duration_cast<std::chrono::microseconds>
         (std::chrono::system_clock::now().time_since_epoch()).count();
-      Output::TimeProfilingBuilder timeProfilingBuilder(outputData);
+      OsOutput::TimeProfilingBuilder timeProfilingBuilder(outputData);
       timeProfilingBuilder.add_processingTime(processingTime);
       timeProfilingBuilder.add_beforeSendTime(beforeSendTime);
       auto timeProfilingOffset = timeProfilingBuilder.Finish();
 
-      Output::OutputMessageBuilder outputBuilder(outputData);
+      OsOutput::OutputMessageBuilder outputBuilder(outputData);
       outputBuilder.add_type(typeOffset);
       outputBuilder.add_sensorType(sensorTypeOffset);
       outputBuilder.add_pose(poseOffset);
@@ -185,7 +185,7 @@ namespace fitplayBridge {
       result["type"] = "application_frame";
       result["sensor_type"] = "camera";
 
-      const Output::OutputMessage* outputMessage = Output::GetOutputMessage(getCurrentBuffer());
+      const OsOutput::OutputMessage* outputMessage = OsOutput::GetOutputMessage(getCurrentBuffer());
 
       vector<json> keypoints_json_vec;
       vector<json> keypoints3d_json_vec;

@@ -56,7 +56,7 @@ namespace actionwalk {
         public:
             walk();
             ~ walk();
-            bool process(const Input::InputMessage*, flatbuffers::FlatBufferBuilder&);
+            bool process(const OsInput::InputMessage*, flatbuffers::FlatBufferBuilder&);
             void writeToFlatbuffers(ActionData::ActionBuilder&);
             void setPlayer(float);
             vector<float> getWalkOffset() {return walkOffset; }
@@ -91,8 +91,8 @@ namespace actionwalk {
 
     walk::~walk() {}
 
-    bool walk::process(const Input::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
-        if (data->type() == Input::MessageType::MessageType_Pose) {
+    bool walk::process(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
+        if (data->type() == OsInput::MessageType::MessageType_Pose) {
             const PoseData::Pose* pose = data->pose();
             calculateFrame(pose);
             calculateMean();
