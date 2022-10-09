@@ -15,7 +15,7 @@
 #include "generalDetection/generalCalculator.hpp"
 #include "json.hpp"
 
-#define FITPLAY_ENGINE_VERSION "0.1.0"
+#define FITPLAY_ENGINE_VERSION "0.2.0"
 
 namespace fitplayBridge {
   class BridgeClass {
@@ -109,6 +109,7 @@ namespace fitplayBridge {
       }
       auto poseOffset = poseBuilder.Finish();
 
+      auto version = outputData.CreateString(FITPLAY_ENGINE_VERSION);
       auto typeOffset = outputData.CreateString("application_frame");
       auto sensorTypeOffset = outputData.CreateString("camera");
 
@@ -120,6 +121,7 @@ namespace fitplayBridge {
       auto timeProfilingOffset = timeProfilingBuilder.Finish();
 
       OsOutput::OutputMessageBuilder outputBuilder(outputData);
+      outputBuilder.add_version(version);
       outputBuilder.add_type(typeOffset);
       outputBuilder.add_sensorType(sensorTypeOffset);
       outputBuilder.add_pose(poseOffset);

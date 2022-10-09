@@ -3,7 +3,6 @@
 #include "json.hpp"
 #include <chrono>
 
-#define FITPLAY_ENGINE_VERSION "0.1.0"
 #define MEDIAPIPE_LANDMARK_SIZE 33
 
 static const string landmark_name[33] = {
@@ -99,7 +98,7 @@ const int bridge_release_buffer(void* handler){
 
 const int bridge_perform (void* handler, MidWareLandmark* landmarks, int num, 
                                     MidWareLandmark3D* landmarks3d, int num3d, 
-                                    json* output_json){
+                                    unsigned char** output, unsigned int* len){
     cout << "Enter: " << __FUNCTION__ << endl;
 
     fitplayBridge::BridgeClass* bridge_handler = reinterpret_cast<fitplayBridge::BridgeClass*>(handler);
@@ -174,176 +173,28 @@ const int bridge_perform (void* handler, MidWareLandmark* landmarks, int num,
     bridge_handler->processData(reinterpret_cast<const char*>(builder.GetBufferPointer()));
 
     // uint8_t* flatbuffer = bridge_handler->getCurrentBuffer();
-    int flatbuffer_size = bridge_handler->getCurrentBufferSize();
-    if(flatbuffer_size == 0){
+    *len = bridge_handler->getCurrentBufferSize();
+    if(*len == 0){
         cout << __FUNCTION__ << ": no output flatbuffer avaliable" <<endl;
         return 1;
     }else{
-        cout << __FUNCTION__ << ": flatbuffer size: " << flatbuffer_size <<endl;
+        cout << __FUNCTION__ << ": flatbuffer size: " << *len <<endl;
         uint8_t* flatbuffer = bridge_handler->getCurrentBuffer();
-
-        // const ActionData::Action* action = ActionData::GetAction(flatbuffer);
-        const OsOutput::OutputMessage* output = OsOutput::GetOutputMessage(flatbuffer);
-        const ActionData::Action* action = output->detectionResult();
-
-        if(action->fitting() != NULL){
-            cout << __FUNCTION__ << ": has fitting output" << endl;
-            // (*output_json)["fitting"]["version"] = "0.0.1";
-
-            auto rotation = action->fitting()->rotation();
-            if(rotation != NULL){
-                vector<json> rotation_json_vec;
-                for(int i = 0; i < rotation->size(); i++){
-                    auto joint = rotation->Get(i);
-                    json joint_json;
-                    joint_json["name"] = joint->name()->c_str();
-                    joint_json["x"] = joint->x();
-                    joint_json["y"] = joint->y();
-                    joint_json["z"] = joint->z();
-                    joint_json["w"] = joint->w();
-                    rotation_json_vec.push_back(joint_json);
-                }
-                (*output_json)["fitting"]["rotation"] = rotation_json_vec;
-            }
-
-            auto mirrorRotation = action->fitting()->mirrorRotation();
-            if(mirrorRotation != NULL){
-                vector<json> mirror_rotation_json_vec;
-                for(int i = 0; i < mirrorRotation->size(); i++){
-                    auto joint = mirrorRotation->Get(i);
-                    json joint_json;
-                    joint_json["name"] = joint->name()->c_str();
-                    joint_json["x"] = joint->x();
-                    joint_json["y"] = joint->y();
-                    joint_json["z"] = joint->z();
-                    joint_json["w"] = joint->w();
-                    mirror_rotation_json_vec.push_back(joint_json);
-                }
-                (*output_json)["fitting"]["mirrorRotation"] = mirror_rotation_json_vec;
-            }
-
-            auto localRotation = action->fitting()->localRotation();
-            if(localRotation != NULL){
-                vector<json> local_rotation_json_vec;
-                for(int i = 0; i < localRotation->size(); i++){
-                    auto joint = localRotation->Get(i);
-                    json joint_json;
-                    joint_json["name"] = joint->name()->c_str();
-                    joint_json["x"] = joint->x();
-                    joint_json["y"] = joint->y();
-                    joint_json["z"] = joint->z();
-                    joint_json["w"] = joint->w();
-                    local_rotation_json_vec.push_back(joint_json);
-                }
-                (*output_json)["fitting"]["localRotation"] = local_rotation_json_vec;
-            }
-            
-
-            auto mirrorLocalRotation = action->fitting()->mirrorLocalRotation();
-            if(mirrorLocalRotation != NULL){
-                vector<json> mirror_local_rotation_json_vec;
-                for(int i = 0; i < mirrorLocalRotation->size(); i++){
-                    auto joint = mirrorLocalRotation->Get(i);
-                    json joint_json;
-                    joint_json["name"] = joint->name()->c_str();
-                    joint_json["x"] = joint->x();
-                    joint_json["y"] = joint->y();
-                    joint_json["z"] = joint->z();
-                    joint_json["w"] = joint->w();
-                    mirror_local_rotation_json_vec.push_back(joint_json);
-                }
-                (*output_json)["fitting"]["mirrorLocalRotation"] = mirror_local_rotation_json_vec;
-            }
-            
-            // auto fittedLandmarks = action->fitting()->fittedLandmarks();
-            // vector<json> fkLandmark_json_vec;
-            // for(int i = 0; i < fittedLandmarks->size(); i++){
-            //     auto fkLandmark = fittedLandmarks->Get(i);
-            //     json fkLandmark_json;
-            //     fkLandmark_json["name"] = fkLandmark->name()->c_str();
-            //     fkLandmark_json["x"] = fkLandmark->x();
-            //     fkLandmark_json["y"] = fkLandmark->y();
-            //     fkLandmark_json["z"] = fkLandmark->z();
-            //     fkLandmark_json_vec.push_back(fkLandmark_json);
-            // }
-            // (*output_json)["fitting"]["fittedLandmarks"] = fkLandmark_json_vec;
-
-            // auto fittedError = action->fitting()->fittedError();
-            // (*output_json)["fitting"]["fittedError"] = fittedError;
+        if(flatbuffer == nullptr){
+            cout << __FUNCTION__ << " Error: current buffer is null" << endl;
+            return -1;
         }
 
-        if(action->ground() != NULL){
-            cout << __FUNCTION__ << ": has ground output" << endl;
-            (*output_json)["ground_location"]["x"] = action->ground()->x();
-            (*output_json)["ground_location"]["y"] = action->ground()->y();
-            (*output_json)["ground_location"]["z"] = action->ground()->z();
-            (*output_json)["ground_location"]["legLength"] = action->ground()->legLength();
-            (*output_json)["ground_location"]["tracing"] = action->ground()->tracing();
+        *output = (unsigned char*)calloc(*len, sizeof(flatbuffer));
+        if(*output == nullptr){
+            cout << __FUNCTION__ << " Error: output buffer alloc failed" << endl;
+        }else{
+            cout << __FUNCTION__ << ": output buffer size "<< *len << endl;
         }
+        memcpy(*output, flatbuffer, *len);
 
-        if(action->walk() != NULL){
-            cout << __FUNCTION__ << ": has walk output" << endl;
-            (*output_json)["action_detection"]["version"] = "0.2";
-            (*output_json)["action_detection"]["walk"]["leftLeg"] = action->walk()->leftLeg();
-            (*output_json)["action_detection"]["walk"]["rightLeg"] = action->walk()->rightLeg(); 
-            (*output_json)["action_detection"]["walk"]["leftFrequency"] = action->walk()->leftFrequency(); 
-            (*output_json)["action_detection"]["walk"]["rightFrequency"] = action->walk()->rightFrequency(); 
-            (*output_json)["action_detection"]["walk"]["leftHipAng"] = action->walk()->leftHipAng(); 
-            (*output_json)["action_detection"]["walk"]["rightHipAng"] = action->walk()->rightHipAng(); 
-            (*output_json)["action_detection"]["walk"]["leftStepLength"] = action->walk()->leftStepLength(); 
-            (*output_json)["action_detection"]["walk"]["rightStepLength"] = action->walk()->rightStepLength(); 
-            (*output_json)["action_detection"]["walk"]["leftProgress"] = action->walk()->leftProgress(); 
-            (*output_json)["action_detection"]["walk"]["rightProgress"] = action->walk()->rightProgress();  
-            (*output_json)["action_detection"]["walk"]["turn"] = action->walk()->turn(); 
-            (*output_json)["action_detection"]["walk"]["stepRate"] = action->walk()->stepRate(); 
-            (*output_json)["action_detection"]["walk"]["stepLen"] = action->walk()->stepLen(); 
-            (*output_json)["action_detection"]["walk"]["velocity"] = action->walk()->velocity(); 
-            // (*output_json)["action_detection"]["walk"]["velocityThreshold"] = action->walk()->velocityThreshold(); 
-            // (*output_json)["action_detection"]["walk"]["realtimeLeftLeg"] = action->walk()->realtimeLeftLeg(); 
-            // (*output_json)["action_detection"]["walk"]["realtimeRightLeg"] = action->walk()->realtimeRightLeg(); 
-        }
-
-        if(action->squat() != NULL){
-            cout << __FUNCTION__ << ": has squat output" << endl;
-            (*output_json)["action_detection"]["squat"]["squat"] = (int)(action->squat()->status());
-        }
-
-        if(action->jump() != NULL){
-            cout << __FUNCTION__ << ": has jump output" << endl;
-            (*output_json)["action_detection"]["jump"]["onTheGround"] = action->jump()->onTheGround();
-            (*output_json)["action_detection"]["jump"]["velocity"] = action->jump()->velocity();
-        }
-
-        if(action->gaze() != NULL){
-            cout << __FUNCTION__ << ": has gaze output" << endl;
-            (*output_json)["gaze_tracking"]["x"] = action->gaze()->x();
-            (*output_json)["gaze_tracking"]["y"] = action->gaze()->y();
-            (*output_json)["gaze_tracking"]["z"] = action->gaze()->z();
-        }
-
-        if(action->general() != NULL){
-            cout << __FUNCTION__ << ": has general output" << endl;
-            (*output_json)["general_detection"]["confidence"] = action->general()->confidence();
-        }
-
-        if(action->stand() != NULL){
-           cout << __FUNCTION__ << ": has stand output" << endl;
-           (*output_json)["stand_detection"]["mode"] = action->stand()->mode();
-        }
+        const OsOutput::OutputMessage* output_msg = OsOutput::GetOutputMessage(*output);
     }
-
-    (*output_json)["type"] = "application_frame";
-    (*output_json)["sensor_type"] = "camera";
-    if(keypoints_json_vec.size() > 0){
-        (*output_json)["pose_landmark"]["keypoints"] = keypoints_json_vec;
-    }
-    if(keypoints3d_json_vec.size() > 0){
-        (*output_json)["pose_landmark"]["keypoints3D"] = keypoints3d_json_vec;
-    }
-    
-    (*output_json)["pose_landmark"]["timestamp"] = chrono::duration_cast<chrono::milliseconds>(
-                                                chrono::system_clock::now().time_since_epoch()).count();
-    (*output_json)["pose_landmark"]["version"] = FITPLAY_ENGINE_VERSION;
 
     return 0;
 }
