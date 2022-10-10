@@ -11,10 +11,24 @@ var SensorClient = require('../../common/protocol/js/sensor/sensor-client').Sens
 var SensorFrame = require('../../common/protocol/js/sensor/sensor-frame').SensorFrame
 var SensorControl = require('../../common/protocol/js/sensor/sensor-control').SensorControl
 
-var client = new WebSocketClient();
+var server_address = 'ws://10.103.19.105:8181/'
+
 var count = 0
+function FrameCount() {
+    // console.log(`FPS: ${count}`);
+    process.stdout.write('FPS: ' + count + '  \r');
+    count=0;
+}
+var Timeout = setInterval(FrameCount, 1000);
+
+var client = new WebSocketClient();
+
 client.on('connectFailed', function(error) {
     console.log('Connect Error: ' + error.toString());
+    setTimeout(()=>{
+        console.log('try reconnect');
+        client.connect(server_address);
+    }, 1000);
 });
 
 client.on('connect', function(connection) {
@@ -25,8 +39,11 @@ client.on('connect', function(connection) {
     });
     connection.on('close', function() {
         console.log('echo-protocol Connection Closed');
+        console.log('reconnecting...');
+        client.connect(server_address);
     });
     connection.on('message', function(message) {
+        count++;
         if (message.type === 'utf8') {
             // console.log("frame")
             if(JSON.parse(message.utf8Data).action_detection)
@@ -45,7 +62,7 @@ client.on('connect', function(connection) {
             //     console.log(element.name + "," +element.x + "," + element.y + "," + element.z )
             // });
             //console.log(JSON.parse(message.utf8Data))
-        } else {
+        } else if(message.type === 'binary') {
             // console.log(message.binaryData)
             var outputMessage = OutputMessage.getRootAsOutputMessage(new flatbuffers.ByteBuffer(message.binaryData))
             var detectionResult = outputMessage.detectionResult()
@@ -53,6 +70,22 @@ client.on('connect', function(connection) {
             // console.log("legLength:"+detectionResult.walk().leftLeg())
             console.log(outputMessage.type() + "|" + outputMessage.sensorType())
             console.log("y[0]:"+pose.keypoints(0).y())
+
+            // console.log("Version: " + outputMessage.version());
+            // console.log("Type: " + outputMessage.type());
+            // console.log("Processing time: " + outputMessage.timeProfiling().processingTime());
+            // console.log("Before send time: " + outputMessage.timeProfiling().beforeSendTime());
+            // for(var i = 0; i < outputMessage.pose().keypointsLength(); i++){
+            //     var point = outputMessage.pose().keypoints(i);
+            //      console.log("keypoint["+i+"]: "+point.x()+", "+point.y()+", "+point.z());
+            // }
+            // console.log("  ");
+            // for(var i = 0; i < outputMessage.pose().keypoints3DLength(); i++){
+            //     var point = outputMessage.pose().keypoints3D(i);
+            //      console.log("keypoint3D["+i+"]: "+point.x()+", "+point.y()+", "+point.z());
+            // }
+        }else{
+            console.log(message.type)
         }
     });
     var appClientMessage =  {
@@ -282,4 +315,5 @@ function flatbuffersMessage(message) {
     }
 }
 
-client.connect('ws://localhost:8181/');
+console.log("connecting...");
+client.connect(server_address);
