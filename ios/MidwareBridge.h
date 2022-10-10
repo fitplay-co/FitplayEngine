@@ -75,6 +75,16 @@ const int bridge_perform(void* handler, MidWareLandmark* landmarks, int num,
  */
 const int bridge_process_request(void* handler, json app_json);
 
+
+/**
+ * @brief process user request for flatbuffer input
+ * 
+ * @param handler the bridge used to process data.
+ * @param app_json request info.
+ * @return const int return 0 if success, others if failed.
+ */
+const int bridge_process_request_flatbuffer(void* handler, const char* input);
+
 #if __cplusplus
 }
 #endif
