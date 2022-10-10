@@ -79,10 +79,10 @@ function websocketReconnect(){
     
     ws.onmessage = (e) => {
       let message=e.data;
-      let jsonObj=JSON.parse(message);
+      // let jsonObj=JSON.parse(message);
 
 
-      if(jsonObj.sensor_type !="vibration")
+      // if(jsonObj.sensor_type !="vibration")
       {
         //console.log("[websocketClient] is not support type:%s",jsonObj.type);
         return ;
@@ -101,7 +101,7 @@ function websocketReconnect(){
             }
           });
       } catch (error) {
-        console.log("onmessage "+error);
+        // console.log("onmessage "+error);
       }
     }
   }

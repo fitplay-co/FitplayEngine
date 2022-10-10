@@ -1,4 +1,3 @@
 cd wasm
-cd app 
-npm install 
+cd app
 npm start

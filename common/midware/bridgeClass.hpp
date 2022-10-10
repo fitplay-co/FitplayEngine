@@ -221,7 +221,7 @@ namespace fitplayBridge {
       const ActionData::Action* action = outputMessage->detectionResult();
 
       if(action->fitting() != NULL){
-          cout << __FUNCTION__ << ": has fitting output" << endl;
+          // cout << __FUNCTION__ << ": has fitting output" << endl;
           auto rotation = action->fitting()->rotation();
           if(rotation != NULL){
               vector<json> rotation_json_vec;
@@ -288,7 +288,7 @@ namespace fitplayBridge {
       }
 
       if(action->ground() != NULL) {
-          cout << __FUNCTION__ << ": has ground output" << endl;
+          // cout << __FUNCTION__ << ": has ground output" << endl;
           result["ground_location"]["x"] = action->ground()->x();
           result["ground_location"]["y"] = action->ground()->y();
           result["ground_location"]["z"] = action->ground()->z();
@@ -319,30 +319,30 @@ namespace fitplayBridge {
       }
 
       if(action->squat() != NULL){
-          cout << __FUNCTION__ << ": has squat output" << endl;
+          // cout << __FUNCTION__ << ": has squat output" << endl;
           result["action_detection"]["squat"]["squat"] = (int)(action->squat()->status());
       }
 
       if(action->jump() != NULL){
-          cout << __FUNCTION__ << ": has jump output" << endl;
+          // cout << __FUNCTION__ << ": has jump output" << endl;
           result["action_detection"]["jump"]["onTheGround"] = action->jump()->onTheGround();
           result["action_detection"]["jump"]["velocity"] = action->jump()->velocity();
       }
 
       if(action->gaze() != NULL){
-          cout << __FUNCTION__ << ": has gaze output" << endl;
+          // cout << __FUNCTION__ << ": has gaze output" << endl;
           result["gaze_tracking"]["x"] = action->gaze()->x();
           result["gaze_tracking"]["y"] = action->gaze()->y();
           result["gaze_tracking"]["z"] = action->gaze()->z();
       }
 
       if(action->general() != NULL){
-          cout << __FUNCTION__ << ": has general output" << endl;
+          // cout << __FUNCTION__ << ": has general output" << endl;
           result["general_detection"]["confidence"] = action->general()->confidence();
       }
 
       if(action->stand() != NULL){
-          cout << __FUNCTION__ << ": has stand output" << endl;
+          // cout << __FUNCTION__ << ": has stand output" << endl;
            result["stand_detection"]["mode"] = action->stand()->mode();
         }
     }
