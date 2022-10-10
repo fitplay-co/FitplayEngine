@@ -199,6 +199,21 @@ const int bridge_perform (void* handler, MidWareLandmark* landmarks, int num,
     return 0;
 }
 
+const int bridge_process_request_flatbuffer(void* handler, const char* input) {
+    cout << "Enter: " << __FUNCTION__ << endl;
+    fitplayBridge::BridgeClass* bridge_handler = reinterpret_cast<fitplayBridge::BridgeClass*>(handler);
+    if(bridge_handler == nullptr){
+        cout << __FUNCTION__ << ": Error: invalid bridge handler" << endl;
+        return -1;
+    }
+    if(input == nullptr){
+        cout << __FUNCTION__ << ": Error: input is NULL" << endl;
+        return -1;
+    }
+    bridge_handler->processData(input);
+    return 0;
+}
+
 const int bridge_process_request(void* handler, json app_json){
     cout << "Enter: " << __FUNCTION__ << endl;
     fitplayBridge::BridgeClass* bridge_handler = reinterpret_cast<fitplayBridge::BridgeClass*>(handler);
