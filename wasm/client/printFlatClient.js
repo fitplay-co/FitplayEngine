@@ -11,6 +11,8 @@ var SensorClient = require('../../common/protocol/js/sensor/sensor-client').Sens
 var SensorFrame = require('../../common/protocol/js/sensor/sensor-frame').SensorFrame
 var SensorControl = require('../../common/protocol/js/sensor/sensor-control').SensorControl
 
+var server_address = 'ws://10.103.19.105:8181/'
+
 const args = process.argv.slice(2);
 // 0 for mediapipe 1 for fitplay
 let printModel = 0
@@ -102,6 +104,8 @@ client.on('connect', function(connection) {
     });
     connection.on('close', function() {
         console.log('echo-protocol Connection Closed');
+        console.log('reconnecting...');
+        client.connect(server_address);
     });
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
@@ -354,4 +358,4 @@ function flatbuffersMessage(message) {
     }
 }
 
-client.connect('ws://localhost:8181/');
+client.connect(server_address);
