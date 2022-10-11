@@ -11,6 +11,9 @@ var SensorClient = require('../../common/protocol/js/sensor/sensor-client').Sens
 var SensorFrame = require('../../common/protocol/js/sensor/sensor-frame').SensorFrame
 var SensorControl = require('../../common/protocol/js/sensor/sensor-control').SensorControl
 
+let printFlat = 1;
+let printPose = 1;
+
 var fitplayModel = {
     "head_top" : 0,
     "thorax" : 1,
@@ -92,21 +95,23 @@ client.on('connect', function(connection) {
     });
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
-            if(JSON.parse(message.utf8Data).action_detection)
+            if(printPose == 1)
+            {if(JSON.parse(message.utf8Data).action_detection)
             {var rr = JSON.parse(message.utf8Data).action_detection.walk;
             console.log(rr.leftLeg + "," + rr.rightLeg + "," + rr.leftFrequency + "," + rr.rightFrequency + "," + rr.leftHipAng
                     + "," + rr.rightHipAng + "," + rr.leftStepLength + "," + rr.rightStepLength + "," + rr.turn + "," +
                     rr.stepRate + "," + rr.stepLen + "," + rr.velocity + "," + rr.velocityThreshold + "," + rr.realtimeLeftLeg
-                    + "," + rr.realtimeRightLeg);}
-            // console.log("Frame")
-            // console.log("keyPoints")
-            // JSON.parse(message.utf8Data).pose_landmark.keypoints.forEach(element => {
-            //     console.log(element.name + "," +element.x + "," + element.y + "," + element.z )
-            // });
-            // console.log("keyPoints3D")
-            // JSON.parse(message.utf8Data).pose_landmark.keypoints3D.forEach(element => {
-            //     console.log(element.name + "," +element.x + "," + element.y + "," + element.z )
-            // });
+                    + "," + rr.realtimeRightLeg);}}
+            else 
+            {console.log("Frame")
+            console.log("keyPoints")
+            JSON.parse(message.utf8Data).pose_landmark.keypoints.forEach(element => {
+                console.log(element.name + "," +element.x + "," + element.y + "," + element.z )
+            });
+            console.log("keyPoints3D")
+            JSON.parse(message.utf8Data).pose_landmark.keypoints3D.forEach(element => {
+                console.log(element.name + "," +element.x + "," + element.y + "," + element.z )
+            });}
             //console.log(JSON.parse(message.utf8Data))
         } else {
             // console.log(message.binaryData)
@@ -123,10 +128,18 @@ client.on('connect', function(connection) {
             })
         }
     });
-    var appClientMessage =  {
+    if(printFlat == 1)
+    {var appClientMessage =  {
         "type" : "application_client",
-        "id": "test_client",
+        "id": "test_client"
         // "useJson": true
+    }}
+    else {
+        var appClientMessage =  {
+            "type" : "application_client",
+            "id": "test_client",
+            "useJson": true
+        }
     }
     var actionDetectionSubscribe = {
         "type" : "application_control",
