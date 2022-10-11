@@ -11,8 +11,13 @@ var SensorClient = require('../../common/protocol/js/sensor/sensor-client').Sens
 var SensorFrame = require('../../common/protocol/js/sensor/sensor-frame').SensorFrame
 var SensorControl = require('../../common/protocol/js/sensor/sensor-control').SensorControl
 
-let printFlat = 1;
-let printPose = 1;
+const args = process.argv.slice(2);
+// 0 for mediapipe 1 for fitplay
+let printModel = 0
+if(args[0]) {printModel = args[0]}
+// 0 for pose 1 for walk
+let printContent = 0;
+if(args[1]) {printContent = args[1]}
 
 var fitplayModel = {
     "head_top" : 0,
@@ -78,6 +83,11 @@ fitplayToMediapipeLandmarkIndexMap = [
     19 // right_foot_index[32]
 ]
 
+var landmarkMap = new Array()
+landmarkMap = ["nose", "left_eye_inner", "left_eye", "left_eye_outer", "right_eye_inner", "right_eye", "right_eye_outer", "left_ear", 
+    "right_ear", "mouth_left", "mouth_right", "left_shoulder", "right_shoulder", "left_elbow", "right_elbow", "left_wrist", "right_wrist", 
+    "left_pinky", "right_pinky", "left_index", "right_index", "left_thumb", "right_thumb", "left_hip", "right_hip", "left_knee", "right_knee", 
+    "left_ankle", "right_ankle", "left_heel", "right_heel", "left_foot_index", "right_foot_index"]
 
 var client = new WebSocketClient();
 client.on('connectFailed', function(error) {
@@ -95,7 +105,7 @@ client.on('connect', function(connection) {
     });
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
-            if(printPose == 1)
+            if(printModel == 1)
             {if(JSON.parse(message.utf8Data).action_detection)
             {var rr = JSON.parse(message.utf8Data).action_detection.walk;
             console.log(rr.leftLeg + "," + rr.rightLeg + "," + rr.leftFrequency + "," + rr.rightFrequency + "," + rr.leftHipAng
@@ -120,26 +130,41 @@ client.on('connect', function(connection) {
             var pose = outputMessage.pose()
             // console.log("legLength:"+detectionResult.walk().leftLeg())
             // console.log(outputMessage.type() + "|" + outputMessage.sensorType())
-            console.log("Frame")
+            if(printModel == 1 && printContent == 0)
+            {console.log("Frame")
             Object.keys(fitplayModel).forEach(function(key){
                 var num = fitplayModel[key]
                 console.log(key + "," + pose.keypoints(num).x() + "," + pose.keypoints(num).y() + "," + pose.keypoints(num).z()
                 + "," + pose.keypoints(num).score())
-            })
+            })}
+            else if(printModel == 0 && printContent == 0)
+            {
+                console.log("Frame")
+                console.log("keyPoints")
+                for(var num = 0; num < 33; num++) {
+                    console.log(landmarkMap[num] + "," + pose.keypoints(num).x() + "," + pose.keypoints(num).y() + "," + pose.keypoints(num).z()
+                    + "," + pose.keypoints(num).score())
+                }
+                console.log("keyPoints3D")
+                for(var num = 0; num < 33; num++) {
+                    console.log(landmarkMap[num] + "," + pose.keypoints3D(num).x() + "," + pose.keypoints3D(num).y() + "," + pose.keypoints3D(num).z()
+                    + "," + pose.keypoints3D(num).score())
+                }
+            }
+            else if(printContent == 1)
+            {
+                console.log("Frame")
+                console.log(detectionResult.walk().leftLeg() + "," + detectionResult.walk().rightLeg() + "," + detectionResult.walk().leftFrequency() + "," + detectionResult.walk().rightFrequency() + "," + detectionResult.walk().leftHipAng()
+                    + "," + detectionResult.walk().rightHipAng() + "," + detectionResult.walk().leftStepLength() + "," + detectionResult.walk().rightStepLength() + "," + detectionResult.walk().turn() + "," +
+                    detectionResult.walk().stepRate() + "," + detectionResult.walk().stepLen() + "," + detectionResult.walk().velocity() + "," + detectionResult.walk().velocityThreshold() + "," + detectionResult.walk().realtimeLeftLeg()
+                    + "," + detectionResult.walk().realtimeRightLeg());
+            }
         }
     });
-    if(printFlat == 1)
-    {var appClientMessage =  {
+    var appClientMessage =  {
         "type" : "application_client",
         "id": "test_client"
         // "useJson": true
-    }}
-    else {
-        var appClientMessage =  {
-            "type" : "application_client",
-            "id": "test_client",
-            "useJson": true
-        }
     }
     var actionDetectionSubscribe = {
         "type" : "application_control",
