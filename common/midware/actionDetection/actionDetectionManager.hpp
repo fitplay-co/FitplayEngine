@@ -2,6 +2,7 @@
 #define ACTION_detection_manager
 
 #include "actionManager/mockManager.hpp"
+#include "actionManager/modeManager.hpp"
 #include "actionDetectionCalculator.hpp"
 #include "walkDetection.hpp"
 
@@ -11,6 +12,7 @@ namespace actionDetection {
         private:
 
             mockManager mockInstance;
+            modeManager modeInstance;
             actionwalk::walk walkInstance;
             actionDetectionCalculator calculatorInstance;
 
@@ -38,7 +40,7 @@ namespace actionDetection {
             actionDetectionManager();
             ~actionDetectionManager();
             void addActionDetectionCalculator();
-            void calculateMode(flatbuffers::FlatBufferBuilder& builder);
+            void calculateMode(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder);
             void calculateMock(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder);
             bool process(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder);
             void writeToFlatbuffers(ActionData::ActionBuilder&);
@@ -57,7 +59,7 @@ namespace actionDetection {
 
             calculatorInstance.process(data);
             walkInstance.process(data, builder);
-            calculateMode(builder);
+            calculateMode(data, builder);
             calculateMock(data, builder);
 
             return true;
@@ -97,7 +99,10 @@ namespace actionDetection {
         calculatorInstance.addFeatureVelocity(&rightFootConstraint);
     }
 
-    void actionDetectionManager::calculateMode(flatbuffers::FlatBufferBuilder& builder) {
+    void actionDetectionManager::calculateMode(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
+
+        modeInstance.process(data);
+
         static int modeShiftCount2 = 0;
         float temp = calculatorInstance.getSubscribeAngle()->at(0);
         float kneeDis = calculatorInstance.getSubscribeDistance()->at(0);
@@ -178,10 +183,13 @@ namespace actionDetection {
                 else modeShiftCount = modeShiftCount + 1;
             }
             else modeShiftCount = 0;
-
             if(abs(footDis) > (shoulderDis + 0.15)) {
                 mode = 0;
                 resetModeStatusBit();
+            }
+            modeInstance.process(data);
+            if(modeInstance.getModeShiftBit() == 1) {
+                mode = 0;
             }
         }
         standFlatbuffersOffset = ActionData::CreateStand(builder, mode);
@@ -212,8 +220,8 @@ namespace actionDetection {
                                                     walkOffset.at(12),
                                                     walkOffset.at(13),
                                                     walkOffset.at(14),
-                                                    walkOffset.at(15),
-                                                    walkOffset.at(16));
+                                                    int(walkOffset.at(15)),
+                                                    int(walkOffset.at(16)));
     }
 
     void actionDetectionManager::writeToFlatbuffers(ActionData::ActionBuilder& actionBuilder) {
