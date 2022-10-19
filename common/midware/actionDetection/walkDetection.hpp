@@ -105,11 +105,14 @@ namespace actionwalk {
             calculateRealTimeLeft();
             calculateRealTimeRight();
 
+            if(currentLeftStatus == 0 && progressData->at(preLeftStatus) == 1) currentLeftStatus = -1;
+            if(currentRightStatus == 0 && progressData->at(preRightStatus) == 1) currentRightStatus = -1;
+
             walkOffset = { currentLeftStatus, currentRightStatus, currentLeftStepRate, currentRightStepRate,
                         meanData->at(currentLeftHipAngMean), meanData->at(currentRightHipAngMean), currentLeftStepLength,
                         currentRightStepLength, currentLeftProgress, currentRightProgress, currentTurnAng, currentStepRate,
                         currentStepLength, currentVelocity, currentVelocityThreshold, currentRealTimeLeftStatus, currentRealTimeRightStatus};
-            
+
             flatbuffersOffset = ActionData::CreateWalk(builder, 
                                                         int(currentLeftStatus),
                                                         int(currentRightStatus),
@@ -143,8 +146,8 @@ namespace actionwalk {
     void walk::calculateFrame(const PoseData::Pose* data) {
         frameData->at(preLeftFoot) = frameData->at(currentLeftFoot);
         frameData->at(preRightFoot) = frameData->at(currentRightFoot);
-        frameData->at(currentLeftFoot) = data->keypoints()->Get(27)->y() + data->keypoints()->Get(31)->y();
-        frameData->at(currentRightFoot) = data->keypoints()->Get(28)->y() + data->keypoints()->Get(32)->y();
+        frameData->at(currentLeftFoot) = data->keypoints()->Get(27)->y() + data->keypoints()->Get(31)->y() + data->keypoints()->Get(25)->y();
+        frameData->at(currentRightFoot) = data->keypoints()->Get(28)->y() + data->keypoints()->Get(32)->y() + data->keypoints()->Get(26)->y();
         frameData->at(currentLeftHipAng) = calVecAngle(data, 11, 23, 25, 1);
         frameData->at(currentRightHipAng) = calVecAngle(data, 12, 24, 26, 1);
         float leftThighHeight = data->keypoints3D()->Get(23)->y() - data->keypoints3D()->Get(25)->y();
@@ -188,7 +191,7 @@ namespace actionwalk {
         }
         else {
             // foot reaches its peak and going down
-            if(frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean) > 0.01) {
+            if(frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean) > 0.005) {
                 if(currentLeftStatus != -1) {
                     if(frameShiftFilterCount->at(0) > 3 && currentLeftStatus == 1) {
                         currentLeftStatus = -1;
@@ -200,7 +203,7 @@ namespace actionwalk {
                 else { frameShiftFilterCount->at(0) = 0; }
             }
             // foot going up
-            if(frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean) < -0.01) {
+            if(frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean) < -0.005) {
                 if(currentLeftStatus != 1) {
                     if(frameShiftFilterCount->at(0) > 3 && (currentLeftStatus == 0 || currentLeftStatus == -1)) {
                         if(timeData2->at(timeLock) == 1){
@@ -219,7 +222,7 @@ namespace actionwalk {
                 else { frameShiftFilterCount->at(0) = 0; }
             }
             // leg still
-            if((-0.01 < (frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean))) && ((frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean) < 0.01))) {
+            if((-0.005 < (frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean))) && ((frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean) < 0.005))) {
                 if(currentLeftStatus != 0 && currentLeftStatus != 2) {
                     if(frameShiftFilterCount->at(0) > 6) {
                         // threshold to be tested
@@ -249,7 +252,7 @@ namespace actionwalk {
         }
         else {
             // foot reaches its peak and going down
-            if(frameData->at(currentRightFoot) - meanData->at(preRightFootMean) > 0.01) {
+            if(frameData->at(currentRightFoot) - meanData->at(preRightFootMean) > 0.005) {
                 if(currentRightStatus != -1) {
                     if(frameShiftFilterCount->at(1) > 3 && currentRightStatus == 1) {
                         currentRightStatus = -1;
@@ -261,7 +264,7 @@ namespace actionwalk {
                 else { frameShiftFilterCount->at(1) = 0; }
             }
             // foot going up
-            if(frameData->at(currentRightFoot) - meanData->at(preRightFootMean) < -0.01) {
+            if(frameData->at(currentRightFoot) - meanData->at(preRightFootMean) < -0.005) {
                 if(currentRightStatus != 1) {
                     if(frameShiftFilterCount->at(1) > 3 && (currentRightStatus == 0 || currentRightStatus == -1)) {
                         if(timeData2->at(timeLock) == 1){
@@ -280,7 +283,7 @@ namespace actionwalk {
                 else { frameShiftFilterCount->at(1) = 0; }
             }
             // leg still
-            if((-0.01 < (frameData->at(currentRightFoot) - meanData->at(preRightFootMean))) && ((frameData->at(currentRightFoot) - meanData->at(preRightFootMean) < 0.01))) {
+            if((-0.005 < (frameData->at(currentRightFoot) - meanData->at(preRightFootMean))) && ((frameData->at(currentRightFoot) - meanData->at(preRightFootMean) < 0.005))) {
                 if(currentRightStatus != 0 && currentRightStatus != 2) {
                     if(frameShiftFilterCount->at(1) > 6) {
                         // threshold to be tested

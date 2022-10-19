@@ -11,11 +11,13 @@ var SensorClient = require('../../common/protocol/js/sensor/sensor-client').Sens
 var SensorFrame = require('../../common/protocol/js/sensor/sensor-frame').SensorFrame
 var SensorControl = require('../../common/protocol/js/sensor/sensor-control').SensorControl
 
-var server_address = 'ws://10.103.19.105:8181/'
+var server_address = 'ws://192.168.50.236:8181/'
+
+// var server_address = 'ws://localhost:8181/'
 
 const args = process.argv.slice(2);
 // 0 for mediapipe 1 for fitplay
-let printModel = 0
+let printModel = 1
 if(args[0]) {printModel = args[0]}
 // 0 for pose 1 for walk
 let printContent = 0;
@@ -157,11 +159,23 @@ client.on('connect', function(connection) {
             }
             else if(printContent == 1)
             {
-                console.log("Frame")
+                // console.log("Frame")
                 console.log(detectionResult.walk().leftLeg() + "," + detectionResult.walk().rightLeg() + "," + detectionResult.walk().leftFrequency() + "," + detectionResult.walk().rightFrequency() + "," + detectionResult.walk().leftHipAng()
                     + "," + detectionResult.walk().rightHipAng() + "," + detectionResult.walk().leftStepLength() + "," + detectionResult.walk().rightStepLength() + "," + detectionResult.walk().turn() + "," +
                     detectionResult.walk().stepRate() + "," + detectionResult.walk().stepLen() + "," + detectionResult.walk().velocity() + "," + detectionResult.walk().velocityThreshold() + "," + detectionResult.walk().realtimeLeftLeg()
                     + "," + detectionResult.walk().realtimeRightLeg());
+            }
+            else if(printContent == 2)
+            {
+                // for(var num = 0; num < 19; num++) {
+                //     console.log(detectionResult.fitting().fittedLandmarks(num).name() + "," + detectionResult.fitting().fittedLandmarks(num).x() + "," + detectionResult.fitting().fittedLandmarks(num).y() + "," + detectionResult.fitting().fittedLandmarks(num).z())
+                // }
+                console.log(pose.keypoints(26).y() + pose.keypoints(28).y() + pose.keypoints(32).y())
+                // console.log(detectionResult.fitting().fittedLandmarks(0).name() + "," + detectionResult.fitting().fittedLandmarks(0).x() + "," + detectionResult.fitting().fittedLandmarks(0).y() + "," + detectionResult.fitting().fittedLandmarks(0).z())
+            }
+            else if(printContent == 3)
+            {
+                console.log(detectionResult.walk().leftLeg())
             }
         }
     });
