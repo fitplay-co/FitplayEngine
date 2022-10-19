@@ -44,6 +44,12 @@ namespace fitplay {
         landmarkFittingInstance.handcraftFitting(landmarkData3D, fkInstance.jointPoints);
         landmarkData3D = landmarkFittingInstance.currentFitLandmarkData;
         
+        for (int i = 0; i < jointPointSize +1 ; i++){
+            // cout << i << endl;
+            landmarkData3D[i] = vec3(landmarkFittingInstance.landMarkFilterGlobalX[i]->filter(landmarkFittingInstance.currentFitLandmarkData[i].x),
+            landmarkFittingInstance.landMarkFilterGlobalY[i]->filter(landmarkFittingInstance.currentFitLandmarkData[i].y),
+            landmarkFittingInstance.landMarkFilterGlobalZ[i]->filter(landmarkFittingInstance.currentFitLandmarkData[i].z));
+        }
         //  if(mirror) {
         //     readPoseDataToLandmark2D(data, landmarkData2D);
         //     rgbdFittingInstance.update3DlandmarkWithRGBD(landmarkData3D, landmarkData2D);

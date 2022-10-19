@@ -10,6 +10,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtx/quaternion.hpp"
 #include "fitting_data.hpp"
+#include "actionDetection/euroFilter.hpp"
 
 using namespace std;
 
@@ -39,6 +40,15 @@ public:
 
     BodyErrorData errorDataList[errorDataDims];
     bool frameCached = false;
+
+    detection::OneEuroFilter *landMarkFilter3DX [jointPointSize+1]; 
+    detection::OneEuroFilter *landMarkFilter3DY [jointPointSize+1]; 
+    detection::OneEuroFilter *landMarkFilter3DZ [jointPointSize+1]; 
+    detection::OneEuroFilter *landMarkFilterGlobalX [jointPointSize+1]; 
+    detection::OneEuroFilter *landMarkFilterGlobalY [jointPointSize+1]; 
+    detection::OneEuroFilter *landMarkFilterGlobalZ [jointPointSize+1]; 
+    detection::OneEuroFilter *landMarkFilter2DX [jointPointSize+1]; 
+    detection::OneEuroFilter *landMarkFilter2DY [jointPointSize+1]; 
 
     FittingLandmark ();
     ~FittingLandmark ();
@@ -257,9 +267,29 @@ float FittingLandmark::summarizeError(){
 }
 
 FittingLandmark::FittingLandmark(){
+    for (int i = 0; i <jointPointSize+ 1; i++){
+        landMarkFilter3DX [i] = new detection::OneEuroFilter(one_euro_filter_frequency,0.8,0.4,1);
+        landMarkFilter3DY [i] = new detection::OneEuroFilter(one_euro_filter_frequency,0.8,0.4,1);
+        landMarkFilter3DZ [i] = new detection::OneEuroFilter(one_euro_filter_frequency,0.8,0.4,1);
+        landMarkFilterGlobalX [i] = new detection::OneEuroFilter(one_euro_filter_frequency,0.8,0.4,1);
+        landMarkFilterGlobalY [i] = new detection::OneEuroFilter(one_euro_filter_frequency,0.8,0.4,1);
+        landMarkFilterGlobalZ [i] = new detection::OneEuroFilter(one_euro_filter_frequency,0.8,0.4,1);
+        landMarkFilter2DX [i] = new detection::OneEuroFilter(one_euro_filter_frequency,1.7,0.3,1);
+        landMarkFilter2DY [i] = new detection::OneEuroFilter(one_euro_filter_frequency,1.7,0.3,1);
+    }
 }
 
 FittingLandmark::~FittingLandmark(){
+    for (int i = 0; i <jointPointSize+ 1; i++){
+        delete landMarkFilter3DX [i];
+        delete landMarkFilter3DY [i];
+        delete landMarkFilter3DZ [i];
+        delete landMarkFilterGlobalX [i];
+        delete landMarkFilterGlobalY [i];
+        delete landMarkFilterGlobalZ [i];
+        delete landMarkFilter2DX [i];
+        delete landMarkFilter3DY [i];
+    }
 }
 }
 #endif

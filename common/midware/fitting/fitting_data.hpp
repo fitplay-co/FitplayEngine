@@ -20,6 +20,7 @@ namespace fitplay {
     static constexpr vec3 right = vec3 (1.0f, 0.0f, 0.0f);  
     static constexpr vec3 forward = vec3(0.0f, 0.0f, 1.0f);
     static constexpr vec3 backward = vec3(0.0f, 0.0f, -1.0f);
+    static constexpr int one_euro_filter_frequency = 2;
 
     typedef std::vector<vec3> landmarks;
 
