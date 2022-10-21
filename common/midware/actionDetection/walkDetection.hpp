@@ -9,6 +9,8 @@
 #include "euroFilter.hpp"
 #include "walkData.hpp"
 
+#define walkDetectionThreshold 0.004
+
 namespace actionwalk {
     class walk: public Midware::MidwareComponent {
         private:
@@ -191,7 +193,7 @@ namespace actionwalk {
         }
         else {
             // foot reaches its peak and going down
-            if(frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean) > 0.005) {
+            if(frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean) > walkDetectionThreshold) {
                 if(currentLeftStatus != -1) {
                     if(frameShiftFilterCount->at(0) > 3 && currentLeftStatus == 1) {
                         currentLeftStatus = -1;
@@ -203,7 +205,7 @@ namespace actionwalk {
                 else { frameShiftFilterCount->at(0) = 0; }
             }
             // foot going up
-            if(frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean) < -0.005) {
+            if(frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean) < -walkDetectionThreshold) {
                 if(currentLeftStatus != 1) {
                     if(frameShiftFilterCount->at(0) > 3 && (currentLeftStatus == 0 || currentLeftStatus == -1)) {
                         if(timeData2->at(timeLock) == 1){
@@ -222,7 +224,7 @@ namespace actionwalk {
                 else { frameShiftFilterCount->at(0) = 0; }
             }
             // leg still
-            if((-0.005 < (frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean))) && ((frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean) < 0.005))) {
+            if((-walkDetectionThreshold < (frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean))) && ((frameData->at(currentLeftFoot) - meanData->at(preLeftFootMean) < walkDetectionThreshold))) {
                 if(currentLeftStatus != 0 && currentLeftStatus != 2) {
                     if(frameShiftFilterCount->at(0) > 6) {
                         // threshold to be tested
@@ -252,7 +254,7 @@ namespace actionwalk {
         }
         else {
             // foot reaches its peak and going down
-            if(frameData->at(currentRightFoot) - meanData->at(preRightFootMean) > 0.005) {
+            if(frameData->at(currentRightFoot) - meanData->at(preRightFootMean) > walkDetectionThreshold) {
                 if(currentRightStatus != -1) {
                     if(frameShiftFilterCount->at(1) > 3 && currentRightStatus == 1) {
                         currentRightStatus = -1;
@@ -264,7 +266,7 @@ namespace actionwalk {
                 else { frameShiftFilterCount->at(1) = 0; }
             }
             // foot going up
-            if(frameData->at(currentRightFoot) - meanData->at(preRightFootMean) < -0.005) {
+            if(frameData->at(currentRightFoot) - meanData->at(preRightFootMean) < -walkDetectionThreshold) {
                 if(currentRightStatus != 1) {
                     if(frameShiftFilterCount->at(1) > 3 && (currentRightStatus == 0 || currentRightStatus == -1)) {
                         if(timeData2->at(timeLock) == 1){
@@ -283,7 +285,7 @@ namespace actionwalk {
                 else { frameShiftFilterCount->at(1) = 0; }
             }
             // leg still
-            if((-0.005 < (frameData->at(currentRightFoot) - meanData->at(preRightFootMean))) && ((frameData->at(currentRightFoot) - meanData->at(preRightFootMean) < 0.005))) {
+            if((-walkDetectionThreshold < (frameData->at(currentRightFoot) - meanData->at(preRightFootMean))) && ((frameData->at(currentRightFoot) - meanData->at(preRightFootMean) < walkDetectionThreshold))) {
                 if(currentRightStatus != 0 && currentRightStatus != 2) {
                     if(frameShiftFilterCount->at(1) > 6) {
                         // threshold to be tested

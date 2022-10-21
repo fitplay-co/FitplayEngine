@@ -11,7 +11,7 @@ var SensorClient = require('../../common/protocol/js/sensor/sensor-client').Sens
 var SensorFrame = require('../../common/protocol/js/sensor/sensor-frame').SensorFrame
 var SensorControl = require('../../common/protocol/js/sensor/sensor-control').SensorControl
 
-var server_address = 'ws://192.168.50.236:8181/'
+var server_address = 'ws://192.168.50.106:8181/'
 
 // var server_address = 'ws://localhost:8181/'
 

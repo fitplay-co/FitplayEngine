@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
-file_path = "/Users/ember/2022/os_dev_docker/wasm/app/legacy/fitplay1019test3.csv"
-file_path2 = "/Users/ember/2022/os_dev_docker/wasm/app/legacy/fitplay1019test3.csv"
+file_path = "/Users/ember/2022/os_dev_docker/wasm/app/legacy/test.csv"
+file_path2 = "/Users/ember/2022/os_dev_docker/wasm/app/legacy/test.csv"
 readData = pd.read_csv(file_path,header=None)
 readData2 = pd.read_csv(file_path2,header=None)
 

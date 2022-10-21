@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from one_euro_filter import OneEuroFilter
 
-file_path = "/Users/ember/2022/os_dev_docker/wasm/app/legacy/fitplay1019test2.csv"
+file_path = "/Users/ember/2022/os_dev_docker/wasm/app/legacy/test.csv"
 readData = pd.read_csv(file_path,header=None)
 # print(readData)
 fpmStopCount = 0
@@ -19,7 +19,7 @@ xData = list(range(1,len(data)+1))
 
 pre = 0
 current = 0
-threshold = 0.005
+threshold = 0.0035
 # threshold = 0.02
 
 for i in range(1,len(data)) :
