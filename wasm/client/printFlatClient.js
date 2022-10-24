@@ -175,7 +175,7 @@ client.on('connect', function(connection) {
             }
             else if(printContent == 3)
             {
-                console.log(detectionResult.walk().leftLeg())
+                console.log(detectionResult.ground().z())
             }
         }
     });
