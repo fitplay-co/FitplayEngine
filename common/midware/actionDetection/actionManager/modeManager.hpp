@@ -2,7 +2,7 @@
 #define MODE_manager
 
 #include "inputMessage_generated.h"
-#include "../euroFilter.hpp"
+#include "euroFilter.hpp"
 
 namespace actionDetection {
 

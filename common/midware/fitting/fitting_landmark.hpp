@@ -10,7 +10,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtx/quaternion.hpp"
 #include "fitting_data.hpp"
-#include "actionDetection/euroFilter.hpp"
+#include "euroFilter.hpp"
 
 using namespace std;
 

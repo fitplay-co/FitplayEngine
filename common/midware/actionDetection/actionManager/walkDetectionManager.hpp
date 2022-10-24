@@ -2,18 +2,20 @@
 #include <vector>
 #include <list>
 #include <map>
-#include <chrono> 
+#include <chrono>
 #include <math.h>
 #include "actionData_generated.h"
 #include "midwareComponent/midwareComponent.hpp"
 #include "euroFilter.hpp"
-#include "walkData.hpp"
+#include "walkDetectionManagerData.hpp"
 
-#define walkDetectionThreshold 0.004
+#define walkDetectionThresholdTravel 0.004
+#define walkDetectionThresholdStand 0.006
 
 namespace actionwalk {
     class walk: public Midware::MidwareComponent {
         private:
+            float walkDetectionThreshold;
             // calculated data
             vector<float> *frameData;
             vector<float> *meanData;
@@ -58,7 +60,7 @@ namespace actionwalk {
         public:
             walk();
             ~ walk();
-            bool process(const OsInput::InputMessage*, flatbuffers::FlatBufferBuilder&);
+            bool process(const OsInput::InputMessage*, flatbuffers::FlatBufferBuilder&, float mode);
             void writeToFlatbuffers(ActionData::ActionBuilder&);
             void setPlayer(float);
             vector<float> getWalkOffset() {return walkOffset; }
@@ -93,9 +95,13 @@ namespace actionwalk {
 
     walk::~walk() {}
 
-    bool walk::process(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
+    bool walk::process(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder, float mode) {
         if (data->type() == OsInput::MessageType::MessageType_Pose) {
             const PoseData::Pose* pose = data->pose();
+
+            if(mode == 1) walkDetectionThreshold = walkDetectionThresholdTravel;
+            else if(mode == 0) walkDetectionThreshold = walkDetectionThresholdStand;
+
             calculateFrame(pose);
             calculateMean();
             calculateLeft();
@@ -114,25 +120,6 @@ namespace actionwalk {
                         meanData->at(currentLeftHipAngMean), meanData->at(currentRightHipAngMean), currentLeftStepLength,
                         currentRightStepLength, currentLeftProgress, currentRightProgress, currentTurnAng, currentStepRate,
                         currentStepLength, currentVelocity, currentVelocityThreshold, currentRealTimeLeftStatus, currentRealTimeRightStatus};
-
-            flatbuffersOffset = ActionData::CreateWalk(builder, 
-                                                        int(currentLeftStatus),
-                                                        int(currentRightStatus),
-                                                        currentLeftStepRate,
-                                                        currentRightStepRate,
-                                                        meanData->at(currentLeftHipAngMean),
-                                                        meanData->at(currentRightHipAngMean),
-                                                        currentLeftStepLength,
-                                                        currentRightStepLength,
-                                                        currentLeftProgress,
-                                                        currentRightProgress,
-                                                        currentTurnAng,
-                                                        currentStepRate,
-                                                        currentStepLength,
-                                                        currentVelocity,
-                                                        currentVelocityThreshold,
-                                                        currentRealTimeLeftStatus,
-                                                        currentRealTimeRightStatus);
         }
         return true;
     }

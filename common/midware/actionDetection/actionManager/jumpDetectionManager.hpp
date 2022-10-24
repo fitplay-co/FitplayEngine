@@ -6,7 +6,7 @@
 #include <math.h>
 #include "actionData_generated.h"
 #include "midwareComponent/midwareComponent.hpp"
-#include "jumpData.hpp"
+#include "jumpDetectionManagerData.hpp"
 
 namespace actionjump {
 

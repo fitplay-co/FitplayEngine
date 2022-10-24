@@ -1,8 +1,8 @@
 #include "midwareComponent/midwareComponent.hpp"
 #include "actionData_generated.h"
 #include "actionDetectionManager.hpp"
-#include "actionDetection/jumpDetection.hpp"
-#include "actionDetection/squatDetection.hpp"
+#include "actionDetection/actionManager/jumpDetectionManager.hpp"
+#include "actionDetection/actionManager/squatDetectionManager.hpp"
 
 namespace actionDetection {
 

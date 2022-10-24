@@ -4,7 +4,7 @@
 #include "actionManager/mockManager.hpp"
 #include "actionManager/modeManager.hpp"
 #include "actionDetectionCalculator.hpp"
-#include "walkDetection.hpp"
+#include "actionManager/walkDetectionManager.hpp"
 
 namespace actionDetection {
 
@@ -58,7 +58,7 @@ namespace actionDetection {
             }
 
             calculatorInstance.process(data);
-            walkInstance.process(data, builder);
+            walkInstance.process(data, builder, mode);
             calculateMode(data, builder);
             calculateMock(data, builder);
 
