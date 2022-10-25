@@ -10,7 +10,7 @@
 #include "walkDetectionManagerData.hpp"
 
 #define walkDetectionThresholdTravel 0.004
-#define walkDetectionThresholdStand 0.006
+#define walkDetectionThresholdStand 0.007
 
 namespace actionwalk {
     class walk: public Midware::MidwareComponent {
