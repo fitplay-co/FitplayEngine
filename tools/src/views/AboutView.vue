@@ -71,22 +71,11 @@ import { MessageType } from '../protocol/ts/inputMessage'
 export default {
   setup() {
     onMounted(()=>{
-      const chart1 = echarts.init(document.getElementById('chart1') as HTMLDivElement);
-      chart1.setOption(option)
-      const chart2 = echarts.init(document.getElementById('chart2') as HTMLDivElement);
-      chart2.setOption(option2)
-    });
-  },
-
-  method: {
-
-  }
-  
-}
-
-// var chart1 : echarts.ECharts;
-
-var arr = []
+      // const chart1 = echarts.init(document.getElementById('chart1') as HTMLDivElement);
+      // chart1.setOption(option)
+      // const chart2 = echarts.init(document.getElementById('chart2') as HTMLDivElement);
+      // chart2.setOption(option2)
+      var arr = []
 for(let i = 1,len=100;i<=len;i++){arr.push(i)}
 var num1 = new Array(100).fill(0);
 var num2 = new Array(100).fill(0);
@@ -128,6 +117,10 @@ var option2 = {
       type: "line"
     }]
 };
+const chart1 = echarts.init(document.getElementById('chart1') as HTMLDivElement);
+chart1.setOption(option)
+const chart2 = echarts.init(document.getElementById('chart2') as HTMLDivElement);
+chart2.setOption(option2)
 let url = 'ws://192.168.50.106:8181'
 var ws : WebSocket;
 let isReconnect=false;
@@ -275,29 +268,40 @@ function addFlatData(inputData:any){
     num2.shift()
 
 
-    const chart1 = echarts.init(document.getElementById('chart1') as HTMLDivElement)
-    const chart2 = echarts.init(document.getElementById('chart2') as HTMLDivElement)
-    // chart1.setOption({
-    //     title: {
-    //       subtext: text
-    //     },
-    //     yAxis: {
-    //       type: "value"
-    //     },
-    //     series: [{
-    //       data: num1
-    //     }]
-    // });
-    // chart2.setOption({
-    //     title: {
-    //       subtext: "Ground Location"
-    //     },
-    //     yAxis: {
-    //       type: "value"
-    //     },
-    //     series: [{
-    //       data: num2
-    //     }]
-    // });
+    // const chart1 = echarts.init(document.getElementById('chart1') as HTMLDivElement)
+    // const chart2 = echarts.init(document.getElementById('chart2') as HTMLDivElement)
+    chart1.setOption({
+        title: {
+          subtext: text
+        },
+        yAxis: {
+          type: "value"
+        },
+        series: [{
+          data: num1
+        }]
+    });
+    chart2.setOption({
+        title: {
+          subtext: "Ground Location"
+        },
+        yAxis: {
+          type: "value"
+        },
+        series: [{
+          data: num2
+        }]
+    });
 }
+    });
+  },
+
+  method: {
+
+  }
+  
+}
+
+// var chart1 : echarts.ECharts;
+
 </script>
