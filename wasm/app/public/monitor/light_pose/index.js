@@ -57,8 +57,7 @@ function ws_init(){
 
   var appClientMessage = {
     "type" : "application_client",
-    "id": "test_client",
-    "useJson" : true
+    "id": "test_client"
   }
 
   var appClientFlatMessage = {

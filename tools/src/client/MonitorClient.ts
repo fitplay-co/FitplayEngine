@@ -1,10 +1,6 @@
 import { InputMessage, Control, Pose} from "../protocol/ts/inputMessage"
 import { OutputMessage} from "../protocol/ts/outputMessage"
-import { ControlData } from "@/protocol/ts/applicationControl"
 import { Client } from "../protocol/ts/inputMessage"
-import { SensorClient } from "../protocol/ts/inputMessage"
-import { SensorFrame } from "../protocol/ts/inputMessage"
-import { SensorControl } from "../protocol/ts/inputMessage"
 import { ByteBuffer } from '../protocol/ts/flatbuffers/flatbuffers'; // located in node_modules
 import { Builder } from '../protocol/ts/flatbuffers/builder'
 import { MessageType } from '../protocol/ts/inputMessage'
@@ -70,11 +66,11 @@ class MonitorClient {
             "feature_id" : "ground_location",
             "action" : "reset" 
         }
-        this.send(Buffer.from(flatbuffersMessage(appClientMessage)))
-        this.send(Buffer.from(flatbuffersMessage(actionDetectionSubscribe)))
-        this.send(Buffer.from(flatbuffersMessage(groundLocationSubscribe)))
-        this.send(Buffer.from(flatbuffersMessage(gazeSubscribe)))
-        this.send(Buffer.from(flatbuffersMessage(fittingSubscribe)))
+        this.send(flatbuffersMessage(appClientMessage))
+        this.send(flatbuffersMessage(actionDetectionSubscribe))
+        this.send(flatbuffersMessage(groundLocationSubscribe))
+        this.send(flatbuffersMessage(gazeSubscribe))
+        this.send(flatbuffersMessage(fittingSubscribe))
         // this.send(JSON.stringify(appClientMessage))
         // this.send(JSON.stringify(actionDetectionSubscribe))
         // this.send(JSON.stringify(actionDetectionRelease))
@@ -95,7 +91,7 @@ class MonitorClient {
 
 var ClientInstance = new MonitorClient();
 
-function flatbuffersMessage(message: any): Uint8Array{
+function flatbuffersMessage(message: any) {
     var type = message.type;
     var builder = new Builder(1024);
     //var builder = new flatbuffers.Builder(1024)
@@ -131,7 +127,8 @@ function flatbuffersMessage(message: any): Uint8Array{
         InputMessage.addControl(builder, sensorControlOffset)
     }
     builder.finish(InputMessage.endInputMessage(builder))
-    return builder.asUint8Array()
+    return Buffer.from(builder.asUint8Array())
 }
 
 export { ClientInstance } 
+export { flatbuffersMessage }
