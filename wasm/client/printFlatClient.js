@@ -12,7 +12,6 @@ var SensorFrame = require('../../common/protocol/js/sensor/sensor-frame').Sensor
 var SensorControl = require('../../common/protocol/js/sensor/sensor-control').SensorControl
 
 var server_address = 'ws://192.168.50.254:8181/'
-
 // var server_address = 'ws://localhost:8181/'
 
 const args = process.argv.slice(2);
@@ -137,7 +136,7 @@ client.on('connect', function(connection) {
             // console.log("legLength:"+detectionResult.walk().leftLeg())
             // console.log(outputMessage.type() + "|" + outputMessage.sensorType())
             if(printModel == 1 && printContent == 0)
-            {console.log("Frame")
+            {console.log("Frame" + "," + Date.now())
             console.log("keyPoints")
             Object.keys(fitplayModel).forEach(function(key){
                 var num = fitplayModel[key]
