@@ -11,7 +11,7 @@ var SensorClient = require('../../common/protocol/js/sensor/sensor-client').Sens
 var SensorFrame = require('../../common/protocol/js/sensor/sensor-frame').SensorFrame
 var SensorControl = require('../../common/protocol/js/sensor/sensor-control').SensorControl
 
-var server_address = 'ws://192.168.50.106:8181/'
+var server_address = 'ws://192.168.50.254:8181/'
 
 // var server_address = 'ws://localhost:8181/'
 
@@ -138,11 +138,19 @@ client.on('connect', function(connection) {
             // console.log(outputMessage.type() + "|" + outputMessage.sensorType())
             if(printModel == 1 && printContent == 0)
             {console.log("Frame")
+            console.log("keyPoints")
             Object.keys(fitplayModel).forEach(function(key){
                 var num = fitplayModel[key]
                 console.log(key + "," + pose.keypoints(num).x() + "," + pose.keypoints(num).y() + "," + pose.keypoints(num).z()
                 + "," + pose.keypoints(num).score())
-            })}
+            })
+            console.log("keyPoints3D")
+            Object.keys(fitplayModel).forEach(function(key){
+                var num = fitplayModel[key]
+                console.log(key + "," + pose.keypoints3D(num).x() + "," + pose.keypoints3D(num).y() + "," + pose.keypoints3D(num).z()
+                + "," + pose.keypoints3D(num).score())
+            })
+            }
             else if(printModel == 0 && printContent == 0)
             {
                 console.log("Frame")
