@@ -22,7 +22,7 @@ class MonitorClient {
         var outputMessage = OutputMessage.getRootAsOutputMessage(new ByteBuffer(z))
         var detectionResult = outputMessage.detectionResult()!;
         var groundLocation = detectionResult.ground()!
-        console.log(groundLocation.x())
+        // console.log(groundLocation.x())
     }
 
     sendSubsribtion(this: WebSocket, evt: Event) {

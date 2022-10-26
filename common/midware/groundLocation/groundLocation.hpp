@@ -51,13 +51,13 @@ namespace ground {
                                 0, f_dy, centerPointY,
                                 0, 0, 1);
             mat3 cameraInverse = inverse(cameraParam);
-
-            if (pose->rgbdEnabled()) {
-                z_down = (pose->keypoints()->Get(24)->z() + pose->keypoints()->Get(23)->z())/2;
-            }
-            else {
-                z_down = distance_finder_z_filtered(pose, 23, 24)*2.6;
-            }
+            z_down = (pose->keypoints()->Get(24)->z() + pose->keypoints()->Get(23)->z())/2;
+            // if (pose->rgbdEnabled()) {
+            //     z_down = (pose->keypoints()->Get(24)->z() + pose->keypoints()->Get(23)->z())/2;
+            // }
+            // else {
+            //     z_down = distance_finder_z_filtered(pose, 23, 24)*2.6;
+            // }
 
             vec3 arr33 = vec3(pose->keypoints()->Get(24)->x()*widthScale*z_down, (1-pose->keypoints()->Get(24)->y())*heightScale*z_down, z_down);
             vec3 arr_3down = vec3((pose->keypoints()->Get(23)->x()+pose->keypoints()->Get(24)->x())*widthScale*z_down*0.5, (1-pose->keypoints()->Get(23)->y())*heightScale*z_down, z_down);

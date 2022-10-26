@@ -266,6 +266,7 @@ function addFlatData(inputData:any){
 
     num2.push(m2)
     num2.shift()
+    console.log(m2)
 
 
     // const chart1 = echarts.init(document.getElementById('chart1') as HTMLDivElement)
