@@ -11,7 +11,7 @@ var SensorClient = require('../../common/protocol/js/sensor/sensor-client').Sens
 var SensorFrame = require('../../common/protocol/js/sensor/sensor-frame').SensorFrame
 var SensorControl = require('../../common/protocol/js/sensor/sensor-control').SensorControl
 
-var server_address = 'ws://192.168.50.254:8181/'
+var server_address = 'ws://192.168.50.106:8181/'
 // var server_address = 'ws://localhost:8181/'
 
 const args = process.argv.slice(2);
@@ -152,7 +152,7 @@ client.on('connect', function(connection) {
             }
             else if(printModel == 0 && printContent == 0)
             {
-                console.log("Frame")
+                console.log("Frame" + "," + Date.now())
                 console.log("keyPoints")
                 for(var num = 0; num < 33; num++) {
                     console.log(landmarkMap[num] + "," + pose.keypoints(num).x() + "," + pose.keypoints(num).y() + "," + pose.keypoints(num).z()
