@@ -11,7 +11,7 @@ var SensorClient = require('../../common/protocol/js/sensor/sensor-client').Sens
 var SensorFrame = require('../../common/protocol/js/sensor/sensor-frame').SensorFrame
 var SensorControl = require('../../common/protocol/js/sensor/sensor-control').SensorControl
 
-var server_address = 'ws://10.103.19.105:8181/'
+var server_address = 'ws://192.168.50.136:8181/'
 
 var count = 0
 function FrameCount() {
@@ -68,8 +68,8 @@ client.on('connect', function(connection) {
             var detectionResult = outputMessage.detectionResult()
             var pose = outputMessage.pose()
             // console.log("legLength:"+detectionResult.walk().leftLeg())
-            console.log(outputMessage.type() + "|" + outputMessage.sensorType())
-            console.log("y[0]:"+pose.keypoints(0).y())
+            // console.log(outputMessage.type() + "|" + outputMessage.sensorType())
+            // console.log("y[0]:"+pose.keypoints(0).y())
 
             // console.log("Version: " + outputMessage.version());
             // console.log("Type: " + outputMessage.type());

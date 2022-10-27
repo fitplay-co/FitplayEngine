@@ -98,6 +98,8 @@ const int bridge_process_request_flatbuffer(void* handler, const char* input);
  *  09 10 11
  *  12 13 14
  *  15 16 17
+ *  width: 18
+ *  height: 19
  * @param num num of elements in parameters
  * @return const int return 0 if success, others if failed.
  */

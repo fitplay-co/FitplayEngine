@@ -48,10 +48,19 @@ namespace ground {
     bool groundLocation::process(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
         if (data->type() == OsInput::MessageType::MessageType_Pose) {
             const PoseData::Pose* pose = data->pose();
-            mat3 cameraParam = mat3(f_dx, 0, centerPointX,
-                                0, f_dy, centerPointY,
-                                0, 0, 1);
-            mat3 cameraInverse = inverse(cameraParam);
+            if(this->params_num < 18){
+                cout << __FUNCTION__ << ": Warnning: invaild parameters" << endl;
+                return false;
+            }
+            mat3 cameraParam = mat3(this->params[0], this->params[1], this->params[2],
+                                this->params[3], this->params[4], this->params[5],
+                                this->params[6], this->params[7], this->params[8]);
+            mat3 cameraInverse = mat3(this->params[9], this->params[10], this->params[11],
+                                this->params[12], this->params[13], this->params[14],
+                                this->params[15], this->params[16], this->params[17]);
+            widthScale = this->params[2];
+            heightScale = this->params[5];
+
             z_down = (pose->keypoints()->Get(24)->z() + pose->keypoints()->Get(23)->z())/2;
             // if (pose->rgbdEnabled()) {
             //     z_down = (pose->keypoints()->Get(24)->z() + pose->keypoints()->Get(23)->z())/2;
