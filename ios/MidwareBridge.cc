@@ -272,3 +272,16 @@ const int bridge_process_request(void* handler, json app_json){
 
     return 0;
 }
+
+const int bridge_set_parameters(void* handler, float* params, int num){
+    cout << "Enter: " << __FUNCTION__ << endl;
+    fitplayBridge::BridgeClass* bridge_handler = reinterpret_cast<fitplayBridge::BridgeClass*>(handler);
+    if(bridge_handler == nullptr){
+        cout << __FUNCTION__ << ": Error: invalid bridge handler" << endl;
+        return -1;
+    }
+
+    bridge_handler->setParameters(params, num);
+
+    return 0;
+}

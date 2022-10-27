@@ -38,6 +38,7 @@ namespace fitplayBridge {
       int getCurrentBufferSize();
       bool hasOutput();
       std::string getCurrentJSON();
+      void setParameters(float* params, int num);
   };
 
   BridgeClass::BridgeClass() {
@@ -349,5 +350,11 @@ namespace fitplayBridge {
 
     return result.dump();
     // return "test";
+  }
+
+  void BridgeClass::setParameters(float* params, int num){
+    for (int i = 0; i < midwareManager.componentList.size(); i++) {
+      midwareManager.componentList.at(i)->setParameters(params, num);
+    }
   }
 }

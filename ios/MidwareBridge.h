@@ -80,10 +80,28 @@ const int bridge_process_request(void* handler, json app_json);
  * @brief process user request for flatbuffer input
  * 
  * @param handler the bridge used to process data.
- * @param app_json request info.
+ * @param input request info.
  * @return const int return 0 if success, others if failed.
  */
 const int bridge_process_request_flatbuffer(void* handler, const char* input);
+
+/**
+ * @brief set parameters
+ * 
+ * @param handler the bridge used to process data.
+ * @param params parameters, which are expected to be:
+ *  intrinsic matrix:
+ *  0 1 2
+ *  3 4 5
+ *  6 7 8
+ *  inversed intrinsic matrix:
+ *  09 10 11
+ *  12 13 14
+ *  15 16 17
+ * @param num num of elements in parameters
+ * @return const int return 0 if success, others if failed.
+ */
+const int bridge_set_parameters(void* handler, float* params, int num);
 
 #if __cplusplus
 }
