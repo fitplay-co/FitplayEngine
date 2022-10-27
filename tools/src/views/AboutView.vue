@@ -43,6 +43,7 @@
             <option value="1" class="active">x</option>
             <option value="2">y</option>
             <option value="3">z</option>
+            <option value="4">leg_len</option>
         </select> 
     </div>
     <div id="chart2" style="width: 800px;height:400px;"></div>
@@ -260,6 +261,7 @@ function addFlatData(inputData:any){
     if(ground_location_data == 1) m2 = groundLocation.x();
     if(ground_location_data == 2) m2 = groundLocation.y();
     if(ground_location_data == 3) m2 = groundLocation.z();
+    if(ground_location_data == 4) m2 = groundLocation.legLength();
 
     num1.push(m1)
     num1.shift()
