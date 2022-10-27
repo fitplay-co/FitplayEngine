@@ -118,7 +118,7 @@ client.on('connect', function(connection) {
                     rr.stepRate + "," + rr.stepLen + "," + rr.velocity + "," + rr.velocityThreshold + "," + rr.realtimeLeftLeg
                     + "," + rr.realtimeRightLeg);}}
             else 
-            {console.log("Frame")
+            {console.log("Frame" + "," + Date.now())
             console.log("keyPoints")
             JSON.parse(message.utf8Data).pose_landmark.keypoints.forEach(element => {
                 console.log(element.name + "," +element.x + "," + element.y + "," + element.z )
