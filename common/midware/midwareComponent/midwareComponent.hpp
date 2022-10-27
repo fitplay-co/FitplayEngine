@@ -10,11 +10,14 @@ namespace Midware {
         protected:
             string name;
             int subscriberCount = 0; //订阅此功能的客户端数目
+            float* params = nullptr;
+            int params_num = 0;
             void increaseSubscriberCount();
             void decreaseSubscriberCount();
         public:
             MidwareComponent(string);
             ~MidwareComponent();
+            void setParameters(float* params, int num);
             bool handleInput(const OsInput::InputMessage*, flatbuffers::FlatBufferBuilder&);
             virtual bool process(const OsInput::InputMessage*, flatbuffers::FlatBufferBuilder&);
             virtual void writeToFlatbuffers(ActionData::ActionBuilder&);
@@ -33,6 +36,33 @@ namespace Midware {
         if (subscriberCount > 0) {
             --subscriberCount;
         }
+    }
+
+    void MidwareComponent::setParameters(float* params, int num){
+        if(num == 0){
+            if(this->params != nullptr){
+                free(this->params);
+            }
+            goto end;
+        }
+
+        if(this->params_num != num){
+            if(this->params != nullptr){
+                free(this->params);
+            }
+            this->params = (float*)calloc(num, sizeof(float));
+        }
+
+        memcpy(this->params, params, num * sizeof(float));
+
+end:
+        this->params_num = num;
+
+        cout << __FUNCTION__ << ": ";
+        for(int i = 0; i < this->params_num; i++){
+             cout << this->params[i] << " ";
+        }
+        cout << ", with num of " << this->params_num <<endl;
     }
 
     bool MidwareComponent::process(const OsInput::InputMessage* data, flatbuffers::FlatBufferBuilder& builder) {
