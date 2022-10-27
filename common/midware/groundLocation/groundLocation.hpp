@@ -14,19 +14,20 @@ namespace ground {
             float tracing = 0;
             float z_down = 0;
             float current_distance = 0;
-            float widthScale = 640;
-            float heightScale = 480;
+            float widthScale = 535;
+            float heightScale = 957;
             float startX = 0;
             float startY = 0;
             float startZ = 0;
             float pre_x = 0;
             float pre_z = 0;
             float pre_y = 0;
-            float centerPointX = 320;
-            float centerPointY = 240;
+            float pre_leg_len = 0;
+            float centerPointX = 267;
+            float centerPointY = 478;
             float f = 0.05;
-            float f_dx = 500; //  f/dx
-            float f_dy = 900;
+            float f_dx = 741; //  f/dx
+            float f_dy = 741;
             float legLength = 0;
             float whichLeg = 0; //用来识别以左右哪只脚的y为准，0代表左脚，1代表右脚
             float ground_data[5];
@@ -74,19 +75,21 @@ namespace ground {
                 pre_y = res_down[1];
                 pre_z = z_down;
             }
-            res_down[0] = res_down[0]*0.5+pre_x*0.5;
-            res_down[1] = res_down[1]*0.5+pre_y*0.5;
-            z_down = z_down*0.5+pre_z*0.5;
+            res_down[0] = res_down[0]*0.15+pre_x*0.85;
+            res_down[1] = res_down[1]*0.15+pre_y*0.85;
+            z_down = z_down*0.15+pre_z*0.85;
+            legLength = legLength*0.15+pre_leg_len*0.85;
 
-            ground_data[0] = res_down[0] - startX;
-            ground_data[1] = res_down[1] - startY + legLength;
-            ground_data[2] = z_down - startZ;
+            ground_data[0] = res_down[0];
+            ground_data[1] = res_down[1];
+            ground_data[2] = z_down;
             ground_data[3] = legLength;
             ground_data[4] = tracing;
 
             pre_x = res_down[0];
             pre_y = res_down[1];
             pre_z = z_down;
+            pre_leg_len = legLength;
 
             flatbuffersOffset = ActionData::CreateGround(builder, ground_data[0], ground_data[1], ground_data[2], ground_data[3], ground_data[4]);
             return true;
@@ -117,13 +120,14 @@ namespace ground {
     void groundLocation::distance_finder_leg(const PoseData::Pose* data) {
         float y_1 = fabs(data->keypoints3D()->Get(31)->y() - data->keypoints3D()->Get(23)->y());
         float y_2 = fabs(data->keypoints3D()->Get(32)->y() - data->keypoints3D()->Get(24)->y());
-        if(y_1 > legLength){
-            legLength = y_1;
-            whichLeg = 0;
-        }
-        if(y_2 > legLength){
-            legLength = y_2;
-            whichLeg = 1;
-        }
+        // if(y_1 > legLength){
+        //     legLength = y_1;
+        //     whichLeg = 0;
+        // }
+        // if(y_2 > legLength){
+        //     legLength = y_2;
+        //     whichLeg = 1;
+        // }
+        legLength = y_1 > y_2 ? y_1 : y_2;
     }
 }
