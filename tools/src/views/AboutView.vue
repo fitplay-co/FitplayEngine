@@ -122,7 +122,7 @@ const chart1 = echarts.init(document.getElementById('chart1') as HTMLDivElement)
 chart1.setOption(option)
 const chart2 = echarts.init(document.getElementById('chart2') as HTMLDivElement);
 chart2.setOption(option2)
-let url = 'ws://192.168.50.106:8181'
+let url = 'ws://192.168.50.136:8181'
 var ws : WebSocket;
 let isReconnect=false;
 websocketConnect();
@@ -265,10 +265,11 @@ function addFlatData(inputData:any){
 
     num1.push(m1)
     num1.shift()
+    console.log(m1)
 
     num2.push(m2)
     num2.shift()
-    console.log(m2)
+    // console.log(m2)
 
 
     // const chart1 = echarts.init(document.getElementById('chart1') as HTMLDivElement)
@@ -278,7 +279,9 @@ function addFlatData(inputData:any){
           subtext: text
         },
         yAxis: {
-          type: "value"
+          type: "value",
+          min : -10,
+          max : 10
         },
         series: [{
           data: num1
@@ -289,7 +292,9 @@ function addFlatData(inputData:any){
           subtext: "Ground Location"
         },
         yAxis: {
-          type: "value"
+          type: "value",
+          min : -10,
+          max : 10
         },
         series: [{
           data: num2
