@@ -1,51 +1,35 @@
 namespace actionwalk {
 
-    // frame data
-    static constexpr int preLeftFoot = 0;
-    static constexpr int preRightFoot = 1;
-    static constexpr int currentLeftFoot = 2;
-    static constexpr int currentRightFoot = 3; 
+    // walk action pose data
+    static constexpr int preLeftWalkPose = 0;
+    static constexpr int preRightWalkPose = 1;
+    static constexpr int currentLeftWalkPose = 2;
+    static constexpr int currentRightWalkPose = 3; 
     static constexpr int currentLeftHipAng = 4; 
     static constexpr int currentRightHipAng = 5;
     static constexpr int currentThighHeight = 6;
     static constexpr int currentLeftLegHeight = 7;
     static constexpr int currentRightLegHeight = 8;
-    static constexpr int currentLeftConfidence = 9;
-    static constexpr int currentRightConfidence = 10;
+    static constexpr int preLeftWalkPoseMean = 11;
+    static constexpr int preRightWalkPoseMean = 12;
+    static constexpr int currentLeftWalkPoseMean = 13;
+    static constexpr int currentRightWalkPoseMean = 14;
+    static constexpr int currentLeftHipAngMean = 15; 
+    static constexpr int currentRightHipAngMean = 16;
+    static constexpr int currentThighHeightMean = 17;
+    static constexpr int currentLegHeightMean = 18;
+    static constexpr int currentHeightMean = 19;
+    static constexpr int preLeftWalkStatus = 20;
+    static constexpr int preRightWalkStatus = 21;
 
-    // mean data
-    static constexpr int preLeftFootMean = 0;
-    static constexpr int preRightFootMean = 1;
-    static constexpr int currentLeftFootMean = 2;
-    static constexpr int currentRightFootMean = 3;
-    static constexpr int currentLeftHipAngMean = 4; 
-    static constexpr int currentRightHipAngMean = 5;
-    static constexpr int currentThighHeightMean = 6;
-    static constexpr int currentLegHeightMean = 7;
-    static constexpr int currentHeightMean = 8;
-
-    // progress data
-    static constexpr int preLeftStatus = 0;
-    static constexpr int totalLeftDistance = 1;
-    static constexpr int maxLeftDistance = 2;
-    static constexpr int currentProgressLeftStatus = 3;
-    static constexpr int realLeftStatus = 7;
-    static constexpr int preRightStatus = 4;
-    static constexpr int totalRightDistance = 5;
-    static constexpr int maxRightDistance = 6;
-    static constexpr int currentProgressRightStatus = 7;
-
-    // time data
+    // walk action time data
     static constexpr int timeLeftDown = 0;
     static constexpr int timeLeftUp = 1;
     static constexpr int timeLeftWindow = 2;
     static constexpr int timeRightDown = 3;
     static constexpr int timeRightUp = 4;
     static constexpr int timeRightWindow = 5;
-
-    // time data
-    // version 2
-    static constexpr int timeLock = 0;
-    static constexpr int timeAlpha = 1;
-    static constexpr int timeBeta = 2;
+    static constexpr int timeLock = 6;
+    static constexpr int timeAlpha = 7;
+    static constexpr int timeBeta = 8;
 }

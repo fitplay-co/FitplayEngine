@@ -68,7 +68,7 @@ namespace actionDetection {
             const ApplicationControl::Control* control = data->control(); 
             if (control->featureId()->str() == "action_detection") {
                 if (control->action()->str() == "set_player") {
-                    walkInstance.setPlayer(control->data()->height());
+                    walkInstance.setPlayerHeight(control->data()->height());
                 }
             }
         }
