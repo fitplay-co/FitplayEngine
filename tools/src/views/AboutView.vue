@@ -2,6 +2,12 @@
   <div class="about">
     <h1>Fitplay Debugging Tools </h1>
   </div>
+  <div>SERVER IP
+        <select id="server_ip">
+            <option value="0" class="active">ws://192.168.50.106:8181</option>
+            <!-- <option value="1">ws://192.168.50.136:8181</option> -->
+        </select> 
+  </div>
   <div>Keypoint
         <select id="keypoints">
             <option value="0" class="active">nose</option>
@@ -122,7 +128,9 @@ const chart1 = echarts.init(document.getElementById('chart1') as HTMLDivElement)
 chart1.setOption(option)
 const chart2 = echarts.init(document.getElementById('chart2') as HTMLDivElement);
 chart2.setOption(option2)
-let url = 'ws://192.168.50.136:8181'
+var ip_select = (document.getElementById('server_ip') as HTMLSelectElement).options[(document.getElementById('server_ip') as HTMLSelectElement).selectedIndex];
+var url = ip_select.text;
+// let url = 'ws://192.168.50.136:8181'
 var ws : WebSocket;
 let isReconnect=false;
 websocketConnect();
@@ -280,8 +288,8 @@ function addFlatData(inputData:any){
         },
         yAxis: {
           type: "value",
-          min : -10,
-          max : 10
+          min : -1,
+          max : 1
         },
         series: [{
           data: num1
@@ -293,8 +301,8 @@ function addFlatData(inputData:any){
         },
         yAxis: {
           type: "value",
-          min : -10,
-          max : 10
+          min : -1,
+          max : 1
         },
         series: [{
           data: num2
