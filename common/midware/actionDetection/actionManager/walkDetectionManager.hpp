@@ -9,8 +9,13 @@
 #include "euroFilter.hpp"
 #include "walkDetectionManagerData.hpp"
 
-#define walkDetectionThresholdTravel 0.004
-#define walkDetectionThresholdStand 0.008
+// #define useKneeAsDetectionPoint
+#define walkDetectionThresholdTravel 0.005
+#define walkDetectionThresholdStand 0.01
+#ifdef useKneeAsDetectionPoint
+    #define walkDetectionThresholdTravel 0.004
+    #define walkDetectionThresholdStand 0.008
+#endif
 
 namespace actionwalk {
     class walk: public Midware::MidwareComponent {
@@ -135,8 +140,12 @@ namespace actionwalk {
     void walk::calculateFrame(const PoseData::Pose* data) {
         frameData->at(preLeftFoot) = frameData->at(currentLeftFoot);
         frameData->at(preRightFoot) = frameData->at(currentRightFoot);
-        frameData->at(currentLeftFoot) = data->keypoints()->Get(27)->y() + data->keypoints()->Get(31)->y() + data->keypoints()->Get(25)->y();
-        frameData->at(currentRightFoot) = data->keypoints()->Get(28)->y() + data->keypoints()->Get(32)->y() + data->keypoints()->Get(26)->y();
+        frameData->at(currentLeftFoot) = data->keypoints()->Get(27)->y() + data->keypoints()->Get(31)->y();
+        frameData->at(currentRightFoot) = data->keypoints()->Get(28)->y() + data->keypoints()->Get(32)->y();
+        #ifdef useKneeAsDetectionPoint
+            frameData->at(currentLeftFoot) = data->keypoints()->Get(27)->y() + data->keypoints()->Get(31)->y() + data->keypoints()->Get(25)->y();
+            frameData->at(currentRightFoot) = data->keypoints()->Get(28)->y() + data->keypoints()->Get(32)->y() + data->keypoints()->Get(26)->y();
+        #endif  
         frameData->at(currentLeftHipAng) = calVecAngle(data, 11, 23, 25, 1);
         frameData->at(currentRightHipAng) = calVecAngle(data, 12, 24, 26, 1);
         float leftThighHeight = data->keypoints3D()->Get(23)->y() - data->keypoints3D()->Get(25)->y();
