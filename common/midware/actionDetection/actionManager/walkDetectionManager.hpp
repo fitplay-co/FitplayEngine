@@ -8,7 +8,7 @@
 #include "walkDetectionManagerData.hpp"
 #include "actionManagerUtility.hpp"
 
-#define useKneeAsDetectionPoint
+// #define useKneeAsDetectionPoint
 #define walkDetectionThresholdTravel 0.005
 #define walkDetectionThresholdStand 0.01
 #ifdef useKneeAsDetectionPoint
