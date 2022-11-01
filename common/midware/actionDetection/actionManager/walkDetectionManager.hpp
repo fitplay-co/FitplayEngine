@@ -84,6 +84,9 @@ namespace actionwalk {
         return true;
     }
 
+    void walk::writeToFlatbuffers(ActionData::ActionBuilder& actionBuilder) {
+    }
+
     void walk::setPlayerHeight(float height) {
         configPlayerHeight = height * 0.01;
     }
