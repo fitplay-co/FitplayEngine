@@ -1,5 +1,37 @@
 namespace actionwalk {
 
+    // ****** 1 ******
+    // provide different threshold for two basic detection keypoints routes :
+    // toe ankle
+    // toe ankle knee
+
+    // #define useKneeAsDetectionPoint
+    #ifndef useKneeAsDetectionPoint
+        #define walkDetectionThresholdTravel 0.005
+        #define walkDetectionThresholdStand 0.01
+    #endif
+
+    #ifdef useKneeAsDetectionPoint
+        #define walkDetectionThresholdTravel 0.004
+        #define walkDetectionThresholdStand 0.008
+    #endif
+
+    // ****** 2 ******
+    // parameters for filter
+    // todo : improve height filter
+    static constexpr double frequency = 60;
+    static constexpr double mincutoff = 0.85;
+    static constexpr double beta = 1.2;
+    static constexpr double dcutoff = 1.0;
+    static constexpr float angLowPassFilterParam = 0.8;
+
+    // ****** 3 ******
+    // height prediction / velocity parameters
+    static constexpr float thighLegRatio = 2.004;
+    static constexpr float thighHeightRatio = 0.245;
+    static constexpr float heightVelocityBetaRatio = 2.401;
+    static constexpr float stepRateBetaMax = 10;
+
     // walk action pose data
     static constexpr int preLeftWalkPose = 0;
     static constexpr int preRightWalkPose = 1;

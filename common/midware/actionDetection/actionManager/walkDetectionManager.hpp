@@ -8,14 +8,6 @@
 #include "walkDetectionManagerData.hpp"
 #include "actionManagerUtility.hpp"
 
-// #define useKneeAsDetectionPoint
-#define walkDetectionThresholdTravel 0.005
-#define walkDetectionThresholdStand 0.01
-#ifdef useKneeAsDetectionPoint
-    #define walkDetectionThresholdTravel 0.004
-    #define walkDetectionThresholdStand 0.008
-#endif
-
 namespace actionwalk {
     class walk: public Midware::MidwareComponent {
         private:
@@ -24,7 +16,6 @@ namespace actionwalk {
             std::shared_ptr<vector<float>> walkActionPoseData;
             std::shared_ptr<vector<float>> walkActionTimeData;
             // one euro filter parameters
-            double frequency = 60, mincutoff = 0.85, beta = 1.2, dcutoff = 1.0;
             float euroFilterFrameCount = 0;
             std::shared_ptr<detection::OneEuroFilter> leftWalkEuroFilter;
             std::shared_ptr<detection::OneEuroFilter> rightWalkEuroFilter;
@@ -42,8 +33,6 @@ namespace actionwalk {
 
             float configPlayerHeight = 0;
             float fpmStopCount = 0;
-
-            flatbuffers::Offset<ActionData::Walk> flatbuffersOffset;
             vector<float> walkOffset;
         public:
             walk();
@@ -61,7 +50,7 @@ namespace actionwalk {
     };
 
     walk::walk(): MidwareComponent("walk") {
-        walkActionPoseData = make_shared<vector<float>>(30);
+        walkActionPoseData = make_shared<vector<float>>(25);
         walkActionTimeData = make_shared<vector<float>>(10);
         leftWalkEuroFilter = make_shared<detection::OneEuroFilter>(frequency, mincutoff, beta, dcutoff);
         rightWalkEuroFilter = make_shared<detection::OneEuroFilter>(frequency, mincutoff, beta, dcutoff);
@@ -93,10 +82,6 @@ namespace actionwalk {
                         currentStepRateBeta, currentStepLenBeta, currentVelocityBeta, currentVelocityBetaThreshold, 0, 0};
         }
         return true;
-    }
-
-    void walk::writeToFlatbuffers(ActionData::ActionBuilder& actionBuilder) {
-        actionBuilder.add_walk(flatbuffersOffset);
     }
 
     void walk::setPlayerHeight(float height) {
@@ -135,11 +120,11 @@ namespace actionwalk {
         // low pass filter
         // walkActionPoseData->at(currentLeftFootMean) = walkActionPoseData->at(currentLeftFootMean) * 0.85 + walkActionPoseData->at(currentLeftFoot) * 0.15;
         // walkActionPoseData->at(currentRightFootMean) = walkActionPoseData->at(currentRightFootMean) * 0.85 + walkActionPoseData->at(currentRightFoot) * 0.15;
-        walkActionPoseData->at(currentLeftHipAngMean) = walkActionPoseData->at(currentLeftHipAngMean) * 0.8 + walkActionPoseData->at(currentLeftHipAng) * 0.2;
-        walkActionPoseData->at(currentRightHipAngMean) = walkActionPoseData->at(currentRightHipAngMean) * 0.8 + walkActionPoseData->at(currentRightHipAng) * 0.2;
+        walkActionPoseData->at(currentLeftHipAngMean) = walkActionPoseData->at(currentLeftHipAngMean) * angLowPassFilterParam + walkActionPoseData->at(currentLeftHipAng) * (1 - angLowPassFilterParam);
+        walkActionPoseData->at(currentRightHipAngMean) = walkActionPoseData->at(currentRightHipAngMean) * angLowPassFilterParam + walkActionPoseData->at(currentRightHipAng) * (1 - angLowPassFilterParam);
         walkActionPoseData->at(currentThighHeightMean) = (walkActionPoseData->at(currentThighHeightMean) * 0.9 + walkActionPoseData->at(currentThighHeight) * 0.1) * 0.79 + 0.15;
-        walkActionPoseData->at(currentLegHeightMean) = walkActionPoseData->at(currentThighHeightMean) * 2.004;
-        walkActionPoseData->at(currentHeightMean) = walkActionPoseData->at(currentThighHeightMean) / 0.245;
+        walkActionPoseData->at(currentLegHeightMean) = walkActionPoseData->at(currentThighHeightMean) * thighLegRatio;
+        walkActionPoseData->at(currentHeightMean) = walkActionPoseData->at(currentThighHeightMean) / thighHeightRatio;
     }
 
     void walk::calculateLeft() {
@@ -267,7 +252,7 @@ namespace actionwalk {
     }
 
     void walk::calculateStepLen() {
-        float maxSL = (configPlayerHeight==0)? walkActionPoseData->at(currentHeightMean) * 1.2 : configPlayerHeight * 1.2;//configHeight 是 身高？
+        float maxSL = (configPlayerHeight==0)? walkActionPoseData->at(currentHeightMean) * 1.2 : configPlayerHeight * 1.2;
         float leftFlexion = (180 - walkActionPoseData->at(currentLeftHipAngMean)) > 90 ? 90 : (180 - walkActionPoseData->at(currentLeftHipAngMean));
         float rightFlexion = (180 - walkActionPoseData->at(currentRightHipAngMean)) > 90 ? 90 : (180 - walkActionPoseData->at(currentRightHipAngMean));
         if(walkActionPoseData->at(preLeftWalkStatus) == 1 && currentLeftWalkStatus == -1) {
@@ -305,10 +290,10 @@ namespace actionwalk {
         float preStepRate = currentStepRateBeta;
         currentStepRateBeta = currentLeftStepRate > currentRightStepRate ? currentLeftStepRate : currentRightStepRate;
 
-        if(walkActionTimeData->at(timeAlpha)!=0&&walkActionTimeData->at(timeBeta)!=0){
+        if(walkActionTimeData->at(timeAlpha)!=0 && walkActionTimeData->at(timeBeta)!=0){
             currentStepRateBeta = 1 / (float(abs(walkActionTimeData->at(timeAlpha) - walkActionTimeData->at(timeBeta)))/1000);
         }
-        if(currentStepRateBeta > 10) currentStepRateBeta = 10;
+        if(currentStepRateBeta > stepRateBetaMax) currentStepRateBeta = stepRateBetaMax;
         // currentVelocity = currentVelocity * 0.8 + (currentStepRate * currentStepLength) * 0.2;
         // if(currentVelocity > 10) currentVelocity = 10;
         // if(currentVelocity < 0.01) currentVelocity = 0;
@@ -316,7 +301,7 @@ namespace actionwalk {
         if(currentLeftWalkStatus == 0 && currentRightWalkStatus == 0) {
             currentVelocityBeta = 0;
         }
-        currentVelocityBetaThreshold = (configPlayerHeight==0)? sqrt(2.401 * walkActionPoseData->at(currentHeightMean)) : sqrt(2.401 * configPlayerHeight);
+        currentVelocityBetaThreshold = (configPlayerHeight==0)? sqrt(heightVelocityBetaRatio * walkActionPoseData->at(currentHeightMean)) : sqrt(heightVelocityBetaRatio * configPlayerHeight);
     }
 }
 
