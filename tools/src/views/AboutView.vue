@@ -53,6 +53,13 @@
         </select> 
     </div>
     <div id="chart2" style="width: 800px;height:400px;"></div>
+    <div>General Monitor
+        <select id="general_detection">
+            <option value="1" class="active">mode</option>
+            <option value="2">confidence</option>
+        </select> 
+    </div>
+    <div id="chart3" style="width: 800px;height:400px;"></div>
 </template>
 
 <style>
@@ -86,6 +93,7 @@ export default {
 for(let i = 1,len=100;i<=len;i++){arr.push(i)}
 var num1 = new Array(100).fill(0);
 var num2 = new Array(100).fill(0);
+var num3 = new Array(100).fill(0);
 var option = {
     title: {
         text: 'Keypoint Monitor',
@@ -107,8 +115,8 @@ var option = {
 };
 var option2 = {
     title: {
-        text: 'Keypoint Monitor',
-        subtext: 'M1'
+        text: 'Ground Location Monitor',
+        subtext: 'M2'
     },
     xAxis: {
       type: "category",
@@ -124,10 +132,31 @@ var option2 = {
       type: "line"
     }]
 };
+var option3 = {
+    title: {
+        text: 'General Monitor',
+        subtext: 'M3'
+    },
+    xAxis: {
+      type: "category",
+      name: "time",
+      data: arr
+    },
+    yAxis: {
+      type: "value"
+    },
+    series: [{
+      symbol: "none",
+      data: num3,
+      type: "line"
+    }]
+};
 const chart1 = echarts.init(document.getElementById('chart1') as HTMLDivElement);
 chart1.setOption(option)
 const chart2 = echarts.init(document.getElementById('chart2') as HTMLDivElement);
 chart2.setOption(option2)
+const chart3 = echarts.init(document.getElementById('chart3') as HTMLDivElement);
+chart3.setOption(option3)
 var ip_select = (document.getElementById('server_ip') as HTMLSelectElement).options[(document.getElementById('server_ip') as HTMLSelectElement).selectedIndex];
 var url = ip_select.text;
 // let url = 'ws://192.168.50.136:8181'
@@ -249,6 +278,8 @@ function addFlatData(inputData:any){
     var select_data = Number((document.getElementById('keypoints_data') as HTMLSelectElement).options[(document.getElementById('keypoints_data') as HTMLSelectElement).selectedIndex].value);
 
     var ground_location_data = Number((document.getElementById('ground_location') as HTMLSelectElement).options[(document.getElementById('ground_location') as HTMLSelectElement).selectedIndex].value);
+    var general_detection_data = Number((document.getElementById('general_detection') as HTMLSelectElement).options[(document.getElementById('general_detection') as HTMLSelectElement).selectedIndex].value);
+    
     const z = new Uint8Array(inputData);
     var outputMessage = OutputMessage.getRootAsOutputMessage(new ByteBuffer(z))
     var pose = outputMessage.pose()!;
@@ -257,19 +288,25 @@ function addFlatData(inputData:any){
 
     var m1 : Number | undefined;
     var m2 : Number | undefined;
+    var m3 : Number | undefined;
 
     if (select_data == 1 && select_type == 1) m1 = pose.keypoints(value)?.x();
     if (select_data == 2 && select_type == 1) m1 = pose.keypoints(value)?.y();
     if (select_data == 3 && select_type == 1) m1 = pose.keypoints(value)?.z();
+    if (select_data == 4 && select_type == 1) m1 = pose.keypoints(value)?.score();
 
     if (select_data == 1 && select_type == 2) m1 = pose.keypoints3D(value)?.x();
     if (select_data == 2 && select_type == 2) m1 = pose.keypoints3D(value)?.y();
     if (select_data == 3 && select_type == 2) m1 = pose.keypoints3D(value)?.z();
+    if (select_data == 4 && select_type == 2) m1 = pose.keypoints3D(value)?.score();
 
     if(ground_location_data == 1) m2 = groundLocation.x();
     if(ground_location_data == 2) m2 = groundLocation.y();
     if(ground_location_data == 3) m2 = groundLocation.z();
     if(ground_location_data == 4) m2 = groundLocation.legLength();
+
+    if(general_detection_data == 1) m3 = detectionResult.stand()?.mode();
+    if(general_detection_data == 2) m3 = detectionResult.general()?.confidence();
 
     num1.push(m1)
     num1.shift()
@@ -278,6 +315,10 @@ function addFlatData(inputData:any){
     num2.push(m2)
     num2.shift()
     // console.log(m2)
+
+    num3.push(m3)
+    num3.shift()
+    // console.log(m3)
 
 
     // const chart1 = echarts.init(document.getElementById('chart1') as HTMLDivElement)
@@ -306,6 +347,19 @@ function addFlatData(inputData:any){
         },
         series: [{
           data: num2
+        }]
+    });
+    chart3.setOption({
+        title: {
+          subtext: "General Detection"
+        },
+        yAxis: {
+          type: "value",
+          min : -1,
+          max : 1
+        },
+        series: [{
+          data: num3
         }]
     });
 }
