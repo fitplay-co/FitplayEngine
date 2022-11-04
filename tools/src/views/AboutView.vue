@@ -4,13 +4,13 @@
   </div>
   <div>SERVER IP
         <select id="server_ip">
-            <option value="0" class="active">ws://192.168.50.106:8181</option>
+            <option value="0" class="active">ws://192.168.50.231:8181</option>
             <!-- <option value="1">ws://192.168.50.136:8181</option> -->
         </select> 
   </div>
   <div>Keypoint
         <select id="keypoints">
-            <option value="0" class="active">nose</option>
+            <option value="0" class="active">head</option>
             <option value="11">left_shoulder</option>
             <option value="12">right_shoulder</option>
             <option value="13">left_elbow</option>
@@ -57,6 +57,7 @@
         <select id="general_detection">
             <option value="1" class="active">mode</option>
             <option value="2">confidence</option>
+            <option value="3">jump</option>
         </select> 
     </div>
     <div id="chart3" style="width: 800px;height:400px;"></div>
@@ -307,14 +308,15 @@ function addFlatData(inputData:any){
 
     if(general_detection_data == 1) m3 = detectionResult.stand()?.mode();
     if(general_detection_data == 2) m3 = detectionResult.general()?.confidence();
+    if(general_detection_data == 3) m3 = detectionResult.jump()?.onTheGround();
 
     num1.push(m1)
     num1.shift()
-    console.log(m1)
+    // console.log(m1)
 
     num2.push(m2)
     num2.shift()
-    // console.log(m2)
+    console.log(m2)
 
     num3.push(m3)
     num3.shift()
@@ -342,8 +344,8 @@ function addFlatData(inputData:any){
         },
         yAxis: {
           type: "value",
-          min : -1,
-          max : 1
+          min : -2,
+          max : 2
         },
         series: [{
           data: num2

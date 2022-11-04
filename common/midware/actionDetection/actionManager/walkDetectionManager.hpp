@@ -47,6 +47,7 @@ namespace actionwalk {
             void calculateRight();
             void calculateStepLen();
             void calculateStepRate();
+            float calculateArea();
     };
 
     walk::walk(): MidwareComponent("walk") {
@@ -107,6 +108,7 @@ namespace actionwalk {
         walkActionPoseData->at(currentThighHeight) = std::max(leftThighHeight, rightThighHeight);
         walkActionPoseData->at(currentLeftLegHeight) = data->keypoints3D()->Get(27)->y() - data->keypoints3D()->Get(23)->y();
         walkActionPoseData->at(currentRightLegHeight) = data->keypoints3D()->Get(28)->y() - data->keypoints3D()->Get(24)->y();
+        // walkActionPoseData->at(trunkArea) = calculateArea();
     }
 
     void walk::calculateMean() {
@@ -306,6 +308,8 @@ namespace actionwalk {
         }
         currentVelocityBetaThreshold = (configPlayerHeight==0)? sqrt(heightVelocityBetaRatio * walkActionPoseData->at(currentHeightMean)) : sqrt(heightVelocityBetaRatio * configPlayerHeight);
     }
+
+
 }
 
 #endif
