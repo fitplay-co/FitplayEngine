@@ -53,6 +53,7 @@ namespace actionwalk {
     static constexpr int currentHeightMean = 19;
     static constexpr int preLeftWalkStatus = 20;
     static constexpr int preRightWalkStatus = 21;
+    static constexpr int trunkArea = 22;
 
     // walk action time data
     static constexpr int timeLeftDown = 0;

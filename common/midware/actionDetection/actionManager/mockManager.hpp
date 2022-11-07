@@ -90,10 +90,10 @@ namespace actionDetection {
     void mockManager::calculateWalkConfidence(const PoseData::Pose* data) {
         int leftConfidence, rightConfidence;
         // left foot
-        if(data->keypoints()->Get(27)->score()>0.7 && data->keypoints()->Get(31)->score()>0.7) leftConfidence = 1;
+        if(data->keypoints()->Get(27)->score()>0.02 && data->keypoints()->Get(31)->score()>0.02) leftConfidence = 1;
         else leftConfidence = 0;
         // right foot
-        if(data->keypoints()->Get(28)->score()>0.7 && data->keypoints()->Get(32)->score()>0.7) rightConfidence = 1;
+        if(data->keypoints()->Get(28)->score()>0.02 && data->keypoints()->Get(32)->score()>0.02) rightConfidence = 1;
         else rightConfidence = 0;
 
         if(leftConfidence && rightConfidence) walkConfidence = 0;

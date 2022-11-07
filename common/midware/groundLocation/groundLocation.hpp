@@ -110,6 +110,7 @@ namespace ground {
 
             ground_data[0] = res_down[0] - startX;
             ground_data[1] = res_down[1] - startY + legLength;
+            ground_data[1] = 1.91;
             ground_data[2] = z_down - startZ;
             ground_data[3] = legLength;
             ground_data[4] = tracing;

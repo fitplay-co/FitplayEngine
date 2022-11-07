@@ -18,4 +18,4 @@ mkdir -p $BUILD_DIR/include
 
 cp lib/iOS/fitplaymidware.a $BUILD_DIR/lib
 cp ./*.h $BUILD_DIR/include
-cp ../common/third_party/*.hpp $BUILD_DIR/include
+cp ../common/third_party/json.hpp $BUILD_DIR/include
