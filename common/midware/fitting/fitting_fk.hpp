@@ -65,25 +65,25 @@ namespace fitplay {
         for(int i = 0; i< jointPointSize + 1; i++) {
             jointPoints.push_back(jointPoint());
         }
-        addJointPoint(jointPoints[18], "root", -1, 0.4f, down);
-        addJointPoint(jointPoints[0], "spine", 18, 0.4f, down);
-        addJointPoint(jointPoints[1], "neck", 0, 0.1f, down);
-        addJointPoint(jointPoints[2], "lshoulder", 0, 0.16f, right);
-        addJointPoint(jointPoints[3], "rshoulder", 0, 0.16f, left);
-        addJointPoint(jointPoints[4], "luparm", 2, 0.24f, right);
-        addJointPoint(jointPoints[5], "ruparm", 3, 0.24f, left);
-        addJointPoint(jointPoints[6], "llowarm", 4, 0.2f, right);
-        addJointPoint(jointPoints[7], "rlowarm", 5, 0.2f, left);
-        addJointPoint(jointPoints[8], "lhand", 6, 0.1f, right);
-        addJointPoint(jointPoints[9], "rhand", 7, 0.1f, left);
-        addJointPoint(jointPoints[10], "lhip", 18, 0.1f, down);
-        addJointPoint(jointPoints[11], "rhip", 18, 0.1f, down);
-        addJointPoint(jointPoints[12], "lupleg", 10, 0.4f, up);
-        addJointPoint(jointPoints[13], "rupleg", 11, 0.4f, up);
-        addJointPoint(jointPoints[14], "llowleg", 12, 0.37f, up);
-        addJointPoint(jointPoints[15], "rlowleg", 13, 0.37f, up);
-        addJointPoint(jointPoints[16], "lfoot", 14, 0.1f, up);
-        addJointPoint(jointPoints[17], "rfoot", 15, 0.1f, up);
+        addJointPoint(jointPoints[JP_ROOT], "root", NO_PARENT, 0.4f, down);
+        addJointPoint(jointPoints[JP_SPINE], "spine", JP_ROOT, 0.4f, down);
+        addJointPoint(jointPoints[JP_NECK], "neck", JP_SPINE, 0.1f, down);
+        addJointPoint(jointPoints[JP_L_SHOULDER], "lshoulder", JP_SPINE, 0.16f, right);
+        addJointPoint(jointPoints[JP_R_SHOULDER], "rshoulder", JP_SPINE, 0.16f, left);
+        addJointPoint(jointPoints[JP_L_UP_ARM], "luparm", JP_L_SHOULDER, 0.24f, right);
+        addJointPoint(jointPoints[JP_R_UP_ARM], "ruparm", JP_R_SHOULDER, 0.24f, left);
+        addJointPoint(jointPoints[JP_L_LO_ARM], "llowarm", JP_L_UP_ARM, 0.2f, right);
+        addJointPoint(jointPoints[JP_R_LO_ARM], "rlowarm", JP_R_UP_ARM, 0.2f, left);
+        addJointPoint(jointPoints[JP_L_HAND], "lhand", JP_L_LO_ARM, 0.1f, right);
+        addJointPoint(jointPoints[JP_R_HAND], "rhand", JP_R_LO_ARM, 0.1f, left);
+        addJointPoint(jointPoints[JP_L_HIP], "lhip", JP_ROOT, 0.1f, down);
+        addJointPoint(jointPoints[JP_R_HIP], "rhip", JP_ROOT, 0.1f, down);
+        addJointPoint(jointPoints[JP_L_UP_LEG], "lupleg", JP_L_HIP, 0.4f, up);
+        addJointPoint(jointPoints[JP_R_UP_LEG], "rupleg", JP_R_HIP, 0.4f, up);
+        addJointPoint(jointPoints[JP_L_LO_LEG], "llowleg", JP_L_UP_LEG, 0.37f, up);
+        addJointPoint(jointPoints[JP_R_LO_LEG], "rlowleg", JP_R_UP_LEG, 0.37f, up);
+        addJointPoint(jointPoints[JP_L_FOOT], "lfoot", JP_L_LO_LEG, 0.1f, up);
+        addJointPoint(jointPoints[JP_R_FOOT], "rfoot", JP_R_LO_LEG, 0.1f, up);
     }
 
     FittingFk::~FittingFk() {}

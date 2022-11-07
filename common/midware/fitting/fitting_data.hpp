@@ -45,6 +45,28 @@ namespace fitplay {
     static constexpr int R_FOOT = 18;
     static constexpr int NO_NEXT = -1;
 
+    static constexpr int JP_SPINE = 0; 
+    static constexpr int JP_NECK = 1;      
+    static constexpr int JP_L_SHOULDER = 2;  
+    static constexpr int JP_R_SHOULDER = 3; 
+    static constexpr int JP_L_UP_ARM = 4;
+    static constexpr int JP_R_UP_ARM = 5;
+    static constexpr int JP_L_LO_ARM = 6;
+    static constexpr int JP_R_LO_ARM = 7;
+    static constexpr int JP_L_HAND = 8;  
+    static constexpr int JP_R_HAND = 9;
+    static constexpr int JP_L_HIP = 10;
+    static constexpr int JP_R_HIP = 11;
+    static constexpr int JP_L_UP_LEG = 12;
+    static constexpr int JP_R_UP_LEG = 13;
+    static constexpr int JP_L_LO_LEG = 14;
+    static constexpr int JP_R_LO_LEG = 15;
+    static constexpr int JP_L_FOOT = 16;
+    static constexpr int JP_R_FOOT = 17;
+    static constexpr int JP_ROOT = 18;
+    static constexpr int NO_PARENT = -1;
+
+
     static constexpr int kinamaticChainNext[jointPointSize + 1][3] {
         { NECK, L_HIP, R_HIP }, //0 HIP_CENTER
         { HEAD, L_SHOULDER, R_SHOULDER }, //1 NECK
