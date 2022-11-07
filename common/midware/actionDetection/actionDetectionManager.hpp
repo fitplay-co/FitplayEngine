@@ -183,7 +183,7 @@ namespace actionDetection {
                 else modeShiftCount = modeShiftCount + 1;
             }
             else modeShiftCount = 0;
-            if(abs(footDis) > (shoulderDis + 0.15)) {
+            if(abs(footDis) > (shoulderDis + 0.1)) {
                 mode = 0;
                 resetModeStatusBit();
             }

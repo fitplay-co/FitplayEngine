@@ -3,6 +3,30 @@
 
 namespace actionDetection {
 
+    enum pose_landmark {
+        head = 0,
+
+        right_shoulder = 12,
+        right_elbow = 14,
+        right_wrist = 16,
+        right_hand = 18,
+
+        left_shoulder = 11,
+        left_elbow = 13,
+        left_wrist = 15,
+        left_hand = 17,
+
+        right_hip = 24,
+        right_knee = 26,
+        right_ankle = 28,
+        right_toe = 30,
+
+        left_hip = 23,
+        left_knee = 25,
+        left_ankle = 27,
+        left_toe = 29
+    };
+
     struct subscribeAngle {
         int num1;
         int num2;

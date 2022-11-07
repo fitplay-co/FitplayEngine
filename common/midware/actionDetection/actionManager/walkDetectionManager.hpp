@@ -6,11 +6,13 @@
 #include "midwareComponent/midwareComponent.hpp"
 #include "euroFilter.hpp"
 #include "walkDetectionManagerData.hpp"
+#include "actionDetection/actionDetectionData.hpp"
 #include "actionManagerUtility.hpp"
 
 namespace actionwalk {
     class walk: public Midware::MidwareComponent {
         private:
+            typedef actionDetection::pose_landmark landmark;
             float walkDetectionThreshold;
             // calculated data
             std::shared_ptr<vector<float>> walkActionPoseData;
@@ -47,7 +49,7 @@ namespace actionwalk {
             void calculateRight();
             void calculateStepLen();
             void calculateStepRate();
-            float calculateArea();
+            float calculateArea(const PoseData::Pose* data);
     };
 
     walk::walk(): MidwareComponent("walk") {
@@ -108,7 +110,7 @@ namespace actionwalk {
         walkActionPoseData->at(currentThighHeight) = std::max(leftThighHeight, rightThighHeight);
         walkActionPoseData->at(currentLeftLegHeight) = data->keypoints3D()->Get(27)->y() - data->keypoints3D()->Get(23)->y();
         walkActionPoseData->at(currentRightLegHeight) = data->keypoints3D()->Get(28)->y() - data->keypoints3D()->Get(24)->y();
-        // walkActionPoseData->at(trunkArea) = calculateArea();
+        walkActionPoseData->at(currentTrunkArea) = calculateArea(data);
     }
 
     void walk::calculateMean() {
@@ -309,7 +311,15 @@ namespace actionwalk {
         currentVelocityBetaThreshold = (configPlayerHeight==0)? sqrt(heightVelocityBetaRatio * walkActionPoseData->at(currentHeightMean)) : sqrt(heightVelocityBetaRatio * configPlayerHeight);
     }
 
-
+    float walk::calculateArea(const PoseData::Pose* data) {
+        float a1 = data->keypoints()->Get(landmark::left_shoulder)->x();
+        float a2 = data->keypoints()->Get(landmark::left_shoulder)->y();
+        float b1 = data->keypoints()->Get(landmark::right_shoulder)->x();
+        float b2 = data->keypoints()->Get(landmark::right_shoulder)->y();
+        float c1 = data->keypoints()->Get(landmark::left_hip)->x();
+        float c2 = data->keypoints()->Get(landmark::left_hip)->y();
+        return c1;
+    }
 }
 
 #endif

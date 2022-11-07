@@ -4,7 +4,7 @@
   </div>
   <div>SERVER IP
         <select id="server_ip">
-            <option value="0" class="active">ws://192.168.50.231:8181</option>
+            <option value="0" class="active">ws://192.168.50.106:8181</option>
             <!-- <option value="1">ws://192.168.50.136:8181</option> -->
         </select> 
   </div>
@@ -58,6 +58,7 @@
             <option value="1" class="active">mode</option>
             <option value="2">confidence</option>
             <option value="3">jump</option>
+            <option value="4">left_leg</option>
         </select> 
     </div>
     <div id="chart3" style="width: 800px;height:400px;"></div>
@@ -309,6 +310,7 @@ function addFlatData(inputData:any){
     if(general_detection_data == 1) m3 = detectionResult.stand()?.mode();
     if(general_detection_data == 2) m3 = detectionResult.general()?.confidence();
     if(general_detection_data == 3) m3 = detectionResult.jump()?.onTheGround();
+    if(general_detection_data == 4) m3 = detectionResult.walk()?.leftLeg();
 
     num1.push(m1)
     num1.shift()
