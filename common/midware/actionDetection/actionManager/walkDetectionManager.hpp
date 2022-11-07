@@ -76,8 +76,33 @@ namespace actionwalk {
             calculateStepLen();
             calculateStepRate();
 
-            if(currentLeftWalkStatus == 0 && walkActionPoseData->at(preLeftWalkStatus) == 1) currentLeftWalkStatus = -1;
-            if(currentRightWalkStatus == 0 && walkActionPoseData->at(preRightWalkStatus) == 1) currentRightWalkStatus = -1;
+            static int leftDownMockCount = 0;
+            static bool leftDownMock = false;
+            if(currentLeftWalkStatus == 0 && walkActionPoseData->at(preLeftWalkStatus) == 1) {
+                leftDownMock = true;
+            }
+            if(leftDownMock == true) {
+                leftDownMockCount = leftDownMockCount + 1;
+                currentLeftWalkStatus = -1;
+                if(leftDownMockCount >= 10) {
+                    leftDownMockCount = 0;
+                    leftDownMock = false;
+                }
+            }
+
+            static int rightDownMockCount = 0;
+            static bool rightDownMock = false;
+            if(currentRightWalkStatus == 0 && walkActionPoseData->at(preRightWalkStatus) == 1) {
+                rightDownMock = true;
+            }
+            if(rightDownMock == true) {
+                rightDownMockCount = rightDownMockCount + 1;
+                currentRightWalkStatus = -1;
+                if(rightDownMockCount >= 10) {
+                    rightDownMockCount = 0;
+                    rightDownMock = false;
+                }
+            }
 
             walkOffset = { currentLeftWalkStatus, currentRightWalkStatus, currentLeftStepRate, currentRightStepRate,
                         walkActionPoseData->at(currentLeftHipAngMean), walkActionPoseData->at(currentRightHipAngMean), 
@@ -97,11 +122,17 @@ namespace actionwalk {
     void walk::calculateFrame(const PoseData::Pose* data) {
         walkActionPoseData->at(preLeftWalkPose) = walkActionPoseData->at(currentLeftWalkPose);
         walkActionPoseData->at(preRightWalkPose) = walkActionPoseData->at(currentRightWalkPose);
-        walkActionPoseData->at(currentLeftWalkPose) = data->keypoints()->Get(27)->y() + data->keypoints()->Get(31)->y();
-        walkActionPoseData->at(currentRightWalkPose) = data->keypoints()->Get(28)->y() + data->keypoints()->Get(32)->y();
+        #ifdef useFootAsDetectionPoint
+            walkActionPoseData->at(currentLeftWalkPose) = data->keypoints()->Get(27)->y() + data->keypoints()->Get(31)->y();
+            walkActionPoseData->at(currentRightWalkPose) = data->keypoints()->Get(28)->y() + data->keypoints()->Get(32)->y();
+        #endif
         #ifdef useKneeAsDetectionPoint
             walkActionPoseData->at(currentLeftWalkPose) = data->keypoints()->Get(27)->y() + data->keypoints()->Get(31)->y() + data->keypoints()->Get(25)->y();
             walkActionPoseData->at(currentRightWalkPose) = data->keypoints()->Get(28)->y() + data->keypoints()->Get(32)->y() + data->keypoints()->Get(26)->y();
+        #endif
+        #ifdef useHipAsDetectionPoint
+            walkActionPoseData->at(currentLeftWalkPose) = actionManager::calVecAngle(data, 11, 23, 25, 1);
+            walkActionPoseData->at(currentRightWalkPose) = actionManager::calVecAngle(data, 12, 24, 26, 1);
         #endif
         walkActionPoseData->at(currentLeftHipAng) = actionManager::calVecAngle(data, 11, 23, 25, 1);
         walkActionPoseData->at(currentRightHipAng) = actionManager::calVecAngle(data, 12, 24, 26, 1);

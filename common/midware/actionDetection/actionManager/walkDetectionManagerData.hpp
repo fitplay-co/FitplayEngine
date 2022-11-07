@@ -5,8 +5,11 @@ namespace actionwalk {
     // toe ankle
     // toe ankle knee
 
-    // #define useKneeAsDetectionPoint
-    #ifndef useKneeAsDetectionPoint
+    #define useKneeAsDetectionPoint
+    // #define useFootAsDetectionPoint
+    // #define useHipAsDetectionPoint
+
+    #ifdef useFootAsDetectionPoint
         #define walkDetectionThresholdTravel 0.005
         #define walkDetectionThresholdStand 0.01
     #endif
@@ -14,6 +17,11 @@ namespace actionwalk {
     #ifdef useKneeAsDetectionPoint
         #define walkDetectionThresholdTravel 0.004
         #define walkDetectionThresholdStand 0.008
+    #endif
+
+    #ifdef useHipAsDetectionPoint
+        #define walkDetectionThresholdTravel 0.5
+        #define walkDetectionThresholdStand 0.5
     #endif
 
     // ****** 2 ******
