@@ -4,7 +4,7 @@
   </div>
   <div>SERVER IP
         <select id="server_ip">
-            <option value="0" class="active">ws://192.168.50.80:8181</option>
+            <option value="0" class="active">ws://192.168.50.106:8181</option>
             <!-- <option value="1">ws://192.168.50.136:8181</option> -->
         </select> 
   </div>
@@ -321,7 +321,7 @@ function addFlatData(inputData:any){
 
     num2.push(m2)
     num2.shift()
-    console.log(m2)
+    // console.log(m2)
 
     num3.push(m3)
     num3.shift()

@@ -338,9 +338,14 @@ namespace actionwalk {
             currentStepRateBeta = 1 / (float(abs(walkActionTimeData->at(timeAlpha) - walkActionTimeData->at(timeBeta)))/1000);
         }
 
-        float avgStepRate = 4;
+        float avgStepRate = 0;
+        for(list<float>::const_iterator it = stepRateQueue.begin(); it != stepRateQueue.end(); it++) {
+            avgStepRate = avgStepRate + *it;
+        }  
+        avgStepRate = avgStepRate / stepRateQueue.size();
+
         if(currentStepRateBeta > stepRateBetaMax) currentStepRateBeta = preStepRateBeta;
-        else if(currentStepRateBeta > 2 * avgStepRate) currentStepRateBeta = (currentStepRateBeta + avgStepRate)/2;
+        else if(currentStepRateBeta > 1.5 * avgStepRate) currentStepRateBeta = (currentStepRateBeta + avgStepRate)/2;
 
         stepRateQueue.pop_back();
         stepRateQueue.push_front(currentStepRateBeta);

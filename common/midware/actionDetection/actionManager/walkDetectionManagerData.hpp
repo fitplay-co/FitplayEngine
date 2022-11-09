@@ -44,7 +44,7 @@ namespace actionwalk {
     static constexpr float thighLegRatio = 2.004;
     static constexpr float thighHeightRatio = 0.245;
     static constexpr float heightVelocityBetaRatio = 2.401;
-    static constexpr float stepRateBetaMax = 8;
+    static constexpr float stepRateBetaMax = 6;
 
     // walk action pose data
     static constexpr int preLeftWalkPose = 0;
