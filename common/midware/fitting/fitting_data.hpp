@@ -43,6 +43,7 @@ namespace fitplay {
     static constexpr int R_ANKLE = 16;
     static constexpr int L_FOOT = 17;
     static constexpr int R_FOOT = 18;
+    static constexpr int LANDMARK_NUM = 19;
     static constexpr int NO_NEXT = -1;
 
     static constexpr int JP_SPINE = 0; 

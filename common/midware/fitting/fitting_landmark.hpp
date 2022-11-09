@@ -84,18 +84,18 @@ public:
 };
 
 void FittingLandmark::handcraftFitting(const landmarks & fittingLandmark,const vector<jointPoint> & joints) {
-    //read from landmark
+    // read from landmark
     handcraftFittingLandmarkRead(fittingLandmark, joints);
-    // //calculate initial score 
+    // calculate initial score 
     handcraftFittingRound();
     beforeFittingError = summarizeError();
     jointGredientsUpdate();
     
-    //summarize new error , will skip when real time fitting
+    // summarize new error , will skip when real time fitting
     handcraftFittingRound();
     currentFittingError = summarizeError();
 
-    //cached fram after one round 
+    // cached frame after one round 
     frameCached = true;
 }
 

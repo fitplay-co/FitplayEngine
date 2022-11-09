@@ -14,26 +14,13 @@
 #define MIDWAREBRIDGE_H_
 
 #include "json.hpp"
+#include "FPLandmarks.h"
 
 using json = nlohmann::json;
 
 #if __cplusplus
 extern "C" {
 #endif
-
-typedef struct MidWareLandmark{
-    float x;
-    float y;
-    float z;
-    float confidence;
-}MidWareLandmark;
-
-typedef struct MidWareLandmark3D{
-    float x;
-    float y;
-    float z;
-    float confidence;
-}MidWareLandmark3D;
 
 /**
  * @brief create bridge class object and give back handler.

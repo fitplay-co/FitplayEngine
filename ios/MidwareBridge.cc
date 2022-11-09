@@ -1,6 +1,7 @@
 #include "MidwareBridge.h"
 #include "bridgeClass.hpp"
 #include "json.hpp"
+#include "FPBody.hpp"
 #include <chrono>
 
 #define MEDIAPIPE_LANDMARK_SIZE 33
@@ -101,6 +102,21 @@ const int bridge_perform (void* handler, MidWareLandmark* landmarks, int num,
                                     unsigned char** output, unsigned int* len){
     cout << "Enter: " << __FUNCTION__ << endl;
 
+    /** landmarks fitting
+    *   1. fix bone length
+    *   2. landmark constrains
+    */
+    fitplay::FPBody body = fitplay::FPBody(landmarks3d, num3d);
+    // for(int i = 0; i < FP_LANDMARK_NUM ; i++){
+    //     std::cout << __FUNCTION__ <<": before i: "<< i << "; position: " 
+    //     << landmarks3d[i].x << ", "<< landmarks3d[i].y << ", " << landmarks3d[i].z << std::endl;
+    // }
+    body.GetLandmarks(landmarks3d, num3d);
+    // for(int i = 0; i < FP_LANDMARK_NUM ; i++){
+    //     std::cout << __FUNCTION__ <<": after i: "<< i << "; position: " 
+    //     << landmarks3d[i].x << ", "<< landmarks3d[i].y << ", " << landmarks3d[i].z << std::endl;
+    // }
+
     fitplayBridge::BridgeClass* bridge_handler = reinterpret_cast<fitplayBridge::BridgeClass*>(handler);
     if(bridge_handler == nullptr){
         cout << __FUNCTION__ << ": Error: invalid bridge handler" << endl;
@@ -114,24 +130,13 @@ const int bridge_perform (void* handler, MidWareLandmark* landmarks, int num,
     vector<flatbuffers::Offset<PoseData::Point>> keypoints_vec;
     vector<flatbuffers::Offset<PoseData::Point>> keypoints3d_vec;
 
-    vector<json> keypoints_json_vec;
-    vector<json> keypoints3d_json_vec;
-
     for(int i = 0; i < MEDIAPIPE_LANDMARK_SIZE; i++){
         auto name = builder.CreateString(to_string(i).c_str());
         int landmarkIndex = num < MEDIAPIPE_LANDMARK_SIZE ? fitplayToMediapipeLandmarkIndexMap[i] : i;
-        auto point = PoseData::CreatePoint(builder, landmarks[landmarkIndex].x, landmarks[landmarkIndex].y, landmarks[landmarkIndex].z, landmarks[landmarkIndex].confidence, name);
-        json keypoint_json;
-        keypoint_json["x"] = landmarks[landmarkIndex].x;
-        keypoint_json["y"] = landmarks[landmarkIndex].y;
-        keypoint_json["z"] = landmarks[landmarkIndex].z;
-        keypoint_json["score"] = landmarks[landmarkIndex].confidence;
-        if(i < MEDIAPIPE_LANDMARK_SIZE){
-            keypoint_json["name"] = landmark_name[i];
-        }else{
-            keypoint_json["name"] = "unknown";
-        }
-        keypoints_json_vec.push_back(keypoint_json);
+        auto point = PoseData::CreatePoint(builder, landmarks[landmarkIndex].x,
+                                                    landmarks[landmarkIndex].y,
+                                                    landmarks[landmarkIndex].z,
+                                                    landmarks[landmarkIndex].confidence, name);
         keypoints_vec.push_back(point);
     }
     auto keypoints = builder.CreateVector(keypoints_vec);
@@ -139,18 +144,10 @@ const int bridge_perform (void* handler, MidWareLandmark* landmarks, int num,
     for(int i = 0; i < MEDIAPIPE_LANDMARK_SIZE; i++){
         auto name = builder.CreateString(to_string(i).c_str());
         int landmarkIndex = num3d < MEDIAPIPE_LANDMARK_SIZE ? fitplayToMediapipeLandmarkIndexMap[i] : i;
-        auto point3d = PoseData::CreatePoint(builder, landmarks3d[landmarkIndex].x, landmarks3d[landmarkIndex].y, landmarks3d[landmarkIndex].z, landmarks[landmarkIndex].confidence, name);
-        json keypoint_json;
-        keypoint_json["x"] = landmarks3d[landmarkIndex].x;
-        keypoint_json["y"] = landmarks3d[landmarkIndex].y;
-        keypoint_json["z"] = landmarks3d[landmarkIndex].z;
-        keypoint_json["score"] = landmarks[landmarkIndex].confidence;
-        if(i < MEDIAPIPE_LANDMARK_SIZE){
-            keypoint_json["name"] = landmark_name[i];
-        }else{
-            keypoint_json["name"] = "unknown";
-        }
-        keypoints3d_json_vec.push_back(keypoint_json);
+        auto point3d = PoseData::CreatePoint(builder, landmarks3d[landmarkIndex].x,
+                                                    landmarks3d[landmarkIndex].y,
+                                                    landmarks3d[landmarkIndex].z,
+                                                    landmarks[landmarkIndex].confidence, name);
         keypoints3d_vec.push_back(point3d);
     }
 

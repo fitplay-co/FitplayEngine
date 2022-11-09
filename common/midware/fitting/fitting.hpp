@@ -13,6 +13,8 @@
 #include "fitting_landmark.hpp"
 #include "fitting_rgbd.hpp"
 
+#include "FPBody.hpp"
+
 using namespace glm;
 using namespace std;
 
@@ -37,19 +39,19 @@ namespace fitplay {
     };
 
     void fitting::process(const PoseData::Pose* data) {
-        landmarks landmarkData3D(jointPointSize + 1);
-        landmarks landmarkData2D(jointPointSize + 1);
+        landmarks landmarkData3D(LANDMARK_NUM);
+        landmarks landmarkData2D(LANDMARK_NUM);
         readPoseDataToLandmark3D(data, landmarkData3D);
     
         landmarkFittingInstance.handcraftFitting(landmarkData3D, fkInstance.jointPoints);
         landmarkData3D = landmarkFittingInstance.currentFitLandmarkData;
         
-        for (int i = 0; i < jointPointSize +1 ; i++){
-            // cout << i << endl;
-            landmarkData3D[i] = vec3(landmarkFittingInstance.landMarkFilterGlobalX[i]->filter(landmarkFittingInstance.currentFitLandmarkData[i].x),
-            landmarkFittingInstance.landMarkFilterGlobalY[i]->filter(landmarkFittingInstance.currentFitLandmarkData[i].y),
-            landmarkFittingInstance.landMarkFilterGlobalZ[i]->filter(landmarkFittingInstance.currentFitLandmarkData[i].z));
-        }
+        // for (int i = 0; i < LANDMARK_NUM ; i++){
+        //     // cout << i << endl;
+        //     landmarkData3D[i] = vec3(landmarkFittingInstance.landMarkFilterGlobalX[i]->filter(landmarkFittingInstance.currentFitLandmarkData[i].x),
+        //     landmarkFittingInstance.landMarkFilterGlobalY[i]->filter(landmarkFittingInstance.currentFitLandmarkData[i].y),
+        //     landmarkFittingInstance.landMarkFilterGlobalZ[i]->filter(landmarkFittingInstance.currentFitLandmarkData[i].z));
+        // }
         //  if(mirror) {
         //     readPoseDataToLandmark2D(data, landmarkData2D);
         //     rgbdFittingInstance.update3DlandmarkWithRGBD(landmarkData3D, landmarkData2D);
