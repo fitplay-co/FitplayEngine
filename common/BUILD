@@ -21,6 +21,7 @@ cc_library(
     deps = [
         "//common/third_party:glm",
         "//common/third_party:json",
+        "//common/third_party:euroFilter",
     ],
     includes = ["third_party"]
 )

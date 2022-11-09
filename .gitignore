@@ -128,3 +128,5 @@ modules/test/build/*
 bazel-*
 build/
 obj/
+
+.bazeliskrc

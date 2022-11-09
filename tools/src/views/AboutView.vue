@@ -4,7 +4,7 @@
   </div>
   <div>SERVER IP
         <select id="server_ip">
-            <option value="0" class="active">ws://192.168.50.231:8181</option>
+            <option value="0" class="active">ws://192.168.50.80:8181</option>
             <!-- <option value="1">ws://192.168.50.136:8181</option> -->
         </select> 
   </div>

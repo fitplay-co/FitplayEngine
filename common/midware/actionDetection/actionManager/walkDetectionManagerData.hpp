@@ -8,6 +8,7 @@ namespace actionwalk {
     #define useKneeAsDetectionPoint
     // #define useFootAsDetectionPoint
     // #define useHipAsDetectionPoint
+    // #define useKneeDepthAsDetectionPoint
 
     #ifdef useFootAsDetectionPoint
         #define walkDetectionThresholdTravel 0.005
@@ -24,6 +25,11 @@ namespace actionwalk {
         #define walkDetectionThresholdStand 0.5
     #endif
 
+    #ifdef useKneeDepthAsDetectionPoint
+        #define walkDetectionThresholdTravel 0.01
+        #define walkDetectionThresholdStand 0.01
+    #endif
+
     // ****** 2 ******
     // parameters for filter
     // todo : improve height filter
@@ -38,7 +44,7 @@ namespace actionwalk {
     static constexpr float thighLegRatio = 2.004;
     static constexpr float thighHeightRatio = 0.245;
     static constexpr float heightVelocityBetaRatio = 2.401;
-    static constexpr float stepRateBetaMax = 10;
+    static constexpr float stepRateBetaMax = 8;
 
     // walk action pose data
     static constexpr int preLeftWalkPose = 0;

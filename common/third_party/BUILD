@@ -14,3 +14,10 @@ cc_library(
     includes = ["."],
     visibility = ["//visibility:public"],
 )
+
+cc_library(
+    name = "euroFilter",
+    hdrs = glob(["euroFilter.hpp"]),
+    includes = ["."],
+    visibility = ["//visibility:public"],
+)

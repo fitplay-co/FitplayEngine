@@ -2,6 +2,7 @@
 #define WALK_detection_manager
 
 #include <vector>
+#include <list>
 #include "actionData_generated.h"
 #include "midwareComponent/midwareComponent.hpp"
 #include "euroFilter.hpp"
@@ -17,6 +18,7 @@ namespace actionwalk {
             // calculated data
             std::shared_ptr<vector<float>> walkActionPoseData;
             std::shared_ptr<vector<float>> walkActionTimeData;
+            list<float> stepRateQueue = {5,4};
             // one euro filter parameters
             float euroFilterFrameCount = 0;
             std::shared_ptr<detection::OneEuroFilter> leftWalkEuroFilter;
@@ -133,6 +135,10 @@ namespace actionwalk {
         #ifdef useHipAsDetectionPoint
             walkActionPoseData->at(currentLeftWalkPose) = actionManager::calVecAngle(data, 11, 23, 25, 1);
             walkActionPoseData->at(currentRightWalkPose) = actionManager::calVecAngle(data, 12, 24, 26, 1);
+        #endif
+        #ifdef useKneeDepthAsDetectionPoint
+            walkActionPoseData->at(currentLeftWalkPose) = data->keypoints()->Get(25)->z();
+            walkActionPoseData->at(currentRightWalkPose) = data->keypoints()->Get(26)->z();
         #endif
         walkActionPoseData->at(currentLeftHipAng) = actionManager::calVecAngle(data, 11, 23, 25, 1);
         walkActionPoseData->at(currentRightHipAng) = actionManager::calVecAngle(data, 12, 24, 26, 1);
@@ -325,13 +331,21 @@ namespace actionwalk {
         if (walkActionTimeData->at(timeRightWindow) != 0) currentRightStepRate = 0.35 / walkActionTimeData->at(timeRightWindow);
         else { currentRightStepRate = 0; }
 
-        float preStepRate = currentStepRateBeta;
+        float preStepRateBeta = currentStepRateBeta;
         currentStepRateBeta = currentLeftStepRate > currentRightStepRate ? currentLeftStepRate : currentRightStepRate;
 
         if(walkActionTimeData->at(timeAlpha)!=0 && walkActionTimeData->at(timeBeta)!=0){
             currentStepRateBeta = 1 / (float(abs(walkActionTimeData->at(timeAlpha) - walkActionTimeData->at(timeBeta)))/1000);
         }
-        if(currentStepRateBeta > stepRateBetaMax) currentStepRateBeta = stepRateBetaMax;
+
+        float avgStepRate = 4;
+        if(currentStepRateBeta > stepRateBetaMax) currentStepRateBeta = preStepRateBeta;
+        else if(currentStepRateBeta > 2 * avgStepRate) currentStepRateBeta = (currentStepRateBeta + avgStepRate)/2;
+
+        stepRateQueue.pop_back();
+        stepRateQueue.push_front(currentStepRateBeta);
+
+
         // currentVelocity = currentVelocity * 0.8 + (currentStepRate * currentStepLength) * 0.2;
         // if(currentVelocity > 10) currentVelocity = 10;
         // if(currentVelocity < 0.01) currentVelocity = 0;
