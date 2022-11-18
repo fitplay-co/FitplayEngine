@@ -128,20 +128,27 @@ const int bridge_perform (void* handler, MidWareLandmark* landmarks, int num,
     *   1. fix bone length
     *   2. landmark constrains
     */
+    // fitplay::FPBody* body = new fitplay::FPBody(landmarks3d, num3d);
+    if(bridge_handler->body == nullptr){
+        bridge_handler->body = new fitplay::FPBody(landmarks3d, num3d);
+    }else{
+        bridge_handler->body->UpdateBody(landmarks3d, num3d);
+    }
+
+#ifdef FP_OS_DEBUG
     fitplay::FPBody* body = new fitplay::FPBody(landmarks3d, num3d);
+    bridge_handler->debugger->AddBody(body);
+#endif
+    
     // for(int i = 0; i < FP_LANDMARK_NUM ; i++){
     //     std::cout << __FUNCTION__ <<": before i: "<< i << "; position: " 
     //     << landmarks3d[i].x << ", "<< landmarks3d[i].y << ", " << landmarks3d[i].z << std::endl;
     // }
-    body->GetLandmarks(landmarks3d, num3d);
+    bridge_handler->body->GetLandmarks(landmarks3d, num3d);
     // for(int i = 0; i < FP_LANDMARK_NUM ; i++){
     //     std::cout << __FUNCTION__ <<": after i: "<< i << "; position: " 
     //     << landmarks3d[i].x << ", "<< landmarks3d[i].y << ", " << landmarks3d[i].z << std::endl;
     // }
-
-#ifdef FP_OS_DEBUG
-    bridge_handler->debugger->AddBody(body);
-#endif
 
     // TODO: optimize pre-allocated size.
     cout << __FUNCTION__ << ": start building input flatbuffer" << endl;

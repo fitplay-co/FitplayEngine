@@ -38,17 +38,24 @@ private:
     
     vec3 _position = vec3(0.0f, 0.0f, 0.0f);
 
+    int UpdatePosition();
+
 public:
     FPJoint();
+    FPJoint(int id);
     FPJoint(vec3 bone_direction, float bone_len, FPJoint* p_parent, int id);
     ~FPJoint();
 
     vec3 GetPosition();
-    vec3 UpdatePosition();
+    int UpdateDirection(vec3 bone_direction, float confidence); /*x, y, z, confidence*/
 };
 
 FPJoint::FPJoint(){
     FPJoint(vec3(0, 0, 0), 0, NULL, -1);
+}
+
+FPJoint::FPJoint(int id){
+    FPJoint(vec3(0, 0, 0), 0, NULL, id);
 }
 
 FPJoint::FPJoint(vec3 bone_direction, float bone_len, FPJoint* p_parent, int id)
@@ -73,25 +80,40 @@ FPJoint::~FPJoint()
 }
 
 vec3 FPJoint::GetPosition(){
-    // std::cout << __FUNCTION__ << ": Enter" << std::endl;
-    // std::cout << __FUNCTION__ << ": id: " << _id << " position: " 
+    // std::cout << __FUNCTION__ << ": Enter id: " << this->_id << std::endl;
+
+    // std::cout << __FUNCTION__ << " position: " 
     // << _position.x << ", "<< _position.y << ", " << _position.z << std::endl;
+
+    // UpdatePosition(); Note: costly
+
     return this->_position;
 }
 
-vec3 FPJoint::UpdatePosition(){
-    // std::cout << __FUNCTION__ << ": Enter" << std::endl;
-
+int FPJoint::UpdateDirection(vec3 bone_direction, float confidence){
+    // std::cout << __FUNCTION__ << ": Enter id: " << this->_id << std::endl;
+    // std::cout << __FUNCTION__ << " position: " 
+    // << bone_direction.x << ", "<< bone_direction.y << ", " << bone_direction.z << std::endl;
+    if(confidence < 0.03){
+        // std::cout << __FUNCTION__ << "unacceptable confidence: " << confidence << std::endl;
+        return 1;
+    }
+    _bone_direction = glm::normalize(bone_direction);
+    UpdatePosition();
+    // TODO: add constrains
+    return 0;
+}
+/* update in GetPosition if you want to update very joints on the chain, but that will cost much more computational power*/
+int FPJoint::UpdatePosition(){ 
+    // std::cout << __FUNCTION__ << ": Enter id: " << this->_id << std::endl;
     if(this->_p_parent != NULL){
         this->_position = this->_p_parent->GetPosition() + this->_bone_len * this->_bone_direction;
-        // this->_position = this->_p_parent->GetPosition() + this->_bone_direction;
+        return 0;
     }
-    
-    // std::cout << __FUNCTION__ <<": id: "<< _id << "; position: " 
-    // << _position.x << ", "<< _position.y << ", " << _position.z << std::endl;
-    // TODO: update children position
-    return this->_position;
+    return -1;
 }
+
+
 
 }
 #endif /* FPJOINT_HPP_ */

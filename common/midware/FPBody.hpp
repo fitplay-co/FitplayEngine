@@ -25,12 +25,21 @@ fitplay::FPJoint* _root;
 fitplay::FPJoint* _joint_list[FP_LANDMARK_NUM];
 
 public:
+    FPBody();
     FPBody(MidWareLandmark3D* midware_landmarks, int num);
     ~FPBody();
 
     const bool GetLandmarks(MidWareLandmark3D* midware_landmarks, int num);
     FPJoint* GetJoint(int num);
+    int UpdateBody(MidWareLandmark3D* midware_landmarks, int num);
 };
+
+FPBody::FPBody(){
+    // TODO: init with T-Pose
+    MidWareLandmark3D* midware_landmarks = (MidWareLandmark3D*)calloc(FP_LANDMARK_NUM, sizeof(MidWareLandmark3D));
+    FPBody(midware_landmarks, FP_LANDMARK_NUM);
+    free(midware_landmarks);
+}
 
 FPBody::FPBody(MidWareLandmark3D* midware_landmarks, int num)
 {
@@ -42,7 +51,7 @@ FPBody::FPBody(MidWareLandmark3D* midware_landmarks, int num)
                                 midware_landmarks[i].z);
         }
 
-        _root = new FPJoint();
+        _root = new FPJoint(FP_CENTER_HIP);
         _joint_list[FP_CENTER_HIP] = _root;
 
         _joint_list[FP_L_HIP] = new FPJoint(landmarks[FP_L_HIP], /* bone len: */0.0955f * 0.9f, _joint_list[FP_CENTER_HIP], FP_L_HIP);
@@ -112,6 +121,54 @@ const bool FPBody::GetLandmarks(MidWareLandmark3D* midware_landmarks, int num){
 FPJoint* FPBody::GetJoint(int num){
     return _joint_list[num];
 }
+
+int FPBody::UpdateBody(MidWareLandmark3D* midware_landmarks, int num){
+    // std::cout << __FUNCTION__ << ": Enter" << std::endl;
+    if(num == FP_LANDMARK_NUM){
+        vec3 landmarks[FP_LANDMARK_NUM];
+        float confidence[FP_LANDMARK_NUM];
+        for(int i = 0; i < FP_LANDMARK_NUM; i++){
+            landmarks[i] = vec3(midware_landmarks[i].x,
+                                midware_landmarks[i].y,
+                                midware_landmarks[i].z);
+            confidence[i] = midware_landmarks[i].confidence;
+        }
+
+        _joint_list[FP_L_HIP]->UpdateDirection(landmarks[FP_L_HIP], confidence[FP_L_HIP]);
+        _joint_list[FP_R_HIP]->UpdateDirection(landmarks[FP_R_HIP], confidence[FP_L_HIP]);
+        _joint_list[FP_SPINE]->UpdateDirection(landmarks[FP_SPINE], confidence[FP_L_HIP]);
+
+        _joint_list[FP_L_KNEE]->UpdateDirection(landmarks[FP_L_KNEE] - landmarks[FP_L_HIP], confidence[FP_L_HIP]);
+        _joint_list[FP_L_ANKLE]->UpdateDirection(landmarks[FP_L_ANKLE] - landmarks[FP_L_KNEE], confidence[FP_L_HIP]);
+        _joint_list[FP_L_FOOT]->UpdateDirection(landmarks[FP_L_FOOT] - landmarks[FP_L_ANKLE], confidence[FP_L_HIP]);
+
+        _joint_list[FP_R_KNEE]->UpdateDirection(landmarks[FP_R_KNEE] - landmarks[FP_R_HIP], confidence[FP_L_HIP]);
+        _joint_list[FP_R_ANKLE]->UpdateDirection(landmarks[FP_R_ANKLE] - landmarks[FP_R_KNEE], confidence[FP_L_HIP]);
+        _joint_list[FP_R_FOOT]->UpdateDirection(landmarks[FP_R_FOOT] - landmarks[FP_R_ANKLE], confidence[FP_L_HIP]);
+
+        _joint_list[FP_NECK]->UpdateDirection(landmarks[FP_NECK] - landmarks[FP_SPINE], confidence[FP_L_HIP]);
+        _joint_list[FP_HEAD_B]->UpdateDirection(landmarks[FP_HEAD_B] - landmarks[FP_NECK], confidence[FP_L_HIP]);
+        _joint_list[FP_HEAD_T]->UpdateDirection(landmarks[FP_HEAD_T] - landmarks[FP_HEAD_B], confidence[FP_L_HIP]);
+
+        _joint_list[FP_L_SHOULDER]->UpdateDirection(landmarks[FP_L_SHOULDER] - landmarks[FP_NECK], confidence[FP_L_HIP]);
+        _joint_list[FP_L_ARM]->UpdateDirection(landmarks[FP_L_ARM] - landmarks[FP_L_SHOULDER], confidence[FP_L_HIP]);
+        _joint_list[FP_L_WRIST]->UpdateDirection(landmarks[FP_L_WRIST] - landmarks[FP_L_ARM], confidence[FP_L_HIP]);
+        _joint_list[FP_L_HAND]->UpdateDirection(landmarks[FP_L_HAND] - landmarks[FP_L_WRIST], confidence[FP_L_HIP]);
+
+        _joint_list[FP_R_SHOULDER]->UpdateDirection(landmarks[FP_R_SHOULDER] - landmarks[FP_NECK], confidence[FP_L_HIP]);
+        _joint_list[FP_R_ARM]->UpdateDirection(landmarks[FP_R_ARM] - landmarks[FP_R_SHOULDER], confidence[FP_L_HIP]);
+        _joint_list[FP_R_WRIST]->UpdateDirection(landmarks[FP_R_WRIST] - landmarks[FP_R_ARM], confidence[FP_L_HIP]);
+        _joint_list[FP_R_HAND]->UpdateDirection(landmarks[FP_R_HAND] - landmarks[FP_R_WRIST], confidence[FP_L_HIP]);
+        
+    }else{
+        std::cout << __FUNCTION__ << ": Error: expect landmark size " << LANDMARK_NUM 
+        << ", but gets " << num << std::endl;
+        return -1;
+    }
+
+    return 0;
+}
+
 
 }
 
