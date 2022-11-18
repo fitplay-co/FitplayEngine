@@ -14,6 +14,7 @@
 #include "midwareComponent/midwareManager.hpp"
 #include "generalDetection/generalCalculator.hpp"
 #include "json.hpp"
+#include "FPDebug.hpp"
 
 #define FITPLAY_ENGINE_VERSION "0.2.0"
 
@@ -39,6 +40,8 @@ namespace fitplayBridge {
       bool hasOutput();
       std::string getCurrentJSON();
       void setParameters(float* params, int num);
+      fitplay::FPDebug* debugger;
+      int count;
   };
 
   BridgeClass::BridgeClass() {
@@ -47,8 +50,13 @@ namespace fitplayBridge {
     midwareManager.registerMidwareComponent(&actionDetectionInstance);
     midwareManager.registerMidwareComponent(&fittingInstance);
     midwareManager.registerMidwareComponent(&generalInstance);
+    debugger = new fitplay::FPDebug();
+    count = 0;
   }
-  BridgeClass::~BridgeClass() {}
+  BridgeClass::~BridgeClass() {
+    std::cout << __FUNCTION__ << std::endl;
+    delete debugger;
+  }
 
   void BridgeClass::release() {
     if (outputData.GetSize() > 0) {
